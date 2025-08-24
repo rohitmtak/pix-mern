@@ -1,24 +1,77 @@
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 interface WishlistButtonProps {
   className?: string;
   productId?: string;
   isWishlisted?: boolean;
   onToggle?: (productId: string, isWishlisted: boolean) => void;
+  productData?: {
+    name: string;
+    price: number;
+    imageUrl: string;
+    category: string;
+  };
 }
 
 const WishlistButton = ({ 
   className, 
   productId = "",
   isWishlisted = false,
-  onToggle 
+  onToggle,
+  productData
 }: WishlistButtonProps) => {
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const [isLiked, setIsLiked] = useState(isWishlisted);
+  
+  console.log('WishlistButton rendered with props:', { productId, isWishlisted, productData });
+
+  // Update local state when context changes
+  useEffect(() => {
+    console.log('WishlistButton useEffect: isWishlisted changed to', isWishlisted);
+    setIsLiked(isWishlisted);
+  }, [isWishlisted]);
+
+  // Also update local state when context state changes
+  useEffect(() => {
+    const contextIsWishlisted = isInWishlist(productId);
+    console.log('WishlistButton context useEffect: contextIsWishlisted =', contextIsWishlisted, 'for productId:', productId);
+    if (contextIsWishlisted !== isLiked) {
+      console.log('Syncing local state with context state');
+      setIsLiked(contextIsWishlisted);
+    }
+  }, [productId, isInWishlist, isLiked]);
 
   const handleClick = () => {
     const newState = !isLiked;
     setIsLiked(newState);
+    
+    console.log('WishlistButton clicked:', { productId, newState, productData });
+    
+    if (newState) {
+      // Add to wishlist
+      if (productData && productId) {
+        console.log('Adding to wishlist:', { productId, productData });
+        addToWishlist({
+          productId: productId,
+          name: productData.name,
+          price: productData.price,
+          imageUrl: productData.imageUrl,
+          category: productData.category
+        });
+      } else {
+        console.log('Missing productData or productId for wishlist add');
+      }
+    } else {
+      // Remove from wishlist
+      if (productId) {
+        console.log('Removing from wishlist:', productId);
+        removeFromWishlist(productId);
+      }
+    }
+    
+    // Call the onToggle callback if provided
     onToggle?.(productId, newState);
   };
 

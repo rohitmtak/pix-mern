@@ -3,6 +3,7 @@ import ProductCard from './ProductCard';
 import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/lib/api';
 import { cn } from "@/lib/utils";
+import { useWishlist } from '@/contexts/WishlistContext';
 
 interface ProductGridProps {
   products?: Product[];
@@ -25,6 +26,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 }) => {
   // Always call the hook, but only use it when no products are passed as props
   const { products: hookProducts, loading: hookLoading, error: hookError } = useProducts();
+  const { isInWishlist } = useWishlist();
   
   const products = propProducts || hookProducts;
   const loading = propLoading !== undefined ? propLoading : hookLoading;
@@ -93,27 +95,36 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         )}
         style={{ gap: getLayoutConfig().gap }}
       >
-        {products.map((product, index) => (
-          <div 
-            key={product._id || index}
-            className={cn(
-              getLayoutConfig().width,
-              "transition-all duration-1000 ease-in-out"
-            )}
-          >
-            <ProductCard
-              id={product._id}
-              imageUrl={product.colorVariants?.[0]?.images?.[0] || "/placeholder.svg"}
-              title={product.name}
-              price={`₹${product.colorVariants?.[0]?.price || 0}`}
-              category={product.category}
-              alt={product.name}
-              isWishlisted={false} // TODO: Get from wishlist API
-              onWishlistToggle={onWishlistToggle}
-              className="h-full"
-            />
-          </div>
-        ))}
+        {products.map((product, index) => {
+          console.log('Product in ProductGrid:', { 
+            _id: product._id, 
+            name: product.name, 
+            category: product.category,
+            isWishlisted: isInWishlist(product._id)
+          });
+          
+          return (
+            <div 
+              key={product._id || index}
+              className={cn(
+                getLayoutConfig().width,
+                "transition-all duration-1000 ease-in-out"
+              )}
+            >
+              <ProductCard
+                id={product._id}
+                imageUrl={product.colorVariants?.[0]?.images?.[0] || "/placeholder.svg"}
+                title={product.name}
+                price={`₹${product.colorVariants?.[0]?.price || 0}`}
+                category={product.category}
+                alt={product.name}
+                isWishlisted={isInWishlist(product._id)}
+                onWishlistToggle={onWishlistToggle}
+                className="h-full"
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

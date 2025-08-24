@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import SideMenu from "./SideMenu";
+import { useCart } from "@/contexts/CartContext";
 
 const Header = () => {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
@@ -11,6 +12,7 @@ const Header = () => {
   const [isHeaderHovered, setIsHeaderHovered] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { state: cartState } = useCart();
 
   // Check if we're on the home page
   const isHomePage = location.pathname === "/";
@@ -306,8 +308,8 @@ const Header = () => {
 
               {/* Cart */}
               <Link
-                to="/checkout"
-                className="flex items-center justify-center"
+                to="/cart"
+                className="flex items-center justify-center relative"
                 aria-label="Shopping cart"
               >
                 <svg 
@@ -321,6 +323,11 @@ const Header = () => {
                 >
                   <path d="M0 22.985V5.995L2 6v.03l17-.014v16.968H0zm17-15H2v13h15v-13zm-5-2.882c0-2.04-.493-3.203-2.5-3.203-2 0-2.5 1.164-2.5 3.203v.912H5V4.647C5 1.19 7.274 0 9.5 0 11.517 0 14 1.354 14 4.647v1.368h-2v-.912z" fill="currentColor"></path>
                 </svg>
+                {cartState.totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                    {cartState.totalItems > 99 ? '99+' : cartState.totalItems}
+                  </span>
+                )}
               </Link>
             </div>
           </div>

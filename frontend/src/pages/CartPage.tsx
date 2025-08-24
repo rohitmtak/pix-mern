@@ -1,32 +1,19 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { Button } from "@/components/ui/button";
-
-// Mock cart data
-const mockCartItems = [
-  {
-    id: "1",
-    imageUrl: "https://api.builder.io/api/v1/image/assets/TEMP/6714f073aacab712b21f60fbf4e61031c285fc0d?width=841",
-    title: "BLUSH PINK EMBROIDERED BANDHGALA SET",
-    price: "165000/-",
-    size: "S",
-    color: "Blush Pink",
-    quantity: 2
-  }
-];
+import { useCart } from "@/contexts/CartContext";
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState(mockCartItems);
+  const { state: cartState, updateQuantity, removeFromCart, clearCart } = useCart();
+  const cartItems = cartState.items;
 
   // Calculate totals based on cart items
   const calculateTotals = () => {
     const subtotalValue = cartItems.reduce((sum, item) => {
-      const price = parseInt(item.price.replace(/[^0-9]/g, ''));
-      return sum + (price * item.quantity);
+      return sum + (item.price * item.quantity);
     }, 0);
     
     const subtotal = `${subtotalValue.toLocaleString()}/-`;
@@ -39,18 +26,13 @@ const CartPage = () => {
 
   const { subtotal, shipping, tax, total } = calculateTotals();
 
-  const handleQuantityChange = (itemId: string, newQuantity: number) => {
+  const handleQuantityChange = (productId: string, size: string, color: string, newQuantity: number) => {
     if (newQuantity < 1) return;
-    
-    setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
+    updateQuantity(productId, size, color, newQuantity);
   };
 
-  const handleRemoveItem = (itemId: string) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
+  const handleRemoveItem = (productId: string, size: string, color: string) => {
+    removeFromCart(productId, size, color);
   };
 
   const handleProceedToCheckout = () => {
@@ -134,7 +116,7 @@ const CartPage = () => {
                        <div className="w-20 h-20 flex-shrink-0 overflow-hidden bg-gray-200 rounded">
                          <img
                            src={item.imageUrl}
-                           alt={item.title}
+                           alt={item.name}
                            className="w-full h-full object-cover"
                          />
                        </div>
@@ -148,7 +130,7 @@ const CartPage = () => {
                              fontWeight: 400
                            }}
                          >
-                           {item.title}
+                           {item.name}
                          </h3>
                          <p className="text-gray-600 text-sm mb-2">
                            Size: {item.size} | Color: {item.color}
@@ -167,7 +149,7 @@ const CartPage = () => {
                          <div className="flex items-center gap-4">
                            <div className="flex items-center border border-gray-300 rounded-md">
                              <button
-                               onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                               onClick={() => handleQuantityChange(item.productId, item.size, item.color, item.quantity - 1)}
                                className="px-3 py-1 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black"
                              >
                                -
@@ -176,7 +158,7 @@ const CartPage = () => {
                                {item.quantity}
                              </span>
                              <button
-                               onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                               onClick={() => handleQuantityChange(item.productId, item.size, item.color, item.quantity + 1)}
                                className="px-3 py-1 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black"
                              >
                                +
@@ -184,7 +166,7 @@ const CartPage = () => {
                            </div>
                            
                            <button
-                             onClick={() => handleRemoveItem(item.id)}
+                             onClick={() => handleRemoveItem(item.productId, item.size, item.color)}
                              className="text-red-600 hover:text-red-800 text-sm underline transition-colors"
                            >
                              Remove
@@ -210,7 +192,15 @@ const CartPage = () => {
               {/* Order Summary */}
               <div className="lg:sticky lg:top-8 lg:self-start">
                                  <OrderSummary
-                   items={cartItems}
+                   items={cartItems.map(item => ({
+                     id: item.id,
+                     imageUrl: item.imageUrl,
+                     title: item.name,
+                     price: `₹${item.price}`,
+                     size: item.size,
+                     color: item.color,
+                     quantity: item.quantity
+                   }))}
                    subtotal={subtotal}
                    shipping={shipping}
                    tax={tax}

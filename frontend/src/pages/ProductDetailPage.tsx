@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Error } from "@/components/ui/error";
 import { useProduct } from "@/hooks/useProducts";
+import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const ProductDetailPage = () => {
@@ -16,10 +19,14 @@ const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState<'description' | 'details' | 'materials'>('description');
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [isColorLoading, setIsColorLoading] = useState(false);
+  
+  // Cart and wishlist hooks
+  const { addToCart, isInCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { toast } = useToast();
 
   // Fetch product details from API
   const {
@@ -112,8 +119,8 @@ const ProductDetailPage = () => {
   const currentColorVariant = product ? getCurrentColorVariant() : null;
 
   const handleWishlistToggle = (productId: string, isWishlisted: boolean) => {
-    setIsWishlisted(isWishlisted);
-    // TODO: Implement wishlist API call
+    // The WishlistButton component now handles the context operations directly
+    // This function is kept for any additional logic that might be needed
     console.log(`Product ${productId} wishlist toggled to ${isWishlisted}`);
   };
 
@@ -256,10 +263,16 @@ const ProductDetailPage = () => {
                   </h1>
                   <WishlistButton
                     productId={product._id}
-                    isWishlisted={isWishlisted}
+                    isWishlisted={isInWishlist(product._id)}
                     onToggle={handleWishlistToggle}
+                    productData={{
+                      name: product.name,
+                      price: currentColorVariant?.price || 0,
+                      imageUrl: currentImages[0] || '',
+                      category: product.category
+                    }}
                     className="bg-white/80 backdrop-blur-sm p-2 rounded-full hover:bg-white/90 shrink-0"
-                    aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                    aria-label={isInWishlist(product._id) ? "Remove from wishlist" : "Add to wishlist"}
                   />
                 </div>
                 
@@ -276,22 +289,6 @@ const ProductDetailPage = () => {
                   </p>
                 </div>
               </div>
-
-              {/* Description */}
-              {product.description && (
-                <div>
-                  <p 
-                    className="text-gray-700"
-                    style={{
-                      fontSize: '16px',
-                      fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
-                      lineHeight: '24px'
-                    }}
-                  >
-                    {product.description}
-                  </p>
-                </div>
-              )}
 
               {/* Size Selection */}
               {sizes.length > 0 && (
@@ -430,8 +427,28 @@ const ProductDetailPage = () => {
                 <Button 
                   className="w-full text-sm font-normal bg-black text-white hover:bg-gray-800"
                   disabled={!selectedSize || !selectedColor}
+                  onClick={() => {
+                    if (product && selectedSize && selectedColor) {
+                      addToCart({
+                        productId: product._id,
+                        name: product.name,
+                        price: currentColorVariant?.price || 0,
+                        size: selectedSize,
+                        color: selectedColor,
+                        quantity: quantity,
+                        imageUrl: currentImages[0] || ''
+                      });
+                      
+                      // Show success feedback
+                      toast({
+                        title: "Added to Cart",
+                        description: `${product.name} has been added to your cart successfully!`,
+                        duration: 3000,
+                      });
+                    }
+                  }}
                 >
-                  ADD TO CART
+                  {isInCart(product?._id || '', selectedSize, selectedColor) ? 'UPDATE CART' : 'ADD TO CART'}
                 </Button>
                 <Button 
                   variant="outline" 

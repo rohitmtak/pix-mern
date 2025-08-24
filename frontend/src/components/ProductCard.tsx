@@ -28,6 +28,8 @@ const ProductCard = ({
   isWishlisted = false,
   onWishlistToggle
 }: ProductCardProps) => {
+  console.log('ProductCard rendered with props:', { id, title, price, category, isWishlisted });
+  
   return (
     <div className={cn("flex flex-col w-full", className)}>
       {/* Product Image Container */}
@@ -65,6 +67,12 @@ const ProductCard = ({
               productId={id}
               isWishlisted={isWishlisted}
               onToggle={onWishlistToggle}
+              productData={{
+                name: title,
+                price: parseFloat(price.replace('₹', '')) || 0,
+                imageUrl: imageUrl,
+                category: category || ''
+              }}
               className="bg-white/80 backdrop-blur-sm rounded-full hover:bg-white/90"
             />
           </div>

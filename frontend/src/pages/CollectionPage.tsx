@@ -45,7 +45,8 @@ const CollectionPage = () => {
   const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
   const handleWishlistToggle = (productId: string, isWishlisted: boolean) => {
-    // TODO: Implement wishlist API call
+    // The WishlistButton component now handles the context operations directly
+    // This function is kept for any additional logic that might be needed
     console.log(`Product ${productId} wishlist toggled to ${isWishlisted}`);
   };
 
