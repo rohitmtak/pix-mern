@@ -106,7 +106,7 @@ const Add = ({token}) => {
       console.error('Error fetching categories:', error);
       // Set default categories if API fails
       setCategories(['Signature Collection', 'Bridal Couture', 'Contemporary Drapes', 'Luxury Fusion Lounge']);
-      setSubCategories(['Bridal', 'Lehenga', 'Saree', 'Anarkali', 'Gown', 'Kurta', 'Palazzo', 'Dress', 'Top', 'Bottom', 'Jewelry', 'Bags', 'Shoes']);
+      setSubCategories(['Bridal', 'Lehenga', 'Saree', 'Anarkali']);
     }
   };
 
@@ -231,7 +231,7 @@ const Add = ({token}) => {
           <button 
             type="button" 
             onClick={addColorVariant}
-            className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
+            className='bg-black text-white px-5 py-2 sm:px-7 sm:py-2 text-xs sm:text-sm hover:bg-gray-800 transition-colors duration-200'
           >
             Add Color Variant
           </button>
@@ -391,7 +391,7 @@ const Add = ({token}) => {
         <label className='cursor-pointer' htmlFor="bestseller">Add to bestseller</label>
       </div>
 
-      <button type="submit" className='w-28 py-3 mt-4 bg-black text-white'>ADD</button>
+      <button type="submit" className='bg-black text-white px-5 py-2 sm:px-7 sm:py-2 text-xs sm:text-sm hover:bg-gray-800 transition-colors duration-200'>ADD</button>
     </form>
   )
 }
