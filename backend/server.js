@@ -39,12 +39,12 @@ const initializeApp = async () => {
                 // Allow requests with no origin (like mobile apps or curl requests)
                 if (!origin) return callback(null, true);
                 
+                // Allow all localhost ports for development
+                if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+                    return callback(null, true);
+                }
+                
                 const allowedOrigins = [
-                    'http://localhost:5173',
-                    'http://localhost:3000', 
-                    'http://localhost:5174',
-                    'http://127.0.0.1:5173',
-                    'http://127.0.0.1:5174',
                     // Netlify domain
                     'https://highstreetpix.netlify.app'
                 ];

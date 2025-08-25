@@ -31,7 +31,7 @@ const ProductCard = ({
   console.log('ProductCard rendered with props:', { id, title, price, category, isWishlisted });
   
   return (
-    <div className={cn("flex flex-col w-full", className)}>
+    <div className={cn("flex flex-col w-full gap-2", className)}>
       {/* Product Image Container */}
       <div className="relative w-full group">
         <Link to={`/product/${id}`} className="block w-full">
@@ -50,12 +50,12 @@ const ProductCard = ({
         {/* Left side - Product details */}
         <div className="flex-1">
           {/* Title */}
-          <h3 className="text-black text-base">
+          <h3 className="text-black text-sm">
             {title}
           </h3>
           
           {/* Price */}
-          <p className="text-black font-normal text-base">
+          <p className="text-black font-normal text-sm">
             {price}
           </p>
         </div>

@@ -24,20 +24,13 @@ const WishlistPage = () => {
       <Header />
 
       {/* Main Content */}
-      <main className="pt-36">
+      <main className="pt-24">
         <div className="container mx-auto px-16 py-16">
           
           {/* Page Header */}
           <div className="text-center mb-8">
             <h1 
-              className="text-black font-normal uppercase mb-8"
-              style={{
-                fontSize: '50px',
-                fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
-                fontWeight: 400,
-                lineHeight: '60px',
-                color: 'rgba(0,0,0,1)'
-              }}
+              className="text-black font-normal uppercase mb-8 text-2xl"
             >
              Wishlist
             </h1>

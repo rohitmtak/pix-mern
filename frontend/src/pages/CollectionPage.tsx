@@ -94,13 +94,7 @@ const CollectionPage = () => {
         {/* Page Title */}
         <div className="flex justify-center pt-8 pb-6">
           <h1
-            className="text-black text-center font-normal uppercase"
-            style={{
-              width: '635px',
-              fontSize: '25px',
-              fontWeight: 400,
-              color: 'rgba(0,0,0,1)'
-            }}
+            className="text-black text-center font-normal uppercase text-2xl"
           >
             <span>SIGNATURE Collection</span>
           </h1>

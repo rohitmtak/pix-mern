@@ -35,13 +35,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const getLayoutConfig = () => {
     switch (columns) {
       case 2:
-        return { width: "w-[49%]", gap: "2%" }; // 2 columns with 2% gap
+        return { width: "w-[49.5%]", gap: "1%" }; // 2 columns with 2% gap
       case 3:
-        return { width: "w-[32%]", gap: "1.5%" }; // 3 columns with 1.5% gap
+        return { width: "w-[32.5%]", gap: "1.25%" }; // 3 columns with 1.5% gap
       case 4:
-        return { width: "w-[24%]", gap: "1%" }; // 4 columns with 1% gap
+        return { width: "w-[24.25%]", gap: "1%" }; // 4 columns with 1% gap
       default:
-        return { width: "w-[24%]", gap: "1%" }; // Default to 4 columns
+        return { width: "w-[24.25%]", gap: "1%" }; // Default to 4 columns
     }
   };
 

@@ -22,7 +22,9 @@ const ProductDetailPage = () => {
   const [activeTab, setActiveTab] = useState<'description' | 'details' | 'materials'>('description');
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [isColorLoading, setIsColorLoading] = useState(false);
-  
+  const [selectedUnit, setSelectedUnit] = useState<'inches' | 'cm'>('inches');
+  const [isCustomSizeOpen, setIsCustomSizeOpen] = useState(false);
+
   // Cart and wishlist hooks
   const { addToCart, isInCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -49,7 +51,7 @@ const ProductDetailPage = () => {
     if (product && product.colorVariants && product.colorVariants.length > 0) {
       // Set default color from first color variant
       setSelectedColor(product.colorVariants[0].color);
-      
+
       // Set default size from first color variant
       if (product.colorVariants[0].sizes && product.colorVariants[0].sizes.length > 0) {
         setSelectedSize(product.colorVariants[0].sizes[0]);
@@ -86,7 +88,7 @@ const ProductDetailPage = () => {
           <div className="container mx-auto px-0 py-16">
             <Error
               title={isError ? "Error Loading Product" : "Product not found"}
-              message={isError 
+              message={isError
                 ? "Failed to load product. Please try again."
                 : "The product you're looking for doesn't exist."
               }
@@ -111,7 +113,7 @@ const ProductDetailPage = () => {
       return null;
     }
 
-    return product.colorVariants.find(variant => 
+    return product.colorVariants.find(variant =>
       variant.color.toLowerCase() === selectedColor.toLowerCase()
     );
   };
@@ -126,11 +128,11 @@ const ProductDetailPage = () => {
 
   const handleColorSelection = (color: string) => {
     if (color === selectedColor) return; // Don't do anything if same color selected
-    
+
     setIsColorLoading(true);
     setSelectedColor(color);
     setCurrentImageIndex(0); // Reset to first image when color changes
-    
+
     // Simulate a small delay for better UX
     setTimeout(() => {
       setIsColorLoading(false);
@@ -144,14 +146,14 @@ const ProductDetailPage = () => {
   // Get available sizes and colors from color variants
   const getAvailableSizes = () => {
     if (!product || !product.colorVariants) return [];
-    
+
     const allSizes = new Set<string>();
     product.colorVariants.forEach(variant => {
       if (variant.sizes) {
         variant.sizes.forEach(size => allSizes.add(size));
       }
     });
-    
+
     return Array.from(allSizes);
   };
 
@@ -170,7 +172,7 @@ const ProductDetailPage = () => {
     }
 
     // Find color variant that matches the selected color
-    const colorVariant = product.colorVariants.find(variant => 
+    const colorVariant = product.colorVariants.find(variant =>
       variant.color.toLowerCase() === color.toLowerCase()
     );
 
@@ -194,7 +196,7 @@ const ProductDetailPage = () => {
       <main className="pt-24">
         <div className="container mx-auto px-0 py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            
+
             {/* Product Gallery */}
             <div className="space-y-8">
               {/* Main Image */}
@@ -250,10 +252,10 @@ const ProductDetailPage = () => {
               {/* Title and Price */}
               <div className="pb-6 border-b border-gray-200">
                 <div className="flex items-center justify-between gap-4 mb-4">
-                  <h1 
+                  <h1
                     className="text-black font-normal uppercase text-2xl flex-1 min-w-0"
                     style={{
-                      fontFamily: 'Bodoni Moda, -apple-system, Roboto, Bodoni Moda, sans-serif',
+                      fontFamily: 'Playfair Display, Georgia, serif',
                       fontWeight: 400,
                       lineHeight: '32px',
                       color: 'rgba(0,0,0,1)'
@@ -271,13 +273,13 @@ const ProductDetailPage = () => {
                       imageUrl: currentImages[0] || '',
                       category: product.category
                     }}
-                    className="bg-white/80 backdrop-blur-sm p-2 rounded-full hover:bg-white/90 shrink-0"
+                    className="bg-white/80 backdrop-blur-sm p-1 rounded-full hover:bg-white/90 shrink-0 [&>svg]:w-6 [&>svg]:h-6"
                     aria-label={isInWishlist(product._id) ? "Remove from wishlist" : "Add to wishlist"}
                   />
                 </div>
-                
+
                 <div className="flex items-center gap-3">
-                  <p 
+                  <p
                     className="text-black font-normal text-xl"
                     style={{
                       fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
@@ -299,11 +301,11 @@ const ProductDetailPage = () => {
                       onClick={() => setIsSizeChartOpen(true)}
                       className="flex items-center gap-2 text-base text-gray-600 hover:text-black transition-colors duration-200"
                     >
-                      <svg 
-                        className="w-5 h-5" 
-                        fill="currentColor" 
-                        stroke="currentColor" 
-                        xmlns="http://www.w3.org/2000/svg" 
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        stroke="currentColor"
+                        xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 640 512"
                       >
                         <path d="M608 128H32c-17.67 0-32 14.33-32 32v192c0 17.67 14.33 32 32 32h576c17.67 0 32-14.33 32-32V160c0-17.67-14.33-32-32-32zm0 224H32V160h80v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h64v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h64v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h64v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h80v192z"></path>
@@ -314,12 +316,12 @@ const ProductDetailPage = () => {
                   <div className="flex gap-3 flex-wrap">
                     {sizes.map((size) => {
                       // Check if this size is available for the selected color
-                      const colorVariant = product?.colorVariants?.find(variant => 
+                      const colorVariant = product?.colorVariants?.find(variant =>
                         variant.color.toLowerCase() === selectedColor.toLowerCase()
                       );
-                      
+
                       const isAvailable = colorVariant && colorVariant.sizes.includes(size);
-                      
+
                       return (
                         <button
                           key={size}
@@ -374,17 +376,17 @@ const ProductDetailPage = () => {
                         "Brown": "#A52A2A",
                         "Gray": "#808080"
                       };
-                      
+
                       const hexColor = colorMap[color] || "#CCCCCC"; // Default gray if color not found
-                      
+
                       // Check if this color variant is available
-                      const colorVariant = product?.colorVariants?.find(variant => 
+                      const colorVariant = product?.colorVariants?.find(variant =>
                         variant.color.toLowerCase() === color.toLowerCase()
                       );
-                      
+
                       const isAvailable = colorVariant && colorVariant.stock > 0;
                       const hasImages = colorVariant && colorVariant.images && colorVariant.images.length > 0;
-                      
+
                       return (
                         <button
                           key={color}
@@ -400,7 +402,7 @@ const ProductDetailPage = () => {
                           )}
                           title={`${color}${!isAvailable ? ' - Out of Stock' : ''}${hasImages ? ' - Has images' : ''}`}
                         >
-                          <div 
+                          <div
                             className="absolute inset-1 rounded-full"
                             style={{
                               backgroundColor: hexColor,
@@ -424,7 +426,7 @@ const ProductDetailPage = () => {
 
               {/* Add to Cart Button */}
               <div className="mt-8 flex gap-4">
-                <Button 
+                <Button
                   className="w-full text-sm font-normal bg-black text-white hover:bg-gray-800"
                   disabled={!selectedSize || !selectedColor}
                   onClick={() => {
@@ -438,7 +440,7 @@ const ProductDetailPage = () => {
                         quantity: quantity,
                         imageUrl: currentImages[0] || ''
                       });
-                      
+
                       // Show success feedback
                       toast({
                         title: "Added to Cart",
@@ -450,8 +452,8 @@ const ProductDetailPage = () => {
                 >
                   {isInCart(product?._id || '', selectedSize, selectedColor) ? 'UPDATE CART' : 'ADD TO CART'}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full text-sm font-normal border-2 border-black text-black hover:bg-gray-50"
                 >
                   ENQUIRE
@@ -500,7 +502,7 @@ const ProductDetailPage = () => {
                 {/* Tab Content */}
                 {activeTab === 'description' && (
                   <div>
-                    <p 
+                    <p
                       className="text-gray-700"
                       style={{
                         fontSize: '16px',
@@ -516,7 +518,7 @@ const ProductDetailPage = () => {
                 {activeTab === 'details' && (
                   <div>
                     <ul className="space-y-2">
-                      <li 
+                      <li
                         className="text-gray-700"
                         style={{
                           fontSize: '14px',
@@ -525,7 +527,7 @@ const ProductDetailPage = () => {
                       >
                         <strong>Category:</strong> {product.category}
                       </li>
-                      <li 
+                      <li
                         className="text-gray-700"
                         style={{
                           fontSize: '14px',
@@ -534,7 +536,7 @@ const ProductDetailPage = () => {
                       >
                         <strong>Subcategory:</strong> {product.subCategory}
                       </li>
-                      <li 
+                      <li
                         className="text-gray-700"
                         style={{
                           fontSize: '14px',
@@ -543,7 +545,7 @@ const ProductDetailPage = () => {
                       >
                         <strong>Available Colors:</strong> {colors.join(', ')}
                       </li>
-                      <li 
+                      <li
                         className="text-gray-700"
                         style={{
                           fontSize: '14px',
@@ -553,7 +555,7 @@ const ProductDetailPage = () => {
                         <strong>Available Sizes:</strong> {sizes.join(', ')}
                       </li>
                       {product.bestseller && (
-                        <li 
+                        <li
                           className="text-gray-700"
                           style={{
                             fontSize: '14px',
@@ -586,20 +588,20 @@ const ProductDetailPage = () => {
         <>
           {/* Overlay */}
           <div
-            className="fixed inset-0 z-50 transition-opacity duration-300"
+            className="fixed inset-0 z-50 bg-black/20 transition-opacity duration-300"
             onClick={() => setIsSizeChartOpen(false)}
           />
-          
+
           {/* Size Chart Panel */}
           <div
             className={cn(
-              "fixed top-0 right-0 w-[400px] h-screen z-50 transition-transform duration-300 bg-white shadow-2xl",
+              "flex flex-col fixed top-0 right-0 min-w-[50%] h-screen z-50 transition-transform duration-300 bg-white shadow-2xl",
               isSizeChartOpen ? "translate-x-0" : "translate-x-full"
             )}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Size Chart</h2>
+            <div className="flex items-center justify-between py-6 px-16 border-b border-gray-200">
+              <h2 className="text-xl font-semibold">SIZE GUIDE</h2>
               <button
                 onClick={() => setIsSizeChartOpen(false)}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -624,75 +626,184 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Size Chart Content */}
-            <div className="p-6">
+            <div className="py-6 px-16 flex-1 flex flex-col justify-center">
+              {/* Body Measurements Header */}
               <div className="mb-6">
-                <h3 className="text-lg font-medium mb-4">How to Measure</h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  Use a measuring tape to measure your body. For the most accurate fit, have someone help you measure.
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm">Bust: Measure around the fullest part</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">Waist: Measure around the narrowest part</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                    <span className="text-sm">Hips: Measure around the fullest part</span>
+                <h3 className="text-lg text-center font-medium mb-6">
+                  BODY MEASUREMENTS ({selectedUnit === 'inches' ? 'INCHES' : 'CM'})
+                </h3>
+
+                {/* Unit Toggle */}
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <span className="text-sm text-gray-600">Units:</span>
+                  <div className="flex border border-gray-300 overflow-hidden">
+                    <button
+                      onClick={() => setSelectedUnit('inches')}
+                      className={cn(
+                        "px-3 py-1 text-sm transition-colors",
+                        selectedUnit === 'inches'
+                          ? "bg-black text-white"
+                          : "bg-white text-gray-600 hover:bg-gray-50"
+                      )}
+                    >
+                      INCHES
+                    </button>
+                    <button
+                      onClick={() => setSelectedUnit('cm')}
+                      className={cn(
+                        "px-3 py-1 text-sm transition-colors border-l border-gray-300",
+                        selectedUnit === 'cm'
+                          ? "bg-black text-white"
+                          : "bg-white text-gray-600 hover:bg-gray-50"
+                      )}
+                    >
+                      CM
+                    </button>
                   </div>
                 </div>
               </div>
 
               {/* Size Table */}
-              <div>
-                <h3 className="text-lg font-medium mb-4">Size Guide</h3>
+              <div className="mb-6">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm border border-gray-300">
                     <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-2 font-medium">Size</th>
-                        <th className="text-left py-2 font-medium">Bust (cm)</th>
-                        <th className="text-left py-2 font-medium">Waist (cm)</th>
-                        <th className="text-left py-2 font-medium">Hips (cm)</th>
+                      <tr className="border-b border-gray-300">
+                        <th className="text-left py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">SINGLE SIZE</th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">XS</th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">S</th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">M</th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">L</th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">XL</th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">XXL</th>
+                        <th className="text-center py-3 px-2 font-medium bg-gray-50">XXXL</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-2">XS</td>
-                        <td className="py-2">76-81</td>
-                        <td className="py-2">58-63</td>
-                        <td className="py-2">81-86</td>
+                      <tr className="border-b border-gray-300">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">BUST</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '32' : '81'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '34' : '86'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '36' : '91.5'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '38' : '96.5'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '40' : '102'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '43' : '109'}</td>
+                        <td className="py-3 px-2 text-center" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '45' : '114'}</td>
                       </tr>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-2">S</td>
-                        <td className="py-2">81-86</td>
-                        <td className="py-2">63-68</td>
-                        <td className="py-2">86-91</td>
+                      <tr className="border-b border-gray-300">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">WAIST</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '23.5' : '60'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '26' : '66'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '28' : '71'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '29.5' : '75'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '32' : '81'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '34.5' : '87.5'}</td>
+                        <td className="py-3 px-2 text-center" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '38.5' : '98'}</td>
                       </tr>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-2">M</td>
-                        <td className="py-2">86-91</td>
-                        <td className="py-2">68-73</td>
-                        <td className="py-2">91-96</td>
+                      <tr className="border-b border-gray-300">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">HIPS</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '34.75' : '88'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '36.75' : '93'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '38' : '96.5'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '40.5' : '103'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '42.5' : '108'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '44.5' : '113'}</td>
+                        <td className="py-3 px-2 text-center" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '48.5' : '123'}</td>
                       </tr>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-2">L</td>
-                        <td className="py-2">91-96</td>
-                        <td className="py-2">73-78</td>
-                        <td className="py-2">96-101</td>
+                      <tr className="border-b border-gray-300">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">SHOULDER</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '14.5' : '37'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '15' : '38'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '15.5' : '39'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '16' : '40.5'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '16.5' : '42'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '17.25' : '44'}</td>
+                        <td className="py-3 px-2 text-center" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '17.75' : '45'}</td>
                       </tr>
                       <tr>
-                        <td className="py-2">XL</td>
-                        <td className="py-2">96-101</td>
-                        <td className="py-2">78-83</td>
-                        <td className="py-2">101-106</td>
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">ARM HOLE</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '15' : '38'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '15.5' : '39'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '16' : '40.5'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '16.5' : '42'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '17.5' : '44.5'}</td>
+                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '18.5' : '47'}</td>
+                        <td className="py-3 px-2 text-center" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '19' : '48.5'}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
+              </div>
+
+              {/* Custom Text */}
+              <div className="text-center">
+                <p className="text-sm text-gray-700 mb-2">
+                  Here's the size guide video!{" "}
+                  <button
+                    onClick={() => setIsCustomSizeOpen(true)}
+                    className="text-blue-600 hover:text-blue-800 underline font-medium cursor-pointer"
+                  >
+                    Click here
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Custom Size Video Modal */}
+      {isCustomSizeOpen && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 z-50 bg-black/20 transition-opacity duration-300"
+            onClick={() => setIsCustomSizeOpen(false)}
+          />
+
+          {/* Custom Size Panel */}
+          <div
+            className={cn(
+              "flex flex-col fixed top-0 right-0 min-w-[50%] h-screen z-50 transition-transform duration-300 bg-white shadow-2xl",
+              isCustomSizeOpen ? "translate-x-0" : "translate-x-full"
+            )}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold">Size Guide Video</h2>
+              <button
+                onClick={() => setIsCustomSizeOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                >
+                  <path
+                    d="M18 6L6 18M6 6L18 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Video Content */}
+            <div className="p-6 flex-1 flex flex-col justify-center">
+              <div className="flex justify-center">
+                <iframe
+                  src="https://www.youtube.com/embed/03b56tc7sAE?autoplay=1"
+                  title="Size Guide Video"
+                  className="w-full aspect-video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
               </div>
             </div>
           </div>
