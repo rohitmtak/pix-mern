@@ -11,6 +11,14 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -24,6 +32,7 @@ const ProductDetailPage = () => {
   const [isColorLoading, setIsColorLoading] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<'inches' | 'cm'>('inches');
   const [isCustomSizeOpen, setIsCustomSizeOpen] = useState(false);
+  const [galleryApi, setGalleryApi] = useState<CarouselApi | null>(null);
 
   // Cart and wishlist hooks
   const { addToCart, isInCart } = useCart();
@@ -63,6 +72,23 @@ const ProductDetailPage = () => {
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [selectedColor]);
+
+  // Keep main carousel in sync when current image changes
+  useEffect(() => {
+    if (galleryApi) {
+      galleryApi.scrollTo(currentImageIndex);
+    }
+  }, [currentImageIndex, galleryApi]);
+
+  // Update current image when user scrolls main carousel
+  useEffect(() => {
+    if (!galleryApi) return;
+    const onSelect = () => setCurrentImageIndex(galleryApi.selectedScrollSnap());
+    galleryApi.on('select', onSelect);
+    return () => {
+      galleryApi.off('select', onSelect);
+    };
+  }, [galleryApi]);
 
   // Loading state
   if (isLoading) {
@@ -199,18 +225,35 @@ const ProductDetailPage = () => {
 
             {/* Product Gallery */}
             <div className="space-y-8">
-              {/* Main Image */}
-              <div className="relative aspect-[421/553] overflow-hidden bg-gray-100">
+              {/* Main Image - Carousel */}
+              <div className="relative overflow-hidden bg-transparent group">
                 {currentImages.length > 0 ? (
                   <>
-                    <img
-                      src={currentImages[currentImageIndex]}
-                      alt={`${product.name} - ${selectedColor} view ${currentImageIndex + 1}`}
-                      className="w-full h-full object-cover transition-opacity duration-300"
-                      key={`${selectedColor}-${currentImageIndex}`} // Force re-render when color changes
-                    />
+                    <Carousel
+                      setApi={setGalleryApi}
+                      opts={{ loop: true, align: 'start', containScroll: 'trimSnaps' }}
+                      className=""
+                    >
+                      <CarouselContent className="ml-0">
+                        {currentImages.map((image, index) => (
+                          <CarouselItem key={index} className="pl-0">
+                            <img
+                              src={image}
+                              alt={`${product.name} - ${selectedColor} view ${index + 1}`}
+                              className="w-full h-auto"
+                            />
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      {currentImages.length > 1 && (
+                        <>
+                          <CarouselPrevious className="left-4 right-auto top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 backdrop-blur text-gray-900 border border-gray-200 shadow-md hover:bg-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto focus:outline-none" />
+                          <CarouselNext className="right-4 left-auto top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 backdrop-blur text-gray-900 border border-gray-200 shadow-md hover:bg-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto focus:outline-none" />
+                        </>
+                      )}
+                    </Carousel>
                     {isColorLoading && (
-                      <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+                      <div className="absolute inset-0 z-20 bg-white/50 flex items-center justify-center">
                         <Loading size="md" />
                       </div>
                     )}
@@ -221,30 +264,6 @@ const ProductDetailPage = () => {
                   </div>
                 )}
               </div>
-
-              {/* Thumbnail Gallery */}
-              {currentImages.length > 1 && (
-                <div className="flex gap-4 overflow-x-auto">
-                  {currentImages.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={cn(
-                        "flex-shrink-0 w-20 h-20 overflow-hidden border-2 transition-all",
-                        currentImageIndex === index
-                          ? "border-black"
-                          : "border-gray-200 hover:border-gray-400"
-                      )}
-                    >
-                      <img
-                        src={image}
-                        alt={`${product.name} - ${selectedColor} view ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* Product Information */}
