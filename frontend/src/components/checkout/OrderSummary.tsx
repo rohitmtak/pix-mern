@@ -4,7 +4,7 @@ interface CartItem {
   id: string;
   imageUrl: string;
   title: string;
-  price: string;
+  price: string | number;
   size: string;
   color: string;
   quantity: number;
@@ -29,6 +29,19 @@ const OrderSummary = ({
   className,
   variant = 'checkout' // Default to checkout view
 }: OrderSummaryProps) => {
+  // Helper function to format price consistently
+  const formatPrice = (price: string | number) => {
+    if (typeof price === 'number') {
+      return `Rs.${price.toLocaleString()}`;
+    }
+    // If price is already a string with Rs. or ₹ symbol, return as is
+    if (typeof price === 'string' && (price.includes('Rs.') || price.includes('₹'))) {
+      return price.replace('₹', 'Rs.');
+    }
+    // If price is a string without currency prefix, add Rs.
+    return `Rs.${price}`;
+  };
+
   // Cart view (simplified)
   if (variant === 'cart') {
     return (
@@ -45,7 +58,7 @@ const OrderSummary = ({
             CART
           </h2>
           <p className="text-gray-600 text-sm">
-            {items.length} PRODUCT{items.length !== 1 ? 'S' : ''}
+            {items.length} PRODUCT{items.length !== 1 ? 'S' : ''} • {items.reduce((sum, item) => sum + item.quantity, 0)} ITEMS
           </p>
         </div>
 
@@ -53,11 +66,11 @@ const OrderSummary = ({
         <div className="space-y-4 mb-6">
           <div className="flex justify-between">
             <span className="text-gray-600 font-medium">SUBTOTAL:</span>
-            <span className="text-black font-medium">(INR) ₹{subtotal.replace(/[^0-9]/g, '')}</span>
+            <span className="text-black font-medium">(INR) {subtotal}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600 font-medium">TOTAL:</span>
-            <span className="text-black font-medium">(INR) ₹{total.replace(/[^0-9]/g, '')}</span>
+            <span className="text-black font-medium">(INR) {total}</span>
           </div>
         </div>
 
@@ -134,7 +147,7 @@ const OrderSummary = ({
                   fontWeight: 400
                 }}
               >
-                {item.price}
+                {formatPrice(item.price)}
               </p>
             </div>
           </div>

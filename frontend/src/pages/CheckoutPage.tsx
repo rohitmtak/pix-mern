@@ -5,30 +5,18 @@ import Footer from "@/components/Footer";
 import CheckoutForm from "@/components/checkout/CheckoutForm";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { Button } from "@/components/ui/button";
-
-// Mock cart data
-const mockCartItems = [
-  {
-    id: "1",
-    imageUrl: "https://api.builder.io/api/v1/image/assets/TEMP/6714f073aacab712b21f60fbf4e61031c285fc0d?width=841",
-    title: "SIGNATURE Collection Piece",
-    price: "120000/-",
-    size: "M",
-    color: "Black",
-    quantity: 2
-  }
-];
+import { useCart } from "@/contexts/CartContext";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const [cartItems] = useState(mockCartItems);
+  const { state: cartState } = useCart();
+  const cartItems = cartState.items;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Calculate totals based on cart items
+  // Calculate totals based on actual cart items
   const calculateTotals = () => {
     const subtotalValue = cartItems.reduce((sum, item) => {
-      const price = parseInt(item.price.replace(/[^0-9]/g, ''));
-      return sum + (price * item.quantity);
+      return sum + (item.price * item.quantity);
     }, 0);
     
     const subtotal = `${subtotalValue.toLocaleString()}/-`;
@@ -134,7 +122,15 @@ const CheckoutPage = () => {
               {/* Order Summary */}
               <div className="lg:sticky lg:top-8 lg:self-start">
                 <OrderSummary
-                  items={cartItems}
+                  items={cartItems.map(item => ({
+                    id: item.id,
+                    imageUrl: item.imageUrl,
+                    title: item.name,
+                    price: `Rs.${item.price}`,
+                    size: item.size,
+                    color: item.color,
+                    quantity: item.quantity
+                  }))}
                   subtotal={subtotal}
                   shipping={shipping}
                   tax={tax}

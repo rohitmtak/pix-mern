@@ -287,10 +287,10 @@ const ProductDetailPage = () => {
                       color: 'rgba(0,0,0,1)'
                     }}
                   >
-                    ₹{currentColorVariant?.price || "Price not available"}
+                    Rs.{currentColorVariant?.price || "Price not available"}
                   </p>
                 </div>
-              </div>
+               </div>
 
               {/* Size Selection */}
               {sizes.length > 0 && (
@@ -450,7 +450,7 @@ const ProductDetailPage = () => {
                     }
                   }}
                 >
-                  {isInCart(product?._id || '', selectedSize, selectedColor) ? 'UPDATE CART' : 'ADD TO CART'}
+                  ADD TO CART
                 </Button>
                 <Button
                   variant="outline"

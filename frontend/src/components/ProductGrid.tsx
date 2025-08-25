@@ -114,8 +114,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <ProductCard
                 id={product._id}
                 imageUrl={product.colorVariants?.[0]?.images?.[0] || "/placeholder.svg"}
+                hoverImageUrl={
+                  (product.colorVariants?.[0]?.images?.length || 0) > 1
+                    ? product.colorVariants?.[0]?.images?.[1]
+                    : undefined
+                }
                 title={product.name}
-                price={`₹${product.colorVariants?.[0]?.price || 0}`}
+                price={`Rs.${product.colorVariants?.[0]?.price || 0}`}
                 category={product.category}
                 alt={product.name}
                 isWishlisted={isInWishlist(product._id)}

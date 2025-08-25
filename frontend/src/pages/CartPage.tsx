@@ -135,7 +135,7 @@ const CartPage = () => {
                              fontWeight: 400
                            }}
                          >
-                           {item.price}
+                          Rs.{item.price}
                          </p>
                          
                          {/* Quantity Controls */}
@@ -189,7 +189,7 @@ const CartPage = () => {
                      id: item.id,
                      imageUrl: item.imageUrl,
                      title: item.name,
-                     price: `₹${item.price}`,
+                     price: `Rs.${item.price}`,
                      size: item.size,
                      color: item.color,
                      quantity: item.quantity

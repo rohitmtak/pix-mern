@@ -1,22 +1,65 @@
+import React, { useMemo, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { useCart } from "@/contexts/CartContext";
+import { useProduct } from "@/hooks/useProducts";
+import { useToast } from "@/hooks/use-toast";
 
 const WishlistPage = () => {
-  const { state: wishlistState, clearWishlist } = useWishlist();
+  const { state: wishlistState, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const { toast } = useToast();
   const wishlistProducts = wishlistState.items;
+  const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const [selectedSize, setSelectedSize] = useState<string>("");
 
-  const handleWishlistToggle = (productId: string, isWishlisted: boolean) => {
-    // This function is now handled by the WishlistButton component
-    // No need to manage local state here
+  const { product: modalProduct } = useProduct(selectedProductId);
+
+  const availableSizes = useMemo(() => {
+    const sizesSet = new Set<string>();
+    if (modalProduct?.colorVariants) {
+      modalProduct.colorVariants.forEach(variant => {
+        if (variant.sizes) {
+          variant.sizes.forEach((s: string) => sizesSet.add(s));
+        }
+      });
+    }
+    return Array.from(sizesSet);
+  }, [modalProduct]);
+
+  const firstVariant = modalProduct?.colorVariants?.[0];
+
+  const openSizeModal = (productId: string) => {
+    setSelectedProductId(productId);
+    setSelectedSize("");
+    setIsSizeModalOpen(true);
   };
 
-  const handleClearWishlist = () => {
-    clearWishlist();
+  const handleConfirmMove = () => {
+    if (!modalProduct || !selectedSize) return;
+    addToCart({
+      productId: modalProduct._id,
+      name: modalProduct.name,
+      price: firstVariant?.price || 0,
+      size: selectedSize,
+      color: firstVariant?.color || "",
+      quantity: 1,
+      imageUrl: firstVariant?.images?.[0] || "",
+    });
+    removeFromWishlist(modalProduct._id);
+    setIsSizeModalOpen(false);
+    toast({
+      title: "Moved to Cart",
+      description: `${modalProduct.name} (${selectedSize}) added to your cart`,
+      duration: 2500,
+    });
   };
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -44,16 +87,8 @@ const WishlistPage = () => {
                     fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif'
                   }}
                 >
-                  {wishlistProducts.length} item{wishlistProducts.length !== 1 ? 's' : ''} saved
+                  {wishlistProducts.length} {wishlistProducts.length === 1 ? 'Item' : 'Items'}
                 </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClearWishlist}
-                  className="text-sm border-gray-300 hover:bg-gray-50"
-                >
-                  Clear All
-                </Button>
               </div>
             )}
           </div>
@@ -95,18 +130,43 @@ const WishlistPage = () => {
             // Products Grid
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {wishlistProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.productId}
-                  imageUrl={product.imageUrl}
-                  title={product.name}
-                  price={`₹${product.price}`}
-                  category={product.category}
-                  alt={product.name}
-                  isWishlisted={true}
-                  onWishlistToggle={handleWishlistToggle}
-                  className="h-full"
-                />
+                <div key={product.id} className="relative flex flex-col gap-0">
+                  {/* Remove icon overlay */}
+                  <button
+                    aria-label="Remove from wishlist"
+                    onClick={() => removeFromWishlist(product.productId)}
+                    className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-white/90 border border-gray-300 text-gray-500 hover:text-black shadow-sm flex items-center justify-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M6 18L18 6" />
+                    </svg>
+                  </button>
+
+                  <ProductCard
+                    id={product.productId}
+                    imageUrl={product.imageUrl}
+                    title={product.name}
+                    price={`Rs.${product.price}`}
+                    category={product.category}
+                    alt={product.name}
+                    isWishlisted={true}
+                    showWishlist={false}
+                    compact
+                    centered
+                    contentWrapperClassName="border-x border-gray-200"
+                    className="h-full"
+                  />
+
+                  {/* Minimal move action */}
+                  <div className="border-x border-t border-b border-gray-200">
+                    <button
+                      onClick={() => openSizeModal(product.productId)}
+                      className="w-full text-center uppercase text-xs tracking-wide text-gray-700 hover:text-black font-medium py-2"
+                    >
+                      Move to Cart
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -139,6 +199,47 @@ const WishlistPage = () => {
               </div>
             </div>
           )}
+          <Dialog open={isSizeModalOpen} onOpenChange={setIsSizeModalOpen}>
+            <DialogContent className="sm:max-w-[520px] rounded-none sm:rounded-none">
+              <DialogHeader>
+                <DialogTitle className="text-base">Select Size</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-5">
+                <div className="flex items-center gap-4 pb-4 mb-2 border-b border-gray-200">
+                  {firstVariant?.images?.[0] && (
+                    <img src={firstVariant.images[0]} alt={modalProduct?.name || ''} className="w-16 h-16 object-cover" />
+                  )}
+                  <div>
+                    <div className="text-sm font-medium text-black">{modalProduct?.name}</div>
+                    <div className="text-sm text-black">Rs.{firstVariant?.price ?? ''}</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium mb-3">Select Size</div>
+                  <div className="flex flex-wrap gap-3">
+                    {availableSizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`w-10 h-10 rounded-full border text-sm flex items-center justify-center transition-colors ${
+                          selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 hover:border-gray-400 text-gray-700'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  className="w-full text-sm font-normal bg-black text-white hover:bg-gray-800"
+                  disabled={!selectedSize}
+                  onClick={handleConfirmMove}
+                >
+                  Done
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </main>
 
