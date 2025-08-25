@@ -26,6 +26,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/collection" element={<CollectionPage />} />
+      <Route path="/collection/:category" element={<CollectionPage />} />
       <Route path="/product/:id" element={<ProductDetailPage />} />
       <Route path="/wishlist" element={<WishlistPage />} />
       <Route path="/cart" element={<CartPage />} />
@@ -33,6 +34,7 @@ const AppRoutes = () => {
       <Route path="/order-success" element={<OrderSuccessPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/404" element={<NotFound />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -5,9 +5,10 @@ const HeroSection = () => {
         className="absolute inset-0 w-full h-full object-cover"
         autoPlay
         loop
+        muted
         playsInline
+        preload="auto"
       >
-        <source src="/videos/intro2.mp4" type="video/mp4" />
         <source src="/videos/intro2.webm" type="video/webm" />
         Your browser does not support the video tag.
       </video>

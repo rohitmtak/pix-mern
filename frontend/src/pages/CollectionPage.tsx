@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, Navigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductGrid from "@/components/ProductGrid";
@@ -6,14 +7,16 @@ import GridLayoutToggle from "@/components/GridLayoutToggle";
 import { Loading } from "@/components/ui/loading";
 import { Error } from "@/components/ui/error";
 import { useProducts } from "@/hooks/useProducts";
-import { useCategories } from "@/hooks/useCategories";
 import { cn } from "@/lib/utils";
+import { getCategoryBySlug, isValidCategorySlug, PRODUCT_CATEGORIES } from "@/constants/categories";
 
 const CollectionPage = () => {
   const [gridLayout, setGridLayout] = useState(4);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
-  const [searchQuery, setSearchQuery] = useState("");
+  const { category: categorySlug } = useParams<{ category: string }>();
+  
+  // Get category from URL parameter
+  const category = categorySlug ? getCategoryBySlug(categorySlug) : undefined;
 
   // Fetch products from API
   const {
@@ -23,19 +26,16 @@ const CollectionPage = () => {
     refetch
   } = useProducts();
 
-  // Fetch categories for filtering
-  const { categories } = useCategories();
-
-  // Filter products based on search and category
+  // Filter products based on category
   const filteredProducts = products.filter(product => {
-    const matchesSearch = !searchQuery || 
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
+    const matchesCategory = !category || product.category === category;
+    return matchesCategory;
   });
+
+  // Reset to first page when category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category]);
 
   // Pagination logic
   const productsPerPage = 20;
@@ -50,20 +50,21 @@ const CollectionPage = () => {
     console.log(`Product ${productId} wishlist toggled to ${isWishlisted}`);
   };
 
-  const handleCategoryChange = (category: string | undefined) => {
-    setSelectedCategory(category);
-    setCurrentPage(1); // Reset to first page when category changes
-  };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1); // Reset to first page when search changes
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Get category display name
+  const getCategoryDisplayName = (category: string | undefined) => {
+    if (!category) return "All Collection";
+    return category.toUpperCase();
+  };
+
+  // Redirect to 404 if invalid category slug
+  if (categorySlug && !isValidCategorySlug(categorySlug)) {
+    return <Navigate to="/404" replace />;
+  }
 
   if (error) {
     return (
@@ -96,49 +97,13 @@ const CollectionPage = () => {
           <h1
             className="text-black text-center font-normal uppercase text-2xl"
           >
-            <span>SIGNATURE Collection</span>
+            <span>{getCategoryDisplayName(category)}</span>
           </h1>
         </div>
 
-        {/* Search and Filter Controls */}
+        {/* Filter Controls */}
         <div className="px-16 pb-8">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            {/* Search and Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 flex-1">
-              {/* Search Input */}
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => handleSearch("")}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              {/* Category Filter */}
-              <select
-                value={selectedCategory || ""}
-                onChange={(e) => handleCategoryChange(e.target.value || undefined)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-              >
-                <option value="">All Categories</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </div>
-
+          <div className="flex justify-end">
             {/* Grid Layout Toggle */}
             <GridLayoutToggle
               currentLayout={gridLayout}
@@ -170,19 +135,16 @@ const CollectionPage = () => {
           <div className="px-16 pb-16">
             <div className="text-center py-16">
               <p className="text-gray-600 text-lg">
-                {searchQuery || selectedCategory 
-                  ? "No products found matching your criteria." 
+                {category 
+                  ? `No products found in ${getCategoryDisplayName(category)}.` 
                   : "No products available at the moment."}
               </p>
-              {(searchQuery || selectedCategory) && (
+              {category && (
                 <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedCategory(undefined);
-                  }}
+                  onClick={() => window.location.href = "/collection"}
                   className="mt-4 px-6 py-2 text-black border border-black rounded hover:bg-black hover:text-white transition-colors"
                 >
-                  Clear Filters
+                  View All Products
                 </button>
               )}
             </div>

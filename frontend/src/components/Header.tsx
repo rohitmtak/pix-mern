@@ -117,7 +117,7 @@ const Header = () => {
                           {/* Signature Collection */}
                           <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-0">
                             <button
-                              onClick={() => handleNavigation("/collection?category=signature")}
+                              onClick={() => handleNavigation("/collection/signature")}
                               className="text-left"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
@@ -129,7 +129,7 @@ const Header = () => {
                           {/* Bridal Couture */}
                           <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-100">
                             <button
-                              onClick={() => handleNavigation("/collection?category=bridal")}
+                              onClick={() => handleNavigation("/collection/bridal")}
                               className="text-left"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
@@ -141,7 +141,7 @@ const Header = () => {
                           {/* Contemporary Drapes */}
                           <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-200">
                             <button
-                              onClick={() => handleNavigation("/collection?category=contemporary")}
+                              onClick={() => handleNavigation("/collection/contemporary")}
                               className="text-left"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
@@ -153,11 +153,24 @@ const Header = () => {
                           {/* Luxury Fusion Lounge */}
                           <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-300">
                             <button
-                              onClick={() => handleNavigation("/collection?category=luxury")}
+                              onClick={() => handleNavigation("/collection/luxury")}
                               className="text-left"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
                                 Luxury Fusion Lounge
+                              </div>
+                            </button>
+                          </div>
+
+                          {/* VIEW ALL - Separator and View All option */}
+                          <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-400">
+                            <div className="border-t border-gray-200 my-4 mr-32"></div>
+                            <button
+                              onClick={() => handleNavigation("/collection")}
+                              className="text-left"
+                            >
+                              <div className="text-md text-gray-600 group-hover/item:text-black transition-colors duration-300 font-medium">
+                                VIEW ALL
                               </div>
                             </button>
                           </div>
@@ -170,7 +183,7 @@ const Header = () => {
                           {/* Signature Collection Image */}
                           <div className="group/item">
                             <button
-                              onClick={() => handleNavigation("/collection?category=signature")}
+                              onClick={() => handleNavigation("/collection/signature")}
                               className="w-full"
                             >
                               <div className="aspect-[4/5] overflow-hidden">
@@ -189,7 +202,7 @@ const Header = () => {
                           {/* Bridal Couture Image */}
                           <div className="group/item">
                             <button
-                              onClick={() => handleNavigation("/collection?category=bridal")}
+                              onClick={() => handleNavigation("/collection/bridal")}
                               className="w-full"
                             >
                               <div className="aspect-[4/5] overflow-hidden">
@@ -208,7 +221,7 @@ const Header = () => {
                           {/* Contemporary Drapes Image */}
                           <div className="group/item">
                             <button
-                              onClick={() => handleNavigation("/collection?category=contemporary")}
+                              onClick={() => handleNavigation("/collection/contemporary")}
                               className="w-full"
                             >
                               <div className="aspect-[4/5] overflow-hidden">
@@ -227,7 +240,7 @@ const Header = () => {
                           {/* Luxury Fusion Lounge Image */}
                           <div className="group/item">
                             <button
-                              onClick={() => handleNavigation("/collection?category=luxury")}
+                              onClick={() => handleNavigation("/collection/luxury")}
                               className="w-full"
                             >
                               <div className="aspect-[4/5] overflow-hidden">
