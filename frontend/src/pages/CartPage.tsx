@@ -15,12 +15,12 @@ const CartPage = () => {
     const subtotalValue = cartItems.reduce((sum, item) => {
       return sum + (item.price * item.quantity);
     }, 0);
-    
+
     const subtotal = `${subtotalValue.toLocaleString()}/-`;
     const shipping = "Free";
     const tax = `${Math.round(subtotalValue * 0.15).toLocaleString()}/-`;
     const total = `${(subtotalValue + Math.round(subtotalValue * 0.15)).toLocaleString()}/-`;
-    
+
     return { subtotal, shipping, tax, total };
   };
 
@@ -51,18 +51,18 @@ const CartPage = () => {
       {/* Main Content */}
       <main className="pt-24">
         <div className="container mx-auto px-16 py-16">
-          
+
           {/* Page Header */}
           <div className="text-center mb-16">
-                         <h1 
-               className="text-black font-normal uppercase text-2xl"
-             >
-               CART
-             </h1>
-            
+            <h1
+              className="text-black font-normal uppercase text-2xl"
+            >
+              CART
+            </h1>
+
             {/* Breadcrumb */}
             <div className="flex justify-center items-center gap-2 mt-4 text-sm text-gray-600">
-              <button 
+              <button
                 onClick={() => navigate('/collection')}
                 className="hover:text-black transition-colors"
               >
@@ -76,7 +76,7 @@ const CartPage = () => {
           {/* Empty Cart Check */}
           {cartItems.length === 0 ? (
             <div className="text-center py-24">
-              <h2 
+              <h2
                 className="text-black font-normal mb-4"
                 style={{
                   fontSize: '32px',
@@ -89,7 +89,7 @@ const CartPage = () => {
               <p className="text-gray-600 mb-8">
                 Add some items to your cart to get started.
               </p>
-              <Button 
+              <Button
                 onClick={handleContinueShopping}
                 className="bg-black text-white hover:bg-gray-800 px-8 py-3"
               >
@@ -98,77 +98,88 @@ const CartPage = () => {
             </div>
           ) : (
             /* Cart Content */
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-              
+            <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-16">
+
               {/* Cart Items */}
               <div>
-                                 <div className="space-y-6">
-                   {cartItems.map((item) => (
-                     <div key={`${item.id}-${item.size}-${item.color}`} className="flex gap-6 p-6 bg-gray-50 border border-gray-100">
-                       {/* Product Image */}
-                       <div className="w-20 h-20 flex-shrink-0 overflow-hidden bg-gray-200 rounded">
-                         <img
-                           src={item.imageUrl}
-                           alt={item.name}
-                           className="w-full h-full object-cover"
-                         />
-                       </div>
-                       
-                       {/* Product Details */}
-                       <div className="flex-1 min-w-0">
-                         <h3 
-                           className="text-black font-normal text-base mb-2"
-                           style={{
-                             fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
-                             fontWeight: 400
-                           }}
-                         >
-                           {item.name}
-                         </h3>
-                         <p className="text-gray-600 text-sm mb-2">
-                           Size: {item.size} | Color: {item.color}
-                         </p>
-                         <p 
-                           className="text-black font-normal text-base mb-4"
-                           style={{
-                             fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
-                             fontWeight: 400
-                           }}
-                         >
-                          Rs.{item.price}
-                         </p>
-                         
-                         {/* Quantity Controls */}
-                         <div className="flex items-center gap-4">
-                           <div className="flex items-center border border-gray-300 rounded-md">
-                             <button
-                               onClick={() => handleQuantityChange(item.productId, item.size, item.color, item.quantity - 1)}
-                               className="px-3 py-1 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black"
-                             >
-                               -
-                             </button>
-                             <span className="px-3 py-1 border-x border-gray-300 bg-white min-w-[2rem] text-center">
-                               {item.quantity}
-                             </span>
-                             <button
-                               onClick={() => handleQuantityChange(item.productId, item.size, item.color, item.quantity + 1)}
-                               className="px-3 py-1 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black"
-                             >
-                               +
-                             </button>
-                           </div>
-                           
-                           <button
-                             onClick={() => handleRemoveItem(item.productId, item.size, item.color)}
-                             className="text-red-600 hover:text-red-800 text-sm underline transition-colors"
-                           >
-                             Remove
-                           </button>
-                         </div>
-                       </div>
-                     </div>
-                   ))}
-                 </div>
+                <div className="space-y-6">
+                  {cartItems.map((item) => (
+                    <div key={`${item.id}-${item.size}-${item.color}`} className="flex justify-between p-6 bg-gray-50 border border-gray-100">
+                      <div className="flex gap-6">
+                        {/* Product Image */}
+                        <div className="w-32 h-32 flex-shrink-0 overflow-hidden bg-gray-200 rounded">
+                          <img
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        {/* Product Details */}
+                        <div className="flex-1 min-w-0">
+                          <h3
+                            className="text-black font-normal text-base mb-1"
+                            style={{
+                              fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
+                              fontWeight: 400
+                            }}
+                          >
+                            {item.name}
+                          </h3>
+                          <p className="text-gray-600 text-sm mb-1">
+                            Size: {item.size} | Color: {item.color}
+                          </p>
+                          {/* <p
+                            className="text-black font-normal text-base mb-4"
+                            style={{
+                              fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
+                              fontWeight: 400
+                            }}
+                          >
+                            Rs.{item.price}
+                          </p> */}
+
+                          {/* Quantity Controls */}
+                          <div className="flex flex-col-reverse items-start gap-3">
+                            <div className="flex items-center border border-gray-300">
+                              <button
+                                onClick={() => handleQuantityChange(item.productId, item.size, item.color, item.quantity - 1)}
+                                className="px-3 py-1 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black"
+                              >
+                                -
+                              </button>
+                              <span className="px-3 py-1 border-x border-gray-300 bg-white min-w-[2rem] text-center">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => handleQuantityChange(item.productId, item.size, item.color, item.quantity + 1)}
+                                className="px-3 py-1 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black"
+                              >
+                                +
+                              </button>
+                            </div>
+
+                            <button
+                              onClick={() => handleRemoveItem(item.productId, item.size, item.color)}
+                              className="text-red-600 hover:text-red-800 text-sm underline transition-colors"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <p
+                        className="text-black font-normal text-base mb-4"
+                        style={{
+                          fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
+                          fontWeight: 400
+                        }}
+                      >
+                        Rs.{item.price}
+                      </p>
+                    </div>
+                  ))}
+                </div>
 
                 {/* Continue Shopping Button */}
                 <div className="mt-8 pt-8 border-t border-gray-200">
@@ -183,33 +194,29 @@ const CartPage = () => {
               </div>
 
               {/* Order Summary */}
-              <div className="lg:sticky lg:top-8 lg:self-start">
-                                 <OrderSummary
-                   items={cartItems.map(item => ({
-                     id: item.id,
-                     imageUrl: item.imageUrl,
-                     title: item.name,
-                     price: `Rs.${item.price}`,
-                     size: item.size,
-                     color: item.color,
-                     quantity: item.quantity
-                   }))}
-                   subtotal={subtotal}
-                   shipping={shipping}
-                   tax={tax}
-                   total={total}
-                   variant="cart"
-                 />
-                
+              <div className="lg:sticky lg:top-24 lg:self-start">
+                <OrderSummary
+                  items={cartItems.map(item => ({
+                    id: item.id,
+                    imageUrl: item.imageUrl,
+                    title: item.name,
+                    price: `Rs.${item.price}`,
+                    size: item.size,
+                    color: item.color,
+                    quantity: item.quantity
+                  }))}
+                  subtotal={subtotal}
+                  shipping={shipping}
+                  tax={tax}
+                  total={total}
+                  variant="cart"
+                />
+
                 {/* Checkout Button */}
                 <div className="mt-6">
                   <Button
                     onClick={handleProceedToCheckout}
-                    className="w-full bg-black text-white hover:bg-gray-800 py-4 text-lg"
-                    style={{
-                      fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
-                      fontWeight: 500
-                    }}
+                    className="w-full bg-black text-white hover:bg-gray-800 py-4 text-lg font-normal"
                   >
                     CHECKOUT
                   </Button>

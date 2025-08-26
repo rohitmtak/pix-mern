@@ -107,7 +107,7 @@ const Header = () => {
 
                 {/* Category Cards Row - Full width with images */}
                 <div
-                  className="absolute top-full left-1/2 -translate-x-1/2 w-screen bg-white border-t border-gray-100 shadow-2xl py-12 z-[70] opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto transform translate-y-2 group-hover:translate-y-0"
+                  className="absolute top-full left-1/2 -translate-x-1/2 w-screen bg-white border-t border-gray-100 shadow-2xl py-12 z-[70] opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto transform"
                 >
                   <div className="max-w-screen-2xl mx-auto px-16">
                     <div className="flex">
