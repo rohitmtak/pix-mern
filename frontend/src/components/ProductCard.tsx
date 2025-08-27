@@ -96,7 +96,18 @@ const ProductCard = ({
                 onToggle={onWishlistToggle}
                 productData={{
                   name: title,
-                  price: parseFloat(price.replace(/[^0-9.]/g, '')) || 0,
+                  price: (() => {
+                    // Remove all non-numeric characters except decimal points
+                    // But handle the case where Rs. might leave a leading decimal point
+                    let cleanedPrice = price.replace(/[^0-9.]/g, '');
+                    
+                    // If the cleaned price starts with a decimal point, remove it
+                    if (cleanedPrice.startsWith('.')) {
+                      cleanedPrice = cleanedPrice.substring(1);
+                    }
+                    
+                    return parseFloat(cleanedPrice) || 0;
+                  })(),
                   imageUrl: imageUrl,
                   category: category || ''
                 }}

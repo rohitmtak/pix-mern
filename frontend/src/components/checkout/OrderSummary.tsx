@@ -49,15 +49,11 @@ const OrderSummary = ({
         {/* Cart Header */}
         <div className="text-center mb-6">
           <h2 
-            className="text-black font-bold uppercase text-2xl mb-2"
-            style={{
-              fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
-              fontWeight: 700
-            }}
+            className="text-black font-bold uppercase text-2xl mb-2 font-medium"
           >
             CART
           </h2>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 text-xs">
             {items.length} PRODUCT{items.length !== 1 ? 'S' : ''} • {items.reduce((sum, item) => sum + item.quantity, 0)} ITEMS
           </p>
         </div>
