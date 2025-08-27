@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { isAuthenticated, getToken } from '@/utils/auth';
+import { config } from '@/config/env';
 
 export interface WishlistItem {
   id: string;
@@ -80,10 +82,12 @@ const wishlistReducer = (state: WishlistState, action: WishlistAction): Wishlist
 
 interface WishlistContextType {
   state: WishlistState;
-  addToWishlist: (item: Omit<WishlistItem, 'id'>) => void;
-  removeFromWishlist: (productId: string) => void;
+  addToWishlist: (item: Omit<WishlistItem, 'id'>) => Promise<void>;
+  removeFromWishlist: (productId: string) => Promise<void>;
   clearWishlist: () => void;
   isInWishlist: (productId: string) => boolean;
+  syncWithServer: () => Promise<void>;
+  migrateGuestWishlist: () => Promise<void>;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
@@ -133,19 +137,45 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
     }
   }, [state.items]);
 
-  const addToWishlist = (item: Omit<WishlistItem, 'id'>) => {
-    // console.log('addToWishlist called with:', item);
-    const wishlistItem: WishlistItem = {
-      ...item,
-      id: item.productId,
-    };
-    // console.log('Dispatching ADD_TO_WISHLIST with:', wishlistItem);
+  const addToWishlist = async (item: Omit<WishlistItem, 'id'>) => {
+    // Always add to local state first (immediate feedback)
+    const wishlistItem: WishlistItem = { ...item, id: item.productId };
     dispatch({ type: 'ADD_TO_WISHLIST', payload: wishlistItem });
+
+    // If authenticated, sync with server
+    if (isAuthenticated()) {
+      try {
+        const token = getToken();
+        await fetch(`${config.api.baseUrl}/user/wishlist`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'token': token || ''
+          },
+          body: JSON.stringify({ productId: item.productId })
+        });
+      } catch (error) {
+        console.error('Failed to sync wishlist with server:', error);
+      }
+    }
   };
 
-  const removeFromWishlist = (productId: string) => {
-    // console.log('removeFromWishlist called with:', productId);
+  const removeFromWishlist = async (productId: string) => {
+    // Always remove from local state first
     dispatch({ type: 'REMOVE_FROM_WISHLIST', payload: productId });
+
+    // If authenticated, sync with server
+    if (isAuthenticated()) {
+      try {
+        const token = getToken();
+        await fetch(`${config.api.baseUrl}/user/wishlist/${productId}`, {
+          method: 'DELETE',
+          headers: { 'token': token || '' }
+        });
+      } catch (error) {
+        console.error('Failed to sync wishlist removal with server:', error);
+      }
+    }
   };
 
   const clearWishlist = () => {
@@ -158,12 +188,85 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
     return result;
   };
 
+  const syncWithServer = async () => {
+    if (!isAuthenticated()) return;
+    
+    try {
+      const token = getToken();
+      const response = await fetch(`${config.api.baseUrl}/user/wishlist`, {
+        headers: { 'token': token || '' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Fetch product details for each wishlist item
+          const wishlistItems = await Promise.all(
+            data.wishlist.map(async (productId: string) => {
+              try {
+                const productResponse = await fetch(`${config.api.baseUrl}/product/${productId}`);
+                if (productResponse.ok) {
+                  const productData = await productResponse.json();
+                  return {
+                    id: productId,
+                    productId,
+                    name: productData.name,
+                    price: productData.price || 0,
+                    imageUrl: productData.imageUrl || productData.images?.[0] || '',
+                    category: productData.category || 'general'
+                  };
+                }
+              } catch (error) {
+                console.error('Failed to fetch product details:', productId, error);
+              }
+              return null;
+            })
+          );
+          
+          const validItems = wishlistItems.filter(item => item !== null);
+          dispatch({ type: 'LOAD_WISHLIST', payload: validItems });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to sync wishlist:', error);
+    }
+  };
+
+  const migrateGuestWishlist = async () => {
+    if (!isAuthenticated()) return;
+    
+    // Get current local wishlist
+    const localItems = state.items;
+    
+    // Add each item to server
+    for (const item of localItems) {
+      try {
+        const token = getToken();
+        await fetch(`${config.api.baseUrl}/user/wishlist`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'token': token || ''
+          },
+          body: JSON.stringify({ productId: item.productId })
+        });
+      } catch (error) {
+        console.error('Failed to migrate item:', item.productId, error);
+      }
+    }
+    
+    // Clear local storage after successful migration
+    localStorage.removeItem('wishlist');
+  };
+
   const value: WishlistContextType = {
     state,
     addToWishlist,
     removeFromWishlist,
     clearWishlist,
     isInWishlist,
+    syncWithServer,
+    migrateGuestWishlist,
   };
 
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;

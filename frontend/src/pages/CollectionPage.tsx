@@ -9,6 +9,7 @@ import { Error } from "@/components/ui/error";
 import { useProducts } from "@/hooks/useProducts";
 import { cn } from "@/lib/utils";
 import { getCategoryBySlug, isValidCategorySlug, PRODUCT_CATEGORIES } from "@/constants/categories";
+import { toast } from "@/components/ui/use-toast";
 
 const CollectionPage = () => {
   const [gridLayout, setGridLayout] = useState(4);
@@ -45,9 +46,22 @@ const CollectionPage = () => {
   const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
   const handleWishlistToggle = (productId: string, isWishlisted: boolean) => {
-    // The WishlistButton component now handles the context operations directly
-    // This function is kept for any additional logic that might be needed
-    console.log(`Product ${productId} wishlist toggled to ${isWishlisted}`);
+    // Show simple toast message for wishlist actions
+    if (isWishlisted) {
+      // Product was added to wishlist
+      toast({
+        title: "Added to Wishlist!",
+        description: "Item added to your wishlist",
+        duration: 3000,
+      });
+    } else {
+      // Product was removed from wishlist
+      toast({
+        title: "Removed from Wishlist",
+        description: "Item removed from your wishlist",
+        duration: 2000,
+      });
+    }
   };
 
   const handlePageChange = (page: number) => {

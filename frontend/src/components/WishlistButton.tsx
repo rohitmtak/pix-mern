@@ -24,6 +24,7 @@ const WishlistButton = ({
 }: WishlistButtonProps) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const [isLiked, setIsLiked] = useState(isWishlisted);
+  const [isLoading, setIsLoading] = useState(false);
   
   // console.log('WishlistButton rendered with props:', { productId, isWishlisted, productData });
 
@@ -43,43 +44,56 @@ const WishlistButton = ({
     }
   }, [productId, isInWishlist, isLiked]);
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    if (isLoading) return;
+    
     const newState = !isLiked;
     setIsLiked(newState);
+    setIsLoading(true);
     
-    // console.log('WishlistButton clicked:', { productId, newState, productData });
-    
-    if (newState) {
-      // Add to wishlist
-      if (productData && productId) {
-        // console.log('Adding to wishlist:', { productId, productData });
-        addToWishlist({
-          productId: productId,
-          name: productData.name,
-          price: productData.price,
-          imageUrl: productData.imageUrl,
-          category: productData.category
-        });
+    try {
+      // console.log('WishlistButton clicked:', { productId, newState, productData });
+      
+      if (newState) {
+        // Add to wishlist
+        if (productData && productId) {
+          // console.log('Adding to wishlist:', { productId, productData });
+          await addToWishlist({
+            productId: productId,
+            name: productData.name,
+            price: productData.price,
+            imageUrl: productData.imageUrl,
+            category: productData.category
+          });
+        } else {
+          // console.log('Missing productData or productId for wishlist add');
+        }
       } else {
-        // console.log('Missing productData or productId for wishlist add');
+        // Remove from wishlist
+        if (productId) {
+          // console.log('Removing from wishlist:', productId);
+          await removeFromWishlist(productId);
+        }
       }
-    } else {
-      // Remove from wishlist
-      if (productId) {
-        // console.log('Removing from wishlist:', productId);
-        removeFromWishlist(productId);
-      }
+      
+      // Call the onToggle callback if provided
+      onToggle?.(productId, newState);
+    } catch (error) {
+      console.error('Wishlist operation failed:', error);
+      // Revert state on error
+      setIsLiked(!newState);
+    } finally {
+      setIsLoading(false);
     }
-    
-    // Call the onToggle callback if provided
-    onToggle?.(productId, newState);
   };
 
   return (
     <button
       onClick={handleClick}
+      disabled={isLoading}
       className={cn(
         "flex items-center justify-center transition-all duration-200 hover:scale-110",
+        isLoading && "opacity-50 cursor-not-allowed",
         className
       )}
       aria-label={isLiked ? "Remove from wishlist" : "Add to wishlist"}

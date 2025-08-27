@@ -14,7 +14,6 @@ interface OrderSummaryProps {
   items: CartItem[];
   subtotal: string;
   shipping: string;
-  tax: string;
   total: string;
   className?: string;
   variant?: 'cart' | 'checkout'; // New prop to differentiate between cart and checkout
@@ -24,7 +23,6 @@ const OrderSummary = ({
   items,
   subtotal,
   shipping,
-  tax,
   total,
   className,
   variant = 'checkout' // Default to checkout view
@@ -159,10 +157,6 @@ const OrderSummary = ({
         <div className="flex justify-between">
           <span className="text-gray-600">Shipping</span>
           <span className="text-black">{shipping}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600">Tax</span>
-          <span className="text-black">{tax}</span>
         </div>
         <div className="flex justify-between pt-3 border-t border-gray-200">
           <span 

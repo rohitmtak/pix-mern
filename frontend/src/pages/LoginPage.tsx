@@ -5,9 +5,11 @@ import Footer from "@/components/Footer";
 import axios from "axios";
 import { toast } from "sonner";
 import { config } from "@/config/env";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { migrateGuestWishlist } = useWishlist();
 
   const [authMode, setAuthMode] = useState<"Login" | "Sign Up">("Login");
   const [name, setName] = useState("");
@@ -47,16 +49,43 @@ const Login: React.FC = () => {
 
       if (response.data?.success && response.data?.token) {
         localStorage.setItem("token", response.data.token);
-        toast.success(authMode === "Login" ? "Login successful!" : "Account created!");
-        navigate("/");
+        
+        // Migrate guest wishlist to authenticated account
+        try {
+          await migrateGuestWishlist();
+          
+          // Show single, appropriate message based on auth mode
+          if (authMode === "Sign Up") {
+            // New user - show welcome message with wishlist info
+            toast.success("Welcome! Your account has been created and wishlist saved.");
+          } else {
+            // Existing user - show login success with wishlist info
+            toast.success("Welcome back! Your wishlist has been synced.");
+          }
+        } catch (error) {
+          console.error('Failed to migrate wishlist:', error);
+          
+          // Show message without wishlist info if migration fails
+          if (authMode === "Sign Up") {
+            toast.success("Welcome! Your account has been created successfully.");
+          } else {
+            toast.success("Welcome back! Login successful.");
+          }
+        }
+        
+        // Small delay to ensure toast is displayed before navigation
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
       } else {
         toast.error(response.data?.message || "Something went wrong");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        toast.error(error.response?.data?.message || "Request failed");
+        const errorMessage = error.response?.data?.message || "Request failed";
+        toast.error(errorMessage);
       } else {
-        toast.error("Unexpected error occurred");
+        toast.error("An unexpected error occurred. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -76,10 +105,9 @@ const Login: React.FC = () => {
       <main className="pt-24">
         <section className="px-16 py-16">
           <div className="max-w-screen-2xl mx-auto">
-            <div className="w-full max-w-md mx-auto border border-gray-200 shadow-sm p-8">
+            <div className="w-full max-w-md mx-auto p-8">
               <div className="inline-flex items-center gap-2 mb-6">
                 <p className="font-jost text-3xl uppercase">{authMode}</p>
-                <hr className="border-none h-[1.5px] w-8 bg-black" />
               </div>
 
               <form onSubmit={onSubmitHandler} className="flex flex-col gap-4 text-gray-800">

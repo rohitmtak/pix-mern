@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
@@ -8,6 +9,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
 import { useProduct } from "@/hooks/useProducts";
 import { useToast } from "@/hooks/use-toast";
+import { isAuthenticated } from "@/utils/auth";
 
 const WishlistPage = () => {
   const { state: wishlistState, removeFromWishlist } = useWishlist();
@@ -127,48 +129,80 @@ const WishlistPage = () => {
               </Button>
             </div>
           ) : (
-            // Products Grid
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {wishlistProducts.map((product) => (
-                <div key={product.id} className="relative flex flex-col gap-0">
-                  {/* Remove icon overlay */}
-                  <button
-                    aria-label="Remove from wishlist"
-                    onClick={() => removeFromWishlist(product.productId)}
-                    className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-white/90 border border-gray-300 text-gray-500 hover:text-black shadow-sm flex items-center justify-center"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M6 18L18 6" />
-                    </svg>
-                  </button>
-
-                  <ProductCard
-                    id={product.productId}
-                    imageUrl={product.imageUrl}
-                    title={product.name}
-                    price={`Rs.${product.price}`}
-                    category={product.category}
-                    alt={product.name}
-                    isWishlisted={true}
-                    showWishlist={false}
-                    compact
-                    centered
-                    contentWrapperClassName="border-x border-gray-200"
-                    className="h-full"
-                  />
-
-                  {/* Minimal move action */}
-                  <div className="border-x border-t border-b border-gray-200">
-                    <button
-                      onClick={() => openSizeModal(product.productId)}
-                      className="w-full text-center uppercase text-xs tracking-wide text-gray-700 hover:text-black font-medium py-2"
+            <>
+              {/* Login Message for Guest Users */}
+              {!isAuthenticated() && (
+                <div className="text-center py-6 mb-8 bg-gray-50 rounded-lg">
+                  <p className="text-gray-600 text-lg mb-2">
+                    Wishlist is not saved permanently yet. Please{" "}
+                    <button 
+                      onClick={() => window.location.href = '/login'}
+                      className="text-blue-600 underline hover:text-blue-800 font-medium"
                     >
-                      Move to Cart
+                      log in
                     </button>
-                  </div>
+                    {" "}or{" "}
+                    <button 
+                      onClick={() => window.location.href = '/login'}
+                      className="text-blue-600 underline hover:text-blue-800 font-medium"
+                    >
+                      Create Account
+                    </button>
+                    {" "}to save it.
+                  </p>
                 </div>
-              ))}
-            </div>
+              )}
+
+              {/* Products Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {wishlistProducts.map((product) => (
+                  <div key={product.id} className="relative flex flex-col gap-0">
+                    {/* Remove icon overlay */}
+                    <button
+                      aria-label="Remove from wishlist"
+                      onClick={() => {
+                        removeFromWishlist(product.productId);
+                        toast({
+                          title: "Removed from Wishlist",
+                          description: `${product.name} removed from your wishlist`,
+                          duration: 2500,
+                        });
+                      }}
+                      className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-white/90 border border-gray-300 text-gray-500 hover:text-black shadow-sm flex items-center justify-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M6 18L18 6" />
+                      </svg>
+                    </button>
+
+                    <ProductCard
+                      id={product.productId}
+                      imageUrl={product.imageUrl}
+                      title={product.name}
+                      price={`Rs.${product.price}`}
+                      category={product.category}
+                      alt={product.name}
+                      isWishlisted={true}
+                      showWishlist={false}
+                      compact
+                      centered
+                      contentWrapperClassName="border-x border-gray-200"
+                      className="h-full"
+                    />
+
+                    {/* Minimal move action */}
+                    <div className="border-x border-t border-b border-gray-200">
+                      <button
+                        onClick={() => openSizeModal(product.productId)}
+                        className="w-full text-center uppercase text-xs tracking-wide text-gray-700 hover:text-black font-medium py-2"
+                      >
+                        Move to Cart
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
 
           {/* Recommended Products Section */}

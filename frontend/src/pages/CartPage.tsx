@@ -18,13 +18,12 @@ const CartPage = () => {
 
     const subtotal = `${subtotalValue.toLocaleString()}/-`;
     const shipping = "Free";
-    const tax = `${Math.round(subtotalValue * 0.15).toLocaleString()}/-`;
-    const total = `${(subtotalValue + Math.round(subtotalValue * 0.15)).toLocaleString()}/-`;
+    const total = `${subtotalValue.toLocaleString()}/-`;
 
-    return { subtotal, shipping, tax, total };
+    return { subtotal, shipping, total };
   };
 
-  const { subtotal, shipping, tax, total } = calculateTotals();
+  const { subtotal, shipping, total } = calculateTotals();
 
   const handleQuantityChange = (productId: string, size: string, color: string, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -75,20 +74,17 @@ const CartPage = () => {
 
           {/* Empty Cart Check */}
           {cartItems.length === 0 ? (
-            <div className="text-center py-24">
+            <div className="text-center py-12">
               <h2
-                className="text-black font-normal mb-4"
+                className="text-black font-normal mb-12"
                 style={{
                   fontSize: '32px',
                   fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
                   fontWeight: 400
                 }}
               >
-                Your cart is empty
+                Your Shopping Cart Is Empty
               </h2>
-              <p className="text-gray-600 mb-8">
-                Add some items to your cart to get started.
-              </p>
               <Button
                 onClick={handleContinueShopping}
                 className="bg-black text-white hover:bg-gray-800 px-8 py-3"
@@ -207,7 +203,6 @@ const CartPage = () => {
                   }))}
                   subtotal={subtotal}
                   shipping={shipping}
-                  tax={tax}
                   total={total}
                   variant="cart"
                 />

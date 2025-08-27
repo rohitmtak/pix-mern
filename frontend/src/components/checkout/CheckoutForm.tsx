@@ -17,7 +17,6 @@ interface CheckoutFormProps {
 const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
   // Strong validation schema
   const shippingSchema = z.object({
-    email: z.string().email({ message: "Enter a valid email" }),
     firstName: z.string().min(2, { message: "Enter a first name" }),
     lastName: z.string().min(2, { message: "Enter a last name" }),
     address: z.string().min(5, { message: "Enter an address" }),
@@ -31,7 +30,6 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
     phone: z
       .string()
       .regex(/^(\+91\d{10}|\d{10})$/, { message: "Please enter a valid phone number. It should be 10 digits long or include the +91 country code." }),
-    saveInfo: z.boolean().optional().default(false),
     sameAsShipping: z.boolean().optional().default(true),
   });
 
@@ -45,7 +43,6 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
   } = useForm<ShippingForm>({
     resolver: zodResolver(shippingSchema),
     defaultValues: {
-      email: "",
       firstName: "",
       lastName: "",
       address: "",
@@ -55,7 +52,6 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
       postalCode: "",
       country: "IN",
       phone: "",
-      saveInfo: false,
       sameAsShipping: true,
     },
     mode: "onBlur",
@@ -64,12 +60,13 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
 
   const [paymentData, setPaymentData] = useState({
     method: "card" as "card" | "netbanking" | "upi",
+    sameAsShipping: true,
     billingAddress: {
       address: "",
       city: "",
       state: "",
       postalCode: "",
-      country: ""
+      country: "IN"
     }
   });
 
@@ -83,47 +80,7 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
 
   return (
     <form id="checkout-form" onSubmit={handleSubmit(onSubmitForm)} className={cn("space-y-8", className)}>
-      {/* Contact Information */}
-      <div>
-        <h2 
-          className="text-black font-normal uppercase mb-6"
-          style={{
-            fontSize: '24px',
-            fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
-            fontWeight: 400,
-            color: 'rgba(0,0,0,1)'
-          }}
-        >
-          Contact Information
-        </h2>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              className={cn("mt-1", errors.email && "border-red-500")}
-              placeholder="you@example.com"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Controller
-              name="saveInfo"
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <Checkbox id="save-info" checked={Boolean(value)} onCheckedChange={(c) => onChange(Boolean(c))} />
-              )}
-            />
-            <Label htmlFor="save-info" className="text-sm">
-              Save this information for next time
-            </Label>
-          </div>
-        </div>
-      </div>
+
 
       {/* Shipping Address */}
       <div>
@@ -238,7 +195,7 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
       </div>
 
       {/* Shipping Method placeholder (shows guidance like the reference) */}
-      <div>
+      {/* <div>
         <h2 
           className="text-black font-normal uppercase mb-3"
           style={{
@@ -253,7 +210,7 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
         <div className="border rounded-md p-3 text-sm text-gray-600 bg-gray-50">
           Enter your shipping address to view available shipping methods.
         </div>
-      </div>
+      </div> */}
 
       {/* Payment - collapsible options */}
       <div>
@@ -387,38 +344,40 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
       <div>
         <h3 className="text-black font-medium mb-3">Billing address</h3>
         <div className="space-y-3">
-          <label className="flex items-center gap-3 p-3 border rounded-md cursor-pointer">
+          <label className="flex items-center gap-3 p-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
             <input
               type="radio"
               name="billing-address"
-              checked={paymentData.billingAddress.address === ""}
+              checked={paymentData.sameAsShipping}
               onChange={() => setPaymentData(prev => ({
                 ...prev,
+                sameAsShipping: true,
                 billingAddress: { address: "", city: "", state: "", postalCode: "", country: "" }
               }))}
-              className="h-4 w-4"
+              className="h-4 w-4 text-blue-600"
             />
             <span>Same as shipping address</span>
           </label>
-          <label className="flex items-center gap-3 p-3 border rounded-md cursor-pointer">
+          <label className="flex items-center gap-3 p-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
             <input
               type="radio"
               name="billing-address"
-              checked={paymentData.billingAddress.address !== ""}
+              checked={!paymentData.sameAsShipping}
               onChange={() => setPaymentData(prev => ({
                 ...prev,
-                billingAddress: { address: " ", city: "", state: "", postalCode: "", country: "" }
+                sameAsShipping: false,
+                billingAddress: { address: "", city: "", state: "", postalCode: "", country: "" }
               }))}
-              className="h-4 w-4"
+              className="h-4 w-4 text-blue-600"
             />
             <span>Use a different billing address</span>
           </label>
         </div>
 
-        {paymentData.billingAddress.address !== "" && (
+        {!paymentData.sameAsShipping && (
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <Label htmlFor="billingAddress">Address</Label>
+              <Label htmlFor="billingAddress">Address *</Label>
               <Input
                 id="billingAddress"
                 value={paymentData.billingAddress.address}
@@ -427,10 +386,11 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
                   billingAddress: { ...prev.billingAddress, address: e.target.value }
                 }))}
                 className="mt-1"
+                required={!paymentData.sameAsShipping}
               />
             </div>
             <div>
-              <Label htmlFor="billingCity">City</Label>
+              <Label htmlFor="billingCity">City *</Label>
               <Input
                 id="billingCity"
                 value={paymentData.billingAddress.city}
@@ -439,10 +399,11 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
                   billingAddress: { ...prev.billingAddress, city: e.target.value }
                 }))}
                 className="mt-1"
+                required={!paymentData.sameAsShipping}
               />
             </div>
             <div>
-              <Label htmlFor="billingState">State</Label>
+              <Label htmlFor="billingState">State *</Label>
               <Input
                 id="billingState"
                 value={paymentData.billingAddress.state}
@@ -451,10 +412,11 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
                   billingAddress: { ...prev.billingAddress, state: e.target.value }
                 }))}
                 className="mt-1"
+                required={!paymentData.sameAsShipping}
               />
             </div>
             <div>
-              <Label htmlFor="billingPostal">Postal Code</Label>
+              <Label htmlFor="billingPostal">Postal Code *</Label>
               <Input
                 id="billingPostal"
                 value={paymentData.billingAddress.postalCode}
@@ -463,10 +425,11 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
                   billingAddress: { ...prev.billingAddress, postalCode: e.target.value }
                 }))}
                 className="mt-1"
+                required={!paymentData.sameAsShipping}
               />
             </div>
             <div>
-              <Label htmlFor="billingCountry">Country</Label>
+              <Label htmlFor="billingCountry">Country *</Label>
               <Input
                 id="billingCountry"
                 value={paymentData.billingAddress.country}
@@ -475,6 +438,7 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
                   billingAddress: { ...prev.billingAddress, country: e.target.value }
                 }))}
                 className="mt-1"
+                required={!paymentData.sameAsShipping}
               />
             </div>
           </div>

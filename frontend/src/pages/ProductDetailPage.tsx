@@ -27,12 +27,15 @@ const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<'description' | 'details' | 'materials'>('description');
+  const [activeTab, setActiveTab] = useState<
+    "description" | "details" | "materials"
+  >("description");
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
-  const [isColorLoading, setIsColorLoading] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState<'inches' | 'cm'>('inches');
+
+  const [selectedUnit, setSelectedUnit] = useState<"inches" | "cm">("inches");
   const [isCustomSizeOpen, setIsCustomSizeOpen] = useState(false);
   const [galleryApi, setGalleryApi] = useState<CarouselApi | null>(null);
+  const [showSizePrompt, setShowSizePrompt] = useState(false);
 
   // Cart and wishlist hooks
   const { addToCart, isInCart } = useCart();
@@ -44,7 +47,7 @@ const ProductDetailPage = () => {
     product,
     loading: isLoading,
     error: isError,
-    refetch
+    refetch,
   } = useProduct(id || "");
 
   // Debug logging for product data
@@ -55,16 +58,13 @@ const ProductDetailPage = () => {
     }
   }, [product]);
 
-  // Set default selected color and size when product loads
+  // Set default selected color when product loads
   useEffect(() => {
     if (product && product.colorVariants && product.colorVariants.length > 0) {
       // Set default color from first color variant
       setSelectedColor(product.colorVariants[0].color);
-
-      // Set default size from first color variant
-      if (product.colorVariants[0].sizes && product.colorVariants[0].sizes.length > 0) {
-        setSelectedSize(product.colorVariants[0].sizes[0]);
-      }
+      // Reset size selection to empty - user must choose
+      setSelectedSize("");
     }
   }, [product]);
 
@@ -83,10 +83,11 @@ const ProductDetailPage = () => {
   // Update current image when user scrolls main carousel
   useEffect(() => {
     if (!galleryApi) return;
-    const onSelect = () => setCurrentImageIndex(galleryApi.selectedScrollSnap());
-    galleryApi.on('select', onSelect);
+    const onSelect = () =>
+      setCurrentImageIndex(galleryApi.selectedScrollSnap());
+    galleryApi.on("select", onSelect);
     return () => {
-      galleryApi.off('select', onSelect);
+      galleryApi.off("select", onSelect);
     };
   }, [galleryApi]);
 
@@ -114,9 +115,10 @@ const ProductDetailPage = () => {
           <div className="container mx-auto px-0 py-16">
             <Error
               title={isError ? "Error Loading Product" : "Product not found"}
-              message={isError
-                ? "Failed to load product. Please try again."
-                : "The product you're looking for doesn't exist."
+              message={
+                isError
+                  ? "Failed to load product. Please try again."
+                  : "The product you're looking for doesn't exist."
               }
               onRetry={isError ? () => refetch() : undefined}
               retryText="Retry"
@@ -135,38 +137,50 @@ const ProductDetailPage = () => {
 
   // Get current color variant data for pricing
   const getCurrentColorVariant = () => {
-    if (!product || !product.colorVariants || product.colorVariants.length === 0) {
+    if (
+      !product ||
+      !product.colorVariants ||
+      product.colorVariants.length === 0
+    ) {
       return null;
     }
 
-    return product.colorVariants.find(variant =>
-      variant.color.toLowerCase() === selectedColor.toLowerCase()
+    return product.colorVariants.find(
+      (variant) => variant.color.toLowerCase() === selectedColor.toLowerCase()
     );
   };
 
   const currentColorVariant = product ? getCurrentColorVariant() : null;
 
   const handleWishlistToggle = (productId: string, isWishlisted: boolean) => {
-    // The WishlistButton component now handles the context operations directly
-    // This function is kept for any additional logic that might be needed
-    // console.log(`Product ${productId} wishlist toggled to ${isWishlisted}`);
+    // Show simple toast message for wishlist actions
+    if (isWishlisted) {
+      // Product was added to wishlist
+      toast({
+        title: "Added to Wishlist!",
+        description: "Item added to your wishlist",
+        duration: 3000,
+      });
+    } else {
+      // Product was removed from wishlist
+      toast({
+        title: "Removed from Wishlist",
+        description: "Item removed from your wishlist",
+        duration: 2000,
+      });
+    }
   };
 
   const handleColorSelection = (color: string) => {
     if (color === selectedColor) return; // Don't do anything if same color selected
 
-    setIsColorLoading(true);
     setSelectedColor(color);
     setCurrentImageIndex(0); // Reset to first image when color changes
-
-    // Simulate a small delay for better UX
-    setTimeout(() => {
-      setIsColorLoading(false);
-    }, 300);
   };
 
   const handleSizeSelection = (size: string) => {
     setSelectedSize(size);
+    setShowSizePrompt(false); // Hide prompt when size is selected
   };
 
   // Get available sizes and colors from color variants
@@ -174,9 +188,9 @@ const ProductDetailPage = () => {
     if (!product || !product.colorVariants) return [];
 
     const allSizes = new Set<string>();
-    product.colorVariants.forEach(variant => {
+    product.colorVariants.forEach((variant) => {
       if (variant.sizes) {
-        variant.sizes.forEach(size => allSizes.add(size));
+        variant.sizes.forEach((size) => allSizes.add(size));
       }
     });
 
@@ -185,7 +199,7 @@ const ProductDetailPage = () => {
 
   const getAvailableColors = () => {
     if (!product || !product.colorVariants) return [];
-    return product.colorVariants.map(variant => variant.color);
+    return product.colorVariants.map((variant) => variant.color);
   };
 
   const sizes = getAvailableSizes();
@@ -193,13 +207,17 @@ const ProductDetailPage = () => {
 
   // Get images for the selected color variant
   const getImagesForColor = (color: string) => {
-    if (!product || !product.colorVariants || product.colorVariants.length === 0) {
+    if (
+      !product ||
+      !product.colorVariants ||
+      product.colorVariants.length === 0
+    ) {
       return []; // Return empty array if no color variants
     }
 
     // Find color variant that matches the selected color
-    const colorVariant = product.colorVariants.find(variant =>
-      variant.color.toLowerCase() === color.toLowerCase()
+    const colorVariant = product.colorVariants.find(
+      (variant) => variant.color.toLowerCase() === color.toLowerCase()
     );
 
     // If color variant has images, use those
@@ -222,7 +240,6 @@ const ProductDetailPage = () => {
       <main className="pt-24">
         <div className="container mx-auto px-0 py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-
             {/* Product Gallery */}
             <div className="space-y-8">
               {/* Main Image - Carousel */}
@@ -231,7 +248,11 @@ const ProductDetailPage = () => {
                   <>
                     <Carousel
                       setApi={setGalleryApi}
-                      opts={{ loop: true, align: 'start', containScroll: 'trimSnaps' }}
+                      opts={{
+                        loop: true,
+                        align: "start",
+                        containScroll: "trimSnaps",
+                      }}
                       className=""
                     >
                       <CarouselContent className="ml-0">
@@ -252,11 +273,7 @@ const ProductDetailPage = () => {
                         </>
                       )}
                     </Carousel>
-                    {isColorLoading && (
-                      <div className="absolute inset-0 z-20 bg-white/50 flex items-center justify-center">
-                        <Loading size="md" />
-                      </div>
-                    )}
+
                   </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -267,17 +284,17 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Product Information */}
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Title and Price */}
               <div className="pb-6 border-b border-gray-200">
                 <div className="flex items-center justify-between gap-4 mb-4">
                   <h1
                     className="text-black font-normal uppercase text-2xl flex-1 min-w-0"
                     style={{
-                      fontFamily: 'Playfair Display, Georgia, serif',
+                      fontFamily: "Playfair Display, Georgia, serif",
                       fontWeight: 400,
-                      lineHeight: '32px',
-                      color: 'rgba(0,0,0,1)'
+                      lineHeight: "32px",
+                      color: "rgba(0,0,0,1)",
                     }}
                   >
                     {product.name}
@@ -289,11 +306,15 @@ const ProductDetailPage = () => {
                     productData={{
                       name: product.name,
                       price: currentColorVariant?.price || 0,
-                      imageUrl: currentImages[0] || '',
-                      category: product.category
+                      imageUrl: currentImages[0] || "",
+                      category: product.category,
                     }}
                     className="bg-white/80 backdrop-blur-sm p-1 rounded-full hover:bg-white/90 shrink-0 [&>svg]:w-6 [&>svg]:h-6"
-                    aria-label={isInWishlist(product._id) ? "Remove from wishlist" : "Add to wishlist"}
+                    aria-label={
+                      isInWishlist(product._id)
+                        ? "Remove from wishlist"
+                        : "Add to wishlist"
+                    }
                   />
                 </div>
 
@@ -301,15 +322,16 @@ const ProductDetailPage = () => {
                   <p
                     className="text-black font-normal text-xl"
                     style={{
-                      fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
+                      fontFamily:
+                        "Jost, -apple-system, Roboto, Jost, sans-serif",
                       fontWeight: 400,
-                      color: 'rgba(0,0,0,1)'
+                      color: "rgba(0,0,0,1)",
                     }}
                   >
                     Rs.{currentColorVariant?.price || "Price not available"}
                   </p>
                 </div>
-               </div>
+              </div>
 
               {/* Size Selection */}
               {sizes.length > 0 && (
@@ -332,34 +354,45 @@ const ProductDetailPage = () => {
                       Size Chart
                     </button>
                   </div>
-                  <div className="flex gap-3 flex-wrap">
-                    {sizes.map((size) => {
-                      // Check if this size is available for the selected color
-                      const colorVariant = product?.colorVariants?.find(variant =>
-                        variant.color.toLowerCase() === selectedColor.toLowerCase()
-                      );
+                                     <div className="flex gap-3 flex-wrap">
+                     {sizes.map((size) => {
+                       // Check if this size is available for the selected color
+                       const colorVariant = product?.colorVariants?.find(
+                         (variant) =>
+                           variant.color.toLowerCase() ===
+                           selectedColor.toLowerCase()
+                       );
 
-                      const isAvailable = colorVariant && colorVariant.sizes.includes(size);
+                       const isAvailable =
+                         colorVariant && colorVariant.sizes.includes(size);
 
-                      return (
-                        <button
-                          key={size}
-                          onClick={() => handleSizeSelection(size)}
-                          disabled={!isAvailable}
-                          className={cn(
-                            "w-10 h-10 rounded-full border-2 transition-all duration-300 ease-in-out text-sm font-medium flex items-center justify-center",
-                            selectedSize === size
-                              ? "border-black bg-black text-white"
-                              : "border-gray-300 hover:border-gray-400 text-gray-700",
-                            !isAvailable && "opacity-50 cursor-not-allowed border-gray-200 text-gray-400"
-                          )}
-                          title={`${size}${!isAvailable ? ' - Out of Stock' : ''}`}
-                        >
-                          {size}
-                        </button>
-                      );
-                    })}
-                  </div>
+                       return (
+                                                  <button
+                             key={size}
+                             onClick={() => handleSizeSelection(size)}
+                             disabled={!isAvailable}
+                                                          className={cn(
+                                "w-9 h-9 rounded-full border-2 transition-all duration-300 ease-in-out text-sm font-medium flex items-center justify-center",
+                                selectedSize === size
+                                  ? "border-black bg-black text-white"
+                                  : "border-gray-300 hover:border-gray-400 text-gray-700",
+                                !isAvailable &&
+                                  "opacity-50 cursor-not-allowed border-gray-200 text-gray-400"
+                              )}
+                             title={`${size}${!isAvailable ? " - Out of Stock" : ""}`}
+                           >
+                             {size}
+                           </button>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Size Prompt Message */}
+                    {showSizePrompt && (
+                      <p className="mt-3 text-red-600 text-sm">
+                        Please select a size
+                      </p>
+                    )}
                 </div>
               )}
 
@@ -367,9 +400,13 @@ const ProductDetailPage = () => {
               {colors.length > 0 && (
                 <div>
                   <h3 className="text-base font-medium mb-3">
-                    Color{selectedColor && (
+                    Color
+                    {selectedColor && (
                       <>
-                        : <span className="font-normal text-gray-600">{selectedColor}</span>
+                        :{" "}
+                        <span className="font-normal text-gray-600">
+                          {selectedColor}
+                        </span>
                         {currentColorVariant && (
                           <span className="ml-2 text-sm text-green-600">
                             • Available
@@ -382,60 +419,70 @@ const ProductDetailPage = () => {
                     {colors.map((color) => {
                       // Map color names to actual hex values
                       const colorMap: { [key: string]: string } = {
-                        "Black": "#000000",
-                        "White": "#FFFFFF",
-                        "Navy": "#000080",
-                        "Red": "#FF0000",
-                        "Blue": "#0000FF",
-                        "Green": "#008000",
-                        "Yellow": "#FFFF00",
-                        "Pink": "#FFC0CB",
-                        "Purple": "#800080",
-                        "Orange": "#FFA500",
-                        "Brown": "#A52A2A",
-                        "Gray": "#808080"
+                        Black: "#000000",
+                        White: "#FFFFFF",
+                        Navy: "#000080",
+                        Red: "#FF0000",
+                        Blue: "#0000FF",
+                        Green: "#008000",
+                        Yellow: "#FFFF00",
+                        Pink: "#FFC0CB",
+                        Purple: "#800080",
+                        Orange: "#FFA500",
+                        Brown: "#A52A2A",
+                        Gray: "#808080",
                       };
 
                       const hexColor = colorMap[color] || "#CCCCCC"; // Default gray if color not found
 
                       // Check if this color variant is available
-                      const colorVariant = product?.colorVariants?.find(variant =>
-                        variant.color.toLowerCase() === color.toLowerCase()
+                      const colorVariant = product?.colorVariants?.find(
+                        (variant) =>
+                          variant.color.toLowerCase() === color.toLowerCase()
                       );
 
-                      const isAvailable = colorVariant && colorVariant.stock > 0;
-                      const hasImages = colorVariant && colorVariant.images && colorVariant.images.length > 0;
+                      const isAvailable =
+                        colorVariant && colorVariant.stock > 0;
+                      const isSelected = selectedColor === color;
 
                       return (
-                        <button
-                          key={color}
-                          onClick={() => handleColorSelection(color)}
-                          disabled={!isAvailable || isColorLoading}
-                          className={cn(
-                            "w-8 h-8 rounded-full border-2 transition-all duration-300 ease-in-out relative",
-                            selectedColor === color
-                              ? "border-black scale-110" // Black border and slightly larger when selected
-                              : "border-gray-300 hover:border-gray-400",
-                            !isAvailable && "opacity-50 cursor-not-allowed",
-                            isColorLoading && "opacity-50 cursor-not-allowed"
-                          )}
-                          title={`${color}${!isAvailable ? ' - Out of Stock' : ''}${hasImages ? ' - Has images' : ''}`}
-                        >
+                                                 <button
+                           key={color}
+                           onClick={() => handleColorSelection(color)}
+                           disabled={!isAvailable}
+                           className={cn(
+                             "w-7 h-7 rounded-full transition-all duration-200 ease-in-out relative",
+                             "ring-1 ring-gray-200 hover:ring-gray-400",
+                             !isAvailable && "opacity-50 cursor-not-allowed"
+                           )}
+                           title={`${color}${!isAvailable ? " - Out of Stock" : ""}`}
+                         >
                           <div
-                            className="absolute inset-1 rounded-full"
+                            className="w-full h-full rounded-full"
                             style={{
                               backgroundColor: hexColor,
                             }}
                           />
+                          {/* Checkmark for selected color */}
+                          {isSelected && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <svg
+                                className="w-3 h-3 text-white drop-shadow-sm"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </div>
+                          )}
                           {!isAvailable && (
                             <div className="absolute inset-0 rounded-full bg-gray-400 opacity-60" />
                           )}
-                          {hasImages && (
-                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white" />
-                          )}
-                          {isColorLoading && (
-                            <Loading size="sm" className="absolute inset-0 rounded-full" />
-                          )}
+                          
                         </button>
                       );
                     })}
@@ -445,32 +492,37 @@ const ProductDetailPage = () => {
 
               {/* Add to Cart Button */}
               <div className="mt-8 flex gap-4">
-                <Button
-                  className="w-full text-sm font-normal bg-black text-white hover:bg-gray-800"
-                  disabled={!selectedSize || !selectedColor}
-                  onClick={() => {
-                    if (product && selectedSize && selectedColor) {
-                      addToCart({
-                        productId: product._id,
-                        name: product.name,
-                        price: currentColorVariant?.price || 0,
-                        size: selectedSize,
-                        color: selectedColor,
-                        quantity: quantity,
-                        imageUrl: currentImages[0] || ''
-                      });
+                                 <Button
+                   className="w-full text-sm font-normal bg-black text-white hover:bg-gray-800"
+                   disabled={!selectedColor}
+                   onClick={() => {
+                     if (!selectedSize) {
+                       setShowSizePrompt(true);
+                       return;
+                     }
+                     
+                     if (product && selectedSize && selectedColor) {
+                       addToCart({
+                         productId: product._id,
+                         name: product.name,
+                         price: currentColorVariant?.price || 0,
+                         size: selectedSize,
+                         color: selectedColor,
+                         quantity: quantity,
+                         imageUrl: currentImages[0] || "",
+                       });
 
-                      // Show success feedback
-                      toast({
-                        title: "Added to Cart",
-                        description: `${product.name} has been added to your cart successfully!`,
-                        duration: 3000,
-                      });
-                    }
-                  }}
-                >
-                  ADD TO CART
-                </Button>
+                       // Show success feedback
+                       toast({
+                         title: "Added to Cart",
+                         description: `${product.name} has been added to your cart successfully!`,
+                         duration: 3000,
+                       });
+                     }
+                   }}
+                 >
+                   ADD TO CART
+                 </Button>
                 <Button
                   variant="outline"
                   className="w-full text-sm font-normal border-2 border-black text-black hover:bg-gray-50"
@@ -484,10 +536,10 @@ const ProductDetailPage = () => {
                 {/* Tab Navigation */}
                 <div className="flex border-b border-gray-200 mb-6 gap-8">
                   <button
-                    onClick={() => setActiveTab('description')}
+                    onClick={() => setActiveTab("description")}
                     className={cn(
                       "py-3 text-sm font-medium transition-colors duration-200",
-                      activeTab === 'description'
+                      activeTab === "description"
                         ? "text-black border-b-2 border-black"
                         : "text-gray-500 hover:text-gray-700"
                     )}
@@ -495,10 +547,10 @@ const ProductDetailPage = () => {
                     Description
                   </button>
                   <button
-                    onClick={() => setActiveTab('details')}
+                    onClick={() => setActiveTab("details")}
                     className={cn(
                       "py-3 text-sm font-medium transition-colors duration-200",
-                      activeTab === 'details'
+                      activeTab === "details"
                         ? "text-black border-b-2 border-black"
                         : "text-gray-500 hover:text-gray-700"
                     )}
@@ -506,10 +558,10 @@ const ProductDetailPage = () => {
                     Details
                   </button>
                   <button
-                    onClick={() => setActiveTab('materials')}
+                    onClick={() => setActiveTab("materials")}
                     className={cn(
                       "py-3 text-sm font-medium transition-colors duration-200",
-                      activeTab === 'materials'
+                      activeTab === "materials"
                         ? "text-black border-b-2 border-black"
                         : "text-gray-500 hover:text-gray-700"
                     )}
@@ -519,14 +571,15 @@ const ProductDetailPage = () => {
                 </div>
 
                 {/* Tab Content */}
-                {activeTab === 'description' && (
+                {activeTab === "description" && (
                   <div>
                     <p
                       className="text-gray-700"
                       style={{
-                        fontSize: '16px',
-                        fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
-                        lineHeight: '24px'
+                        fontSize: "16px",
+                        fontFamily:
+                          "Jost, -apple-system, Roboto, Jost, sans-serif",
+                        lineHeight: "24px",
                       }}
                     >
                       {product.description || "No description available."}
@@ -534,14 +587,14 @@ const ProductDetailPage = () => {
                   </div>
                 )}
 
-                {activeTab === 'details' && (
+                {activeTab === "details" && (
                   <div>
                     <ul className="space-y-2">
                       <li
                         className="text-gray-700"
                         style={{
-                          fontSize: '14px',
-                          lineHeight: '20px'
+                          fontSize: "14px",
+                          lineHeight: "20px",
                         }}
                       >
                         <strong>Category:</strong> {product.category}
@@ -549,8 +602,8 @@ const ProductDetailPage = () => {
                       <li
                         className="text-gray-700"
                         style={{
-                          fontSize: '14px',
-                          lineHeight: '20px'
+                          fontSize: "14px",
+                          lineHeight: "20px",
                         }}
                       >
                         <strong>Subcategory:</strong> {product.subCategory}
@@ -558,27 +611,27 @@ const ProductDetailPage = () => {
                       <li
                         className="text-gray-700"
                         style={{
-                          fontSize: '14px',
-                          lineHeight: '20px'
+                          fontSize: "14px",
+                          lineHeight: "20px",
                         }}
                       >
-                        <strong>Available Colors:</strong> {colors.join(', ')}
+                        <strong>Available Colors:</strong> {colors.join(", ")}
                       </li>
                       <li
                         className="text-gray-700"
                         style={{
-                          fontSize: '14px',
-                          lineHeight: '20px'
+                          fontSize: "14px",
+                          lineHeight: "20px",
                         }}
                       >
-                        <strong>Available Sizes:</strong> {sizes.join(', ')}
+                        <strong>Available Sizes:</strong> {sizes.join(", ")}
                       </li>
                       {product.bestseller && (
                         <li
                           className="text-gray-700"
                           style={{
-                            fontSize: '14px',
-                            lineHeight: '20px'
+                            fontSize: "14px",
+                            lineHeight: "20px",
                           }}
                         >
                           <strong>Bestseller:</strong> Yes
@@ -588,11 +641,12 @@ const ProductDetailPage = () => {
                   </div>
                 )}
 
-                {activeTab === 'materials' && (
+                {activeTab === "materials" && (
                   <div>
                     <p className="text-gray-700 text-sm">
-                      Product material and care information will be displayed here.
-                      This information is typically provided by the manufacturer.
+                      Product material and care information will be displayed
+                      here. This information is typically provided by the
+                      manufacturer.
                     </p>
                   </div>
                 )}
@@ -649,7 +703,8 @@ const ProductDetailPage = () => {
               {/* Body Measurements Header */}
               <div className="mb-6">
                 <h3 className="text-lg text-center font-medium mb-6">
-                  BODY MEASUREMENTS ({selectedUnit === 'inches' ? 'INCHES' : 'CM'})
+                  BODY MEASUREMENTS (
+                  {selectedUnit === "inches" ? "INCHES" : "CM"})
                 </h3>
 
                 {/* Unit Toggle */}
@@ -657,10 +712,10 @@ const ProductDetailPage = () => {
                   <span className="text-sm text-gray-600">Units:</span>
                   <div className="flex border border-gray-300 overflow-hidden">
                     <button
-                      onClick={() => setSelectedUnit('inches')}
+                      onClick={() => setSelectedUnit("inches")}
                       className={cn(
                         "px-3 py-1 text-sm transition-colors",
-                        selectedUnit === 'inches'
+                        selectedUnit === "inches"
                           ? "bg-black text-white"
                           : "bg-white text-gray-600 hover:bg-gray-50"
                       )}
@@ -668,10 +723,10 @@ const ProductDetailPage = () => {
                       INCHES
                     </button>
                     <button
-                      onClick={() => setSelectedUnit('cm')}
+                      onClick={() => setSelectedUnit("cm")}
                       className={cn(
                         "px-3 py-1 text-sm transition-colors border-l border-gray-300",
-                        selectedUnit === 'cm'
+                        selectedUnit === "cm"
                           ? "bg-black text-white"
                           : "bg-white text-gray-600 hover:bg-gray-50"
                       )}
@@ -688,66 +743,267 @@ const ProductDetailPage = () => {
                   <table className="w-full text-sm border border-gray-300">
                     <thead>
                       <tr className="border-b border-gray-300">
-                        <th className="text-left py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">SINGLE SIZE</th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">XS</th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">S</th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">M</th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">L</th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">XL</th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">XXL</th>
-                        <th className="text-center py-3 px-2 font-medium bg-gray-50">XXXL</th>
+                        <th className="text-left py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                          SINGLE SIZE
+                        </th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                          XS
+                        </th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                          S
+                        </th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                          M
+                        </th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                          L
+                        </th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                          XL
+                        </th>
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                          XXL
+                        </th>
+                        <th className="text-center py-3 px-2 font-medium bg-gray-50">
+                          XXXL
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">BUST</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '32' : '81'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '34' : '86'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '36' : '91.5'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '38' : '96.5'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '40' : '102'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '43' : '109'}</td>
-                        <td className="py-3 px-2 text-center" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '45' : '114'}</td>
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                          BUST
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "32" : "81"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "34" : "86"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "36" : "91.5"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "38" : "96.5"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "40" : "102"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "43" : "109"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "45" : "114"}
+                        </td>
                       </tr>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">WAIST</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '23.5' : '60'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '26' : '66'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '28' : '71'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '29.5' : '75'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '32' : '81'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '34.5' : '87.5'}</td>
-                        <td className="py-3 px-2 text-center" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '38.5' : '98'}</td>
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                          WAIST
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "23.5" : "60"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "26" : "66"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "28" : "71"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "29.5" : "75"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "32" : "81"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "34.5" : "87.5"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "38.5" : "98"}
+                        </td>
                       </tr>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">HIPS</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '34.75' : '88'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '36.75' : '93'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '38' : '96.5'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '40.5' : '103'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '42.5' : '108'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '44.5' : '113'}</td>
-                        <td className="py-3 px-2 text-center" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '48.5' : '123'}</td>
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                          HIPS
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "34.75" : "88"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "36.75" : "93"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "38" : "96.5"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "40.5" : "103"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "42.5" : "108"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "44.5" : "113"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "48.5" : "123"}
+                        </td>
                       </tr>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">SHOULDER</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '14.5' : '37'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '15' : '38'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '15.5' : '39'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '16' : '40.5'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '16.5' : '42'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '17.25' : '44'}</td>
-                        <td className="py-3 px-2 text-center" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '17.75' : '45'}</td>
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                          SHOULDER
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "14.5" : "37"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "15" : "38"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "15.5" : "39"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "16" : "40.5"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "16.5" : "42"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "17.25" : "44"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "17.75" : "45"}
+                        </td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">ARM HOLE</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '15' : '38'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '15.5' : '39'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '16' : '40.5'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '16.5' : '42'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '17.5' : '44.5'}</td>
-                        <td className="py-3 px-2 text-center border-r border-gray-300" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '18.5' : '47'}</td>
-                        <td className="py-3 px-2 text-center" style={{ backgroundColor: '#f2f2f2' }}>{selectedUnit === 'inches' ? '19' : '48.5'}</td>
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                          ARM HOLE
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "15" : "38"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "15.5" : "39"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "16" : "40.5"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "16.5" : "42"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "17.5" : "44.5"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center border-r border-gray-300"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "18.5" : "47"}
+                        </td>
+                        <td
+                          className="py-3 px-2 text-center"
+                          style={{ backgroundColor: "#f2f2f2" }}
+                        >
+                          {selectedUnit === "inches" ? "19" : "48.5"}
+                        </td>
                       </tr>
                     </tbody>
                   </table>

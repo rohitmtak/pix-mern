@@ -39,18 +39,16 @@ const CheckoutPage = () => {
     
     const subtotal = `${subtotalValue.toLocaleString()}/-`;
     const shipping = "Free";
-    const tax = `${Math.round(subtotalValue * 0.15).toLocaleString()}/-`;
-    const total = `${(subtotalValue + Math.round(subtotalValue * 0.15)).toLocaleString()}/-`;
+    const total = `${subtotalValue.toLocaleString()}/-`;
     
-    return { subtotal, shipping, tax, total };
+    return { subtotal, shipping, total };
   };
 
-  const { subtotal, shipping, tax, total } = calculateTotals();
+  const { subtotal, shipping, total } = calculateTotals();
 
   // Numeric totals for backend amount field
   const subtotalValue = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const taxValue = Math.round(subtotalValue * 0.15);
-  const totalValue = subtotalValue + taxValue; // Shipping is Free
+  const totalValue = subtotalValue; // Shipping is Free
 
   const handleFormSubmit = async (formData: any) => {
     try {
@@ -84,16 +82,18 @@ const CheckoutPage = () => {
       }));
 
       // Prepare billing address (if different from shipping)
-      const billingAddress = formData.payment?.billingAddress?.address !== "" 
+      const billingAddress = !formData.payment?.sameAsShipping
         ? formData.payment.billingAddress 
         : address;
 
       // Calculate totals
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const tax = Math.round(subtotal * 0.15);
       const shipping = 0; // Free shipping
-      const total = subtotal + tax + shipping;
+      const total = subtotal + shipping;
 
+      // Get user email from token or user profile
+      const userEmail = localStorage.getItem('userEmail') || 'user@example.com'; // Fallback, but this should be available from auth
+      
       // Create Razorpay order on backend with enhanced data
       const res = await axios.post(
         `${config.api.baseUrl}/order/razorpay`,
@@ -101,12 +101,11 @@ const CheckoutPage = () => {
           items, 
           amount: totalValue, // Keep for backward compatibility
           subtotal,
-          tax,
           shipping,
           total,
           address,
           billingAddress,
-          customerEmail: formData.email,
+          customerEmail: userEmail,
           customerPhone: formData.phone,
           paymentMethod: formData.payment?.method || 'card'
         },
@@ -133,7 +132,7 @@ const CheckoutPage = () => {
         currency,
         name: 'PIX',
         description: 'Order Payment',
-        prefill: { name: address.fullName, email: formData.email, contact: address.phone },
+        prefill: { name: address.fullName, email: userEmail, contact: address.phone },
         notes: { address: `${address.line1}, ${address.city}` },
         theme: { color: '#000000' },
         handler: async (response) => {
@@ -285,7 +284,6 @@ const CheckoutPage = () => {
                   }))}
                   subtotal={subtotal}
                   shipping={shipping}
-                  tax={tax}
                   total={total}
                 />
                 
