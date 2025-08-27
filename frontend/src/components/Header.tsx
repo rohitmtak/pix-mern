@@ -305,6 +305,7 @@ const Header = () => {
               <button
                 className="flex items-center justify-center"
                 aria-label="Account"
+                onClick={() => handleNavigation(localStorage.getItem('token') ? '/profile' : '/login')}
               >
                 <svg
                   width="31"

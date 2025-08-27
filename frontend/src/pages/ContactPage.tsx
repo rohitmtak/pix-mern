@@ -21,14 +21,14 @@ const ContactPage = () => {
                 <div>
                   <h3 className="font-semibold text-black mb-2">Address</h3>
                   <p className="text-gray-700">
-                    123 Fashion Street<br />
-                    Style District<br />
-                    New York, NY 10001
+                    HIGH STREET PIX, 22 - 25, Wonderland, Lower Ground Floor,<br />
+                    7 M.G. Road, Camp,<br />
+                    Pune - 411001 Maharashtra
                   </p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-black mb-2">Phone</h3>
-                  <p className="text-gray-700">+1 (555) 123-4567</p>
+                  <p className="text-gray-700">+91 9812345678</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-black mb-2">Email</h3>

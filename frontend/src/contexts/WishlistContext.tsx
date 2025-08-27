@@ -26,8 +26,8 @@ const initialState: WishlistState = {
 };
 
 const wishlistReducer = (state: WishlistState, action: WishlistAction): WishlistState => {
-  console.log('wishlistReducer called with action:', action.type, action);
-  console.log('Current state:', state);
+  // console.log('wishlistReducer called with action:', action.type, action);
+  // console.log('Current state:', state);
   
   switch (action.type) {
     case 'ADD_TO_WISHLIST': {
@@ -35,7 +35,7 @@ const wishlistReducer = (state: WishlistState, action: WishlistAction): Wishlist
       
       if (existingItem) {
         // Item already exists, don't add duplicate
-        console.log('Item already exists in wishlist, not adding duplicate');
+        // console.log('Item already exists in wishlist, not adding duplicate');
         return state;
       }
 
@@ -45,7 +45,7 @@ const wishlistReducer = (state: WishlistState, action: WishlistAction): Wishlist
         items: newItems,
         totalItems: newItems.length,
       };
-      console.log('New state after adding:', newState);
+      // console.log('New state after adding:', newState);
       return newState;
     }
 
@@ -110,13 +110,13 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
       if (savedWishlist) {
         try {
           const parsedWishlist = JSON.parse(savedWishlist);
-          console.log('Loading wishlist from localStorage:', parsedWishlist);
+          // console.log('Loading wishlist from localStorage:', parsedWishlist);
           dispatch({ type: 'LOAD_WISHLIST', payload: parsedWishlist });
         } catch (error) {
           console.error('Error parsing wishlist from localStorage:', error);
         }
       } else {
-        console.log('No saved wishlist found in localStorage');
+        // console.log('No saved wishlist found in localStorage');
       }
     } catch (error) {
       console.error('Error accessing localStorage:', error);
@@ -126,7 +126,7 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
   // Save wishlist to localStorage whenever it changes
   useEffect(() => {
     try {
-      console.log('Saving wishlist to localStorage:', state.items);
+      // console.log('Saving wishlist to localStorage:', state.items);
       localStorage.setItem('wishlist', JSON.stringify(state.items));
     } catch (error) {
       console.error('Error saving wishlist to localStorage:', error);
@@ -134,17 +134,17 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
   }, [state.items]);
 
   const addToWishlist = (item: Omit<WishlistItem, 'id'>) => {
-    console.log('addToWishlist called with:', item);
+    // console.log('addToWishlist called with:', item);
     const wishlistItem: WishlistItem = {
       ...item,
       id: item.productId,
     };
-    console.log('Dispatching ADD_TO_WISHLIST with:', wishlistItem);
+    // console.log('Dispatching ADD_TO_WISHLIST with:', wishlistItem);
     dispatch({ type: 'ADD_TO_WISHLIST', payload: wishlistItem });
   };
 
   const removeFromWishlist = (productId: string) => {
-    console.log('removeFromWishlist called with:', productId);
+    // console.log('removeFromWishlist called with:', productId);
     dispatch({ type: 'REMOVE_FROM_WISHLIST', payload: productId });
   };
 
@@ -154,7 +154,7 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
 
   const isInWishlist = (productId: string): boolean => {
     const result = state.items.some(item => item.productId === productId);
-    console.log(`isInWishlist(${productId}): ${result}`, 'Current items:', state.items.map(item => item.productId));
+    // console.log(`isInWishlist(${productId}): ${result}`, 'Current items:', state.items.map(item => item.productId));
     return result;
   };
 

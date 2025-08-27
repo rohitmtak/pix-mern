@@ -50,8 +50,8 @@ const ProductDetailPage = () => {
   // Debug logging for product data
   useEffect(() => {
     if (product) {
-      console.log('Product loaded:', product);
-      console.log('Color variants:', product.colorVariants);
+      // console.log('Product loaded:', product);
+      // console.log('Color variants:', product.colorVariants);
     }
   }, [product]);
 
@@ -149,7 +149,7 @@ const ProductDetailPage = () => {
   const handleWishlistToggle = (productId: string, isWishlisted: boolean) => {
     // The WishlistButton component now handles the context operations directly
     // This function is kept for any additional logic that might be needed
-    console.log(`Product ${productId} wishlist toggled to ${isWishlisted}`);
+    // console.log(`Product ${productId} wishlist toggled to ${isWishlisted}`);
   };
 
   const handleColorSelection = (color: string) => {

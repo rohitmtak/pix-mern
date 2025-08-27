@@ -36,7 +36,7 @@ const ProductCard = ({
   centered = false,
   contentWrapperClassName
 }: ProductCardProps) => {
-  console.log('ProductCard rendered with props:', { id, title, price, category, isWishlisted });
+  // console.log('ProductCard rendered with props:', { id, title, price, category, isWishlisted });
   
   return (
     <div className={cn("flex flex-col w-full", compact ? "gap-0" : "gap-2", className)}>

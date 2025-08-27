@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -6,12 +6,30 @@ import CheckoutForm from "@/components/checkout/CheckoutForm";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
+import axios from "axios";
+import { config } from "@/config/env";
+import { toast } from "sonner";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { state: cartState } = useCart();
+  const { state: cartState, clearCart } = useCart();
   const cartItems = cartState.items;
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Load Razorpay Checkout script once
+  useEffect(() => {
+    const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]') as HTMLScriptElement | null;
+    if (existing) return;
+    const s = document.createElement('script');
+    s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    s.async = true;
+    document.body.appendChild(s);
+    return () => {
+      if (s && s.parentElement) {
+        s.parentElement.removeChild(s);
+      }
+    };
+  }, []);
 
   // Calculate totals based on actual cart items
   const calculateTotals = () => {
@@ -29,17 +47,151 @@ const CheckoutPage = () => {
 
   const { subtotal, shipping, tax, total } = calculateTotals();
 
+  // Numeric totals for backend amount field
+  const subtotalValue = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const taxValue = Math.round(subtotalValue * 0.15);
+  const totalValue = subtotalValue + taxValue; // Shipping is Free
+
   const handleFormSubmit = async (formData: any) => {
-    setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // In a real app, you would send this data to your backend
-    console.log("Order data:", { formData, items: cartItems });
-    
-    // Redirect to success page
-    navigate("/order-success");
+    try {
+      setIsSubmitting(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Please login to complete your order');
+        navigate('/login');
+        return;
+      }
+
+      const address = {
+        fullName: `${formData.firstName || ''} ${formData.lastName || ''}`.trim(),
+        phone: formData.phone,
+        line1: formData.address,
+        line2: formData.apartment || '',
+        city: formData.city,
+        state: formData.state,
+        postalCode: formData.postalCode,
+        country: formData.country || 'IN',
+      };
+
+      const items = cartItems.map(item => ({
+        productId: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+        image: item.imageUrl,
+      }));
+
+      // Prepare billing address (if different from shipping)
+      const billingAddress = formData.payment?.billingAddress?.address !== "" 
+        ? formData.payment.billingAddress 
+        : address;
+
+      // Calculate totals
+      const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const tax = Math.round(subtotal * 0.15);
+      const shipping = 0; // Free shipping
+      const total = subtotal + tax + shipping;
+
+      // Create Razorpay order on backend with enhanced data
+      const res = await axios.post(
+        `${config.api.baseUrl}/order/razorpay`,
+        { 
+          items, 
+          amount: totalValue, // Keep for backward compatibility
+          subtotal,
+          tax,
+          shipping,
+          total,
+          address,
+          billingAddress,
+          customerEmail: formData.email,
+          customerPhone: formData.phone,
+          paymentMethod: formData.payment?.method || 'card'
+        },
+        { headers: { token } }
+      );
+
+      if (!res.data?.success || !res.data?.order?.id) {
+        toast.error(res.data?.message || 'Failed to initiate payment');
+        return;
+      }
+
+      const key = (import.meta as any).env?.VITE_RAZORPAY_KEY_ID as string | undefined;
+      if (!key) {
+        toast.error('Razorpay key missing');
+        return;
+      }
+
+      const { id: order_id, amount, currency } = res.data.order;
+
+      const rzp = new (window as any).Razorpay({
+        key,
+        order_id,
+        amount,
+        currency,
+        name: 'PIX',
+        description: 'Order Payment',
+        prefill: { name: address.fullName, email: formData.email, contact: address.phone },
+        notes: { address: `${address.line1}, ${address.city}` },
+        theme: { color: '#000000' },
+        handler: async (response) => {
+          try {
+            await axios.post(
+              `${config.api.baseUrl}/order/verifyRazorpay`,
+              { 
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id
+              },
+              { headers: { token } }
+            );
+
+            // Always update user profile with checkout information
+            try {
+              await axios.put(`${config.api.baseUrl}/user/me`, { name: address.fullName, phone: address.phone }, { headers: { token } });
+            } catch (_) {
+              // non-blocking
+            }
+
+            // Always save address to address book (like profile info)
+            try {
+              const addressPayload = {
+                address: {
+                  id: String(Date.now()),
+                  fullName: address.fullName,
+                  phone: address.phone,
+                  line1: address.line1,
+                  line2: address.line2,
+                  city: address.city,
+                  state: address.state,
+                  postalCode: address.postalCode,
+                  country: address.country,
+                  isDefault: true,
+                },
+              };
+              await axios.post(`${config.api.baseUrl}/user/addresses`, addressPayload, { headers: { token } });
+            } catch (_) {
+              // non-blocking
+            }
+
+            clearCart();
+            navigate('/order-success', { 
+              state: { orderId: res.data.orderId } 
+            });
+          } catch (e) {
+            toast.error('Payment verification failed');
+          }
+        },
+        modal: { ondismiss: () => toast.warning('Payment cancelled') }
+      });
+
+      rzp.open();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Order failed');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBackToCart = () => {
@@ -137,8 +289,15 @@ const CheckoutPage = () => {
                   total={total}
                 />
                 
+                {/* Submit button full width above security info */}
+                <div className="mt-6">
+                  <Button form="checkout-form" type="submit" className="w-full h-12 text-lg font-medium bg-black text-white hover:bg-gray-800">
+                    COMPLETE PURCHASE
+                  </Button>
+                </div>
+
                 {/* Security Info */}
-                <div className="mt-6 p-4 bg-gray-100 rounded-lg">
+                <div className="mt-4 p-4 bg-gray-100 rounded-lg">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <svg
                       width="16"

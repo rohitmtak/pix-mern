@@ -96,12 +96,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         style={{ gap: getLayoutConfig().gap }}
       >
         {products.map((product, index) => {
-          console.log('Product in ProductGrid:', { 
-            _id: product._id, 
-            name: product.name, 
-            category: product.category,
-            isWishlisted: isInWishlist(product._id)
-          });
+          // console.log('Product in ProductGrid:', { 
+          //   _id: product._id, 
+          //   name: product.name, 
+          //   category: product.category,
+          //   isWishlisted: isInWishlist(product._id)
+          // });
           
           return (
             <div 

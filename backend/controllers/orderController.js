@@ -130,15 +130,48 @@ const verifyStripe = async (req,res) => {
 const placeOrderRazorpay = async (req,res) => {
     try {
         
-        const { userId, items, amount, address} = req.body
+        const { userId, items, amount, address, customerEmail, customerPhone, paymentMethod } = req.body
 
+        // Validate required fields
+        if (!userId || !items || !amount || !address) {
+            return res.json({ 
+                success: false, 
+                message: 'Missing required fields' 
+            })
+        }
+
+        // Calculate totals properly
+        const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+        const tax = Math.round(subtotal * 0.15)
+        const shipping = 0 // Free shipping
+        const total = subtotal + tax + shipping
+
+        // Prepare order data with both new and legacy structure
         const orderData = {
+            // New structured fields
             userId,
+            customerEmail: customerEmail || address.phone, // Fallback to phone if email not provided
+            customerPhone: customerPhone || address.phone,
             items,
-            address,
-            amount,
-            paymentMethod:"Razorpay",
-            payment:false,
+            subtotal,
+            tax,
+            shipping,
+            total,
+            shippingAddress: address,
+            billingAddress: address, // Default to same as shipping
+            paymentDetails: {
+                method: paymentMethod || 'card',
+                gateway: 'razorpay'
+            },
+            paymentStatus: 'pending',
+            status: 'placed',
+            orderDate: new Date(),
+            
+            // Legacy fields for backward compatibility
+            amount: total,
+            address: address,
+            paymentMethod: "Razorpay",
+            payment: false,
             date: Date.now()
         }
 
@@ -146,21 +179,36 @@ const placeOrderRazorpay = async (req,res) => {
         await newOrder.save()
 
         const options = {
-            amount: amount * 100,
+            amount: total * 100, // Use calculated total
             currency: currency.toUpperCase(),
-            receipt : newOrder._id.toString()
+            receipt: newOrder._id.toString(),
+            notes: {
+                orderId: newOrder._id.toString(),
+                customerEmail: orderData.customerEmail
+            }
         }
 
-        await razorpayInstance.orders.create(options, (error,order)=>{
+        await razorpayInstance.orders.create(options, (error, razorpayOrder) => {
             if (error) {
-                console.log(error)
+                console.log('Razorpay error:', error)
                 return res.json({success:false, message: error})
             }
-            res.json({success:true,order})
+            
+            // Update order with Razorpay order ID
+            orderModel.findByIdAndUpdate(
+                newOrder._id, 
+                { 'paymentDetails.gatewayOrderId': razorpayOrder.id }
+            ).exec()
+            
+            res.json({
+                success: true, 
+                order: razorpayOrder,
+                orderId: newOrder._id
+            })
         })
 
     } catch (error) {
-        console.log(error)
+        console.log('Order creation error:', error)
         res.json({success:false,message:error.message})
     }
 }
@@ -168,19 +216,49 @@ const placeOrderRazorpay = async (req,res) => {
 const verifyRazorpay = async (req,res) => {
     try {
         
-        const { userId, razorpay_order_id  } = req.body
+        const { userId, razorpay_order_id, razorpay_payment_id } = req.body
 
+        // Fetch order from Razorpay
         const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id)
+        
         if (orderInfo.status === 'paid') {
-            await orderModel.findByIdAndUpdate(orderInfo.receipt,{payment:true});
-            await userModel.findByIdAndUpdate(userId,{cartData:{}})
-            res.json({ success: true, message: "Payment Successful" })
+            // Update order with both new and legacy fields
+            const updatedOrder = await orderModel.findOneAndUpdate(
+                { 'paymentDetails.gatewayOrderId': razorpay_order_id },
+                { 
+                    // New structured fields
+                    paymentStatus: 'paid',
+                    paymentDate: new Date(),
+                    'paymentDetails.transactionId': razorpay_payment_id,
+                    status: 'confirmed',
+                    
+                    // Legacy fields for backward compatibility
+                    payment: true
+                },
+                { new: true }
+            )
+
+            if (updatedOrder) {
+                // Clear user's cart
+                await userModel.findByIdAndUpdate(userId, { cartData: {} })
+                
+                res.json({ 
+                    success: true, 
+                    message: "Payment Successful",
+                    orderId: updatedOrder._id
+                })
+            } else {
+                // Fallback to legacy method if new method fails
+                await orderModel.findByIdAndUpdate(orderInfo.receipt, { payment: true });
+                await userModel.findByIdAndUpdate(userId, { cartData: {} })
+                res.json({ success: true, message: "Payment Successful" })
+            }
         } else {
              res.json({ success: false, message: 'Payment Failed' });
         }
 
     } catch (error) {
-        console.log(error)
+        console.log('Payment verification error:', error)
         res.json({success:false,message:error.message})
     }
 }
