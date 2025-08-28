@@ -1,81 +1,246 @@
-import userModel from "../models/userModel.js"
+import cartModel from "../models/cartModel.js";
+import productModel from "../models/productModel.js";
 
-
-// add products to user cart
-const addToCart = async (req,res) => {
+// Get user's cart
+export const getUserCart = async (req, res) => {
     try {
+        const { userId } = req.user;
         
-        const { userId, itemId, size, color } = req.body
-
-        const userData = await userModel.findById(userId)
-        let cartData = await userData.cartData;
-
-        // Create a unique key for color-size combination
-        const colorSizeKey = `${color}_${size}`;
-
-        if (cartData[itemId]) {
-            if (cartData[itemId][colorSizeKey]) {
-                cartData[itemId][colorSizeKey] += 1
-            }
-            else {
-                cartData[itemId][colorSizeKey] = 1
-            }
-        } else {
-            cartData[itemId] = {}
-            cartData[itemId][colorSizeKey] = 1
+        let cart = await cartModel.findOne({ userId }).populate('items.productId');
+        
+        if (!cart) {
+            cart = await cartModel.create({
+                userId,
+                items: [],
+                totalItems: 0,
+                totalPrice: 0
+            });
         }
-
-        await userModel.findByIdAndUpdate(userId, {cartData})
-
-        res.json({ success: true, message: "Added To Cart" })
-
+        
+        res.status(200).json({
+            success: true,
+            cart: {
+                items: cart.items,
+                totalItems: cart.totalItems,
+                totalPrice: cart.totalPrice
+            }
+        });
     } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: error.message })
+        console.error('Error getting user cart:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get cart'
+        });
     }
-}
+};
 
-// update user cart
-const updateCart = async (req,res) => {
+// Add item to cart
+export const addToCart = async (req, res) => {
     try {
+        const { userId } = req.user;
+        const { productId, name, price, quantity, size, color, imageUrl } = req.body;
         
-        const { userId, itemId, size, color, quantity } = req.body
-
-        const userData = await userModel.findById(userId)
-        let cartData = await userData.cartData;
-
-        // Create a unique key for color-size combination
-        const colorSizeKey = `${color}_${size}`;
-
-        cartData[itemId][colorSizeKey] = quantity
-
-        await userModel.findByIdAndUpdate(userId, {cartData})
-        res.json({ success: true, message: "Cart Updated" })
-
+        let cart = await cartModel.findOne({ userId });
+        
+        if (!cart) {
+            cart = new cartModel({ userId, items: [], totalItems: 0, totalPrice: 0 });
+        }
+        
+        // Check if item already exists with same size and color
+        const existingItemIndex = cart.items.findIndex(
+            item => item.productId.toString() === productId && 
+                   item.size === size && 
+                   item.color === color
+        );
+        
+        if (existingItemIndex > -1) {
+            // Update quantity of existing item
+            cart.items[existingItemIndex].quantity += quantity;
+        } else {
+            // Add new item
+            cart.items.push({
+                productId,
+                name,
+                price,
+                quantity,
+                size,
+                color,
+                imageUrl
+            });
+        }
+        
+        // Recalculate totals
+        cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+        cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        cart.lastUpdated = new Date();
+        
+        await cart.save();
+        
+        res.status(200).json({
+            success: true,
+            message: 'Item added to cart',
+            cart: {
+                items: cart.items,
+                totalItems: cart.totalItems,
+                totalPrice: cart.totalPrice
+            }
+        });
     } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: error.message })
+        console.error('Error adding to cart:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to add item to cart'
+        });
     }
-}
+};
 
-
-// get user cart data
-const getUserCart = async (req,res) => {
-
+// Update cart item quantity
+export const updateCartItem = async (req, res) => {
     try {
+        const { userId } = req.user;
+        const { productId, size, color, quantity } = req.body;
         
-        const { userId } = req.body
+        const cart = await cartModel.findOne({ userId });
+        if (!cart) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cart not found'
+            });
+        }
         
-        const userData = await userModel.findById(userId)
-        let cartData = await userData.cartData;
-
-        res.json({ success: true, data: cartData })
-
+        const itemIndex = cart.items.findIndex(
+            item => item.productId.toString() === productId && 
+                   item.size === size && 
+                   item.color === color
+        );
+        
+        if (itemIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: 'Item not found in cart'
+            });
+        }
+        
+        if (quantity <= 0) {
+            // Remove item if quantity is 0 or negative
+            cart.items.splice(itemIndex, 1);
+        } else {
+            cart.items[itemIndex].quantity = quantity;
+        }
+        
+        // Recalculate totals
+        cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+        cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        cart.lastUpdated = new Date();
+        
+        await cart.save();
+        
+        res.status(200).json({
+            success: true,
+            message: 'Cart updated',
+            cart: {
+                items: cart.items,
+                totalItems: cart.totalItems,
+                totalPrice: cart.totalPrice
+            }
+        });
     } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: error.message })
+        console.error('Error updating cart:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update cart'
+        });
     }
+};
 
-}
+// Remove item from cart
+export const removeFromCart = async (req, res) => {
+    try {
+        const { userId } = req.user;
+        const { productId, size, color } = req.body;
+        
+        const cart = await cartModel.findOne({ userId });
+        if (!cart) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cart not found'
+            });
+        }
+        
+        const itemIndex = cart.items.findIndex(
+            item => item.productId.toString() === productId && 
+                   item.size === size && 
+                   item.color === color
+        );
+        
+        if (itemIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: 'Item not found in cart'
+            });
+        }
+        
+        cart.items.splice(itemIndex, 1);
+        
+        // Recalculate totals
+        cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+        cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        cart.lastUpdated = new Date();
+        
+        await cart.save();
+        
+        res.status(200).json({
+            success: true,
+            message: 'Item removed from cart',
+            cart: {
+                items: cart.items,
+                totalItems: cart.totalItems,
+                totalPrice: cart.totalPrice
+            }
+        });
+    } catch (error) {
+        console.error('Error removing from cart:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to remove item from cart'
+        });
+    }
+};
 
-export { addToCart, updateCart, getUserCart }
+// Clear cart
+export const clearCart = async (req, res) => {
+    try {
+        const { userId } = req.user;
+        
+        const cart = await cartModel.findOne({ userId });
+        if (!cart) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cart not found'
+            });
+        }
+        
+        cart.items = [];
+        cart.totalItems = 0;
+        cart.totalPrice = 0;
+        cart.lastUpdated = new Date();
+        
+        await cart.save();
+        
+        res.status(200).json({
+            success: true,
+            message: 'Cart cleared',
+            cart: {
+                items: [],
+                totalItems: 0,
+                totalPrice: 0
+            }
+        });
+    } catch (error) {
+        console.error('Error clearing cart:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to clear cart'
+        });
+    }
+};

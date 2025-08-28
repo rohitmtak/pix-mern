@@ -8,13 +8,35 @@ import { cn } from "@/lib/utils";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import SavedAddressDisplay from "./SavedAddressDisplay";
 
 interface CheckoutFormProps {
   onSubmit: (formData: any) => void;
   className?: string;
+  addresses?: any[]; // Assuming addresses are of a specific shape
+  onAddNewAddress?: () => void;
+  showAddressForm?: boolean;
+  onToggleAddressForm?: () => void;
+  selectedAddressId?: string; // Add this prop
 }
 
-const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
+const CheckoutForm = ({ 
+  onSubmit, 
+  className, 
+  addresses = [], 
+  onAddNewAddress,
+  showAddressForm = false,
+  onToggleAddressForm,
+  selectedAddressId
+}: CheckoutFormProps) => {
+  
+  // Debug logging
+  console.log('🔍 CheckoutForm props:', {
+    addressesCount: addresses.length,
+    showAddressForm,
+    hasAddresses: addresses.length > 0,
+    shouldShowSavedAddresses: addresses.length > 0 && !showAddressForm
+  });
   // Strong validation schema
   const shippingSchema = z.object({
     firstName: z.string().min(2, { message: "Enter a first name" }),
@@ -77,6 +99,72 @@ const CheckoutForm = ({ onSubmit, className }: CheckoutFormProps) => {
   const onSubmitForm = (values: ShippingForm) => {
     onSubmit({ ...values, payment: paymentData });
   };
+
+  // Create a submit handler function that has access to the props
+  const handleSavedAddressSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Create form data from selected address
+    const selectedAddress = selectedAddressId 
+      ? addresses.find(addr => addr.id === selectedAddressId) 
+      : addresses[0];
+      
+    if (!selectedAddress) {
+      console.error('❌ No address selected or found');
+      return;
+    }
+    
+    console.log('🔍 Submitting form with selected address:', selectedAddress);
+    
+    const formData = {
+      firstName: selectedAddress.fullName.split(' ')[0] || '',
+      lastName: selectedAddress.fullName.split(' ').slice(1).join(' ') || '',
+      phone: selectedAddress.phone,
+      address: selectedAddress.line1,
+      apartment: selectedAddress.line2 || '',
+      city: selectedAddress.city,
+      state: selectedAddress.state,
+      postalCode: selectedAddress.postalCode,
+      country: selectedAddress.country,
+      payment: { method: 'card' as const }
+    };
+    onSubmit(formData);
+  };
+
+  // If user has saved addresses and we're not showing the form, display saved addresses
+  console.log('🔍 CheckoutForm conditional logic:', {
+    addressesLength: addresses.length,
+    showAddressForm,
+    condition: addresses.length > 0 && !showAddressForm,
+    willShowSavedAddresses: addresses.length > 0 && !showAddressForm
+  });
+  
+  if (addresses.length > 0 && !showAddressForm) {
+    console.log('✅ Showing saved addresses display');
+    
+    return (
+      <form id="checkout-form" onSubmit={handleSavedAddressSubmit} className={cn("space-y-8", className)}>
+        <div>
+          <h2 
+            className="text-black font-normal uppercase mb-6"
+            style={{
+              fontSize: '24px',
+              fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
+              fontWeight: 400,
+              color: 'rgba(0,0,0,1)'
+            }}
+          >
+            Shipping Address
+          </h2>
+          
+          <SavedAddressDisplay
+            addresses={addresses}
+            onAddNewAddress={onAddNewAddress || (() => {})}
+            selectedAddressId={undefined} // We'll handle this differently
+          />
+        </div>
+      </form>
+    );
+  }
 
   return (
     <form id="checkout-form" onSubmit={handleSubmit(onSubmitForm)} className={cn("space-y-8", className)}>

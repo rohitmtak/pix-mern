@@ -9,7 +9,7 @@ import { Error } from "@/components/ui/error";
 import { useProduct } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
-import { useToast } from "@/hooks/use-toast";
+import { showToast, toastMessages } from "@/config/toastConfig";
 import { cn } from "@/lib/utils";
 import {
   Carousel,
@@ -40,7 +40,7 @@ const ProductDetailPage = () => {
   // Cart and wishlist hooks
   const { addToCart, isInCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const { toast } = useToast();
+
 
   // Fetch product details from API
   const {
@@ -156,18 +156,14 @@ const ProductDetailPage = () => {
     // Show simple toast message for wishlist actions
     if (isWishlisted) {
       // Product was added to wishlist
-      toast({
-        title: "Added to Wishlist!",
-        description: "Item added to your wishlist",
-        duration: 3000,
-      });
+      showToast.success(
+        toastMessages.wishlist.added("Item")
+      );
     } else {
       // Product was removed from wishlist
-      toast({
-        title: "Removed from Wishlist",
-        description: "Item removed from your wishlist",
-        duration: 2000,
-      });
+      showToast.info(
+        toastMessages.wishlist.removed("Item")
+      );
     }
   };
 
@@ -513,11 +509,9 @@ const ProductDetailPage = () => {
                        });
 
                        // Show success feedback
-                       toast({
-                         title: "Added to Cart",
-                         description: `${product.name} has been added to your cart successfully!`,
-                         duration: 3000,
-                       });
+                       showToast.success(
+                         toastMessages.cart.added(product.name)
+                       );
                      }
                    }}
                  >

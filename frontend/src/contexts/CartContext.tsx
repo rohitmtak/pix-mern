@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { isAuthenticated, getToken } from '@/utils/auth';
+import { config } from '@/config/env';
 
 export interface CartItem {
   id: string;
@@ -15,6 +17,7 @@ interface CartState {
   items: CartItem[];
   totalItems: number;
   totalPrice: number;
+  isSyncing: boolean;
 }
 
 type CartAction =
@@ -22,12 +25,14 @@ type CartAction =
   | { type: 'REMOVE_FROM_CART'; payload: { productId: string; size: string; color: string } }
   | { type: 'UPDATE_QUANTITY'; payload: { productId: string; size: string; color: string; quantity: number } }
   | { type: 'CLEAR_CART' }
-  | { type: 'LOAD_CART'; payload: CartItem[] };
+  | { type: 'LOAD_CART'; payload: CartItem[] }
+  | { type: 'SET_SYNCING'; payload: boolean };
 
 const initialState: CartState = {
   items: [],
   totalItems: 0,
   totalPrice: 0,
+  isSyncing: false,
 };
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
@@ -123,6 +128,12 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       };
     }
 
+    case 'SET_SYNCING':
+      return {
+        ...state,
+        isSyncing: action.payload,
+      };
+
     default:
       return state;
   }
@@ -130,12 +141,15 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
 interface CartContextType {
   state: CartState;
-  addToCart: (item: Omit<CartItem, 'id'>) => void;
-  removeFromCart: (productId: string, size: string, color: string) => void;
-  updateQuantity: (productId: string, size: string, color: string, quantity: number) => void;
-  clearCart: () => void;
+  addToCart: (item: Omit<CartItem, 'id'>) => Promise<void>;
+  removeFromCart: (productId: string, size: string, color: string) => Promise<void>;
+  updateQuantity: (productId: string, size: string, color: string, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
   isInCart: (productId: string, size: string, color: string) => boolean;
   getItemQuantity: (productId: string, size: string, color: string) => number;
+  syncCartWithBackend: () => Promise<void>;
+  loadUserCartFromBackend: () => Promise<void>;
+  migrateGuestCartToUser: (guestCart: CartItem[]) => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -173,24 +187,237 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(state.items));
   }, [state.items]);
 
-  const addToCart = (item: Omit<CartItem, 'id'>) => {
+  // Note: Removed automatic sync to prevent infinite loops
+  // Cart is now synced only when explicitly calling syncCartWithBackend
+
+  // Function to sync cart with backend
+  const syncCartWithBackend = async () => {
+    if (!isAuthenticated() || state.isSyncing) return;
+    
+    dispatch({ type: 'SET_SYNCING', payload: true });
+    
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      // Clear the backend cart first to avoid duplicates
+      await fetch(`${config.api.baseUrl}/cart/clear`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        }
+      });
+
+      // Send each cart item to backend
+      for (const item of state.items) {
+        await fetch(`${config.api.baseUrl}/cart/add`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          },
+          body: JSON.stringify({
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+            imageUrl: item.imageUrl
+          })
+        });
+      }
+    } catch (error) {
+      console.error('Failed to sync cart with backend:', error);
+    } finally {
+      dispatch({ type: 'SET_SYNCING', payload: false });
+    }
+  };
+
+  // Function to load user cart from backend
+  const loadUserCartFromBackend = async () => {
+    if (!isAuthenticated()) return;
+    
+    // Simple guard to prevent multiple simultaneous calls
+    if (state.isSyncing) return;
+    
+    dispatch({ type: 'SET_SYNCING', payload: true });
+    
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      const response = await fetch(`${config.api.baseUrl}/cart/get`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.cart && data.cart.items) {
+          // Convert backend cart format to frontend format
+          const cartItems: CartItem[] = data.cart.items.map((item: any) => ({
+            id: `${item.productId}_${item.size}_${item.color}`,
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+            imageUrl: item.imageUrl
+          }));
+          
+          // Load backend cart into state
+          dispatch({ type: 'LOAD_CART', payload: cartItems });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load cart from backend:', error);
+    } finally {
+      dispatch({ type: 'SET_SYNCING', payload: false });
+    }
+  };
+
+  // Function to migrate guest cart to authenticated user
+  const migrateGuestCartToUser = async (guestCart: CartItem[]) => {
+    if (!isAuthenticated() || guestCart.length === 0) return;
+    
+    try {
+      // Merge guest cart with existing user cart
+      const mergedCart = [...state.items];
+      
+      guestCart.forEach(guestItem => {
+        const existingIndex = mergedCart.findIndex(item =>
+          item.productId === guestItem.productId &&
+          item.size === guestItem.size &&
+          item.color === guestItem.color
+        );
+        
+        if (existingIndex >= 0) {
+          // Merge quantities
+          mergedCart[existingIndex].quantity += guestItem.quantity;
+        } else {
+          // Add new item
+          mergedCart.push(guestItem);
+        }
+      });
+      
+      // Update state with merged cart
+      dispatch({ type: 'LOAD_CART', payload: mergedCart });
+      
+      // Sync to backend
+      await syncCartWithBackend();
+      
+    } catch (error) {
+      console.error('Failed to migrate guest cart:', error);
+    }
+  };
+
+  const addToCart = async (item: Omit<CartItem, 'id'>) => {
     const cartItem: CartItem = {
       ...item,
       id: `${item.productId}_${item.size}_${item.color}`,
     };
     dispatch({ type: 'ADD_TO_CART', payload: cartItem });
+    
+    // If user is authenticated, sync with backend
+    if (isAuthenticated()) {
+      try {
+        const token = getToken();
+        if (!token) return;
+
+        await fetch(`${config.api.baseUrl}/cart/add`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          },
+          body: JSON.stringify({
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+            imageUrl: item.imageUrl
+          })
+        });
+      } catch (error) {
+        console.error('Failed to sync cart with backend:', error);
+      }
+    }
   };
 
-  const removeFromCart = (productId: string, size: string, color: string) => {
+  const removeFromCart = async (productId: string, size: string, color: string) => {
     dispatch({ type: 'REMOVE_FROM_CART', payload: { productId, size, color } });
+    
+    // If user is authenticated, sync with backend
+    if (isAuthenticated()) {
+      try {
+        const token = getToken();
+        if (!token) return;
+
+        await fetch(`${config.api.baseUrl}/cart/remove`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          },
+          body: JSON.stringify({ productId, size, color })
+        });
+      } catch (error) {
+        console.error('Failed to sync cart with backend:', error);
+      }
+    }
   };
 
-  const updateQuantity = (productId: string, size: string, color: string, quantity: number) => {
+  const updateQuantity = async (productId: string, size: string, color: string, quantity: number) => {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, size, color, quantity } });
+    
+    // If user is authenticated, sync with backend
+    if (isAuthenticated()) {
+      try {
+        const token = getToken();
+        if (!token) return;
+
+        await fetch(`${config.api.baseUrl}/cart/update`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          },
+          body: JSON.stringify({ productId, size, color, quantity })
+        });
+      } catch (error) {
+        console.error('Failed to sync cart with backend:', error);
+      }
+    }
   };
 
-  const clearCart = () => {
+  const clearCart = async () => {
     dispatch({ type: 'CLEAR_CART' });
+    
+    // If user is authenticated, sync with backend
+    if (isAuthenticated()) {
+      try {
+        const token = getToken();
+        if (!token) return;
+
+        await fetch(`${config.api.baseUrl}/cart/clear`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          }
+        });
+      } catch (error) {
+        console.error('Failed to sync cart with backend:', error);
+      }
+    }
   };
 
   const isInCart = (productId: string, size: string, color: string): boolean => {
@@ -220,6 +447,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     clearCart,
     isInCart,
     getItemQuantity,
+    syncCartWithBackend,
+    loadUserCartFromBackend,
+    migrateGuestCartToUser,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

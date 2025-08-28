@@ -103,7 +103,7 @@ const adminLogin = async (req, res) => {
 // Authenticated: get current user profile
 const getMe = async (req, res) => {
     try {
-        const user = await userModel.findById(req.body.userId).select('name email phone addresses wishlist createdAt')
+        const user = await userModel.findById(req.user.userId).select('name email phone addresses wishlist createdAt')
         if (!user) return res.json({ success: false, message: 'User not found' })
         res.json({ success: true, user })
     } catch (error) {
@@ -117,7 +117,7 @@ const updateMe = async (req, res) => {
     try {
         const { name, phone } = req.body
         const user = await userModel.findByIdAndUpdate(
-            req.body.userId,
+            req.user.userId,
             { $set: { ...(name !== undefined ? { name } : {}), ...(phone !== undefined ? { phone } : {}) } },
             { new: true, select: 'name email phone addresses wishlist createdAt' }
         )
@@ -131,7 +131,7 @@ const updateMe = async (req, res) => {
 // Addresses CRUD
 const listAddresses = async (req, res) => {
     try {
-        const user = await userModel.findById(req.body.userId).select('addresses')
+        const user = await userModel.findById(req.user.userId).select('addresses')
         res.json({ success: true, addresses: user?.addresses || [] })
     } catch (error) {
         res.json({ success: false, message: error.message })
@@ -142,7 +142,7 @@ const addAddress = async (req, res) => {
     try {
         const address = req.body.address
         if (!address || !address.id) return res.json({ success: false, message: 'Address id required' })
-        const user = await userModel.findById(req.body.userId)
+        const user = await userModel.findById(req.user.userId)
         if (!user) return res.json({ success: false, message: 'User not found' })
         if (address.isDefault) {
             user.addresses.forEach(a => a.isDefault = false)
@@ -159,7 +159,7 @@ const updateAddress = async (req, res) => {
     try {
         const { id } = req.params
         const patch = req.body.address || {}
-        const user = await userModel.findById(req.body.userId)
+        const user = await userModel.findById(req.user.userId)
         if (!user) return res.json({ success: false, message: 'User not found' })
         const idx = user.addresses.findIndex(a => a.id === id)
         if (idx === -1) return res.json({ success: false, message: 'Address not found' })
@@ -177,7 +177,7 @@ const updateAddress = async (req, res) => {
 const deleteAddress = async (req, res) => {
     try {
         const { id } = req.params
-        const user = await userModel.findById(req.body.userId)
+        const user = await userModel.findById(req.user.userId)
         if (!user) return res.json({ success: false, message: 'User not found' })
         user.addresses = user.addresses.filter(a => a.id !== id)
         await user.save()
@@ -190,7 +190,7 @@ const deleteAddress = async (req, res) => {
 // Wishlist
 const listWishlist = async (req, res) => {
     try {
-        const user = await userModel.findById(req.body.userId).select('wishlist')
+        const user = await userModel.findById(req.user.userId).select('wishlist')
         res.json({ success: true, wishlist: user?.wishlist || [] })
     } catch (error) {
         res.json({ success: false, message: error.message })
@@ -201,7 +201,7 @@ const addWishlist = async (req, res) => {
     try {
         const { productId } = req.body
         if (!productId) return res.json({ success: false, message: 'productId required' })
-        const user = await userModel.findById(req.body.userId)
+        const user = await userModel.findById(req.user.userId)
         if (!user) return res.json({ success: false, message: 'User not found' })
         const exists = user.wishlist.find(id => String(id) === String(productId))
         if (!exists) user.wishlist.push(productId)
@@ -215,7 +215,7 @@ const addWishlist = async (req, res) => {
 const removeWishlist = async (req, res) => {
     try {
         const { productId } = req.params
-        const user = await userModel.findById(req.body.userId)
+        const user = await userModel.findById(req.user.userId)
         if (!user) return res.json({ success: false, message: 'User not found' })
         user.wishlist = user.wishlist.filter(id => String(id) !== String(productId))
         await user.save()

@@ -51,7 +51,8 @@ const placeOrder = async (req,res) => {
 const placeOrderStripe = async (req,res) => {
     try {
         
-        const { userId, items, amount, address} = req.body
+        const { items, amount, address} = req.body
+        const { userId } = req.user; // Get userId from auth middleware
         const { origin } = req.headers;
 
         const orderData = {
@@ -107,7 +108,8 @@ const placeOrderStripe = async (req,res) => {
 // Verify Stripe 
 const verifyStripe = async (req,res) => {
 
-    const { orderId, success, userId } = req.body
+    const { orderId, success } = req.body
+    const { userId } = req.user; // Get userId from auth middleware
 
     try {
         if (success === "true") {
@@ -130,14 +132,56 @@ const verifyStripe = async (req,res) => {
 const placeOrderRazorpay = async (req,res) => {
     try {
         
-        const { userId, items, amount, address, customerEmail, customerPhone, paymentMethod } = req.body
+        const { items, amount, address, customerEmail, customerPhone, paymentMethod } = req.body
+        const { userId } = req.user; // Get userId from auth middleware
+
+        console.log('Received order request:');
+        console.log('userId:', userId);
+        console.log('items:', items);
+        console.log('amount:', amount);
+        console.log('address:', address);
+        console.log('customerEmail:', customerEmail);
+        console.log('customerPhone:', customerPhone);
+        console.log('paymentMethod:', paymentMethod);
 
         // Validate required fields
         if (!userId || !items || !amount || !address) {
+            console.log('Validation failed:');
+            console.log('userId exists:', !!userId);
+            console.log('items exists:', !!items);
+            console.log('amount exists:', !!amount);
+            console.log('address exists:', !!address);
+            
             return res.json({ 
                 success: false, 
-                message: 'Missing required fields' 
+                message: 'Missing required fields',
+                details: {
+                    userId: !!userId,
+                    items: !!items,
+                    amount: !!amount,
+                    address: !!address
+                }
             })
+        }
+
+        // Additional validation for items array
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.json({
+                success: false,
+                message: 'Items array is empty or invalid'
+            })
+        }
+
+        // Validate each item has required fields
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (!item.productId || !item.name || !item.price || !item.quantity || !item.size || !item.color) {
+                return res.json({
+                    success: false,
+                    message: `Item ${i + 1} is missing required fields`,
+                    item: item
+                })
+            }
         }
 
         // Calculate totals properly
@@ -145,6 +189,12 @@ const placeOrderRazorpay = async (req,res) => {
         const tax = Math.round(subtotal * 0.15)
         const shipping = 0 // Free shipping
         const total = subtotal + tax + shipping
+
+        console.log('Calculated totals:');
+        console.log('subtotal:', subtotal);
+        console.log('tax:', tax);
+        console.log('shipping:', shipping);
+        console.log('total:', total);
 
         // Prepare order data with both new and legacy structure
         const orderData = {
@@ -216,7 +266,8 @@ const placeOrderRazorpay = async (req,res) => {
 const verifyRazorpay = async (req,res) => {
     try {
         
-        const { userId, razorpay_order_id, razorpay_payment_id } = req.body
+        const { razorpay_order_id, razorpay_payment_id } = req.body
+        const { userId } = req.user; // Get userId from auth middleware
 
         // Fetch order from Razorpay
         const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id)
@@ -283,7 +334,7 @@ const allOrders = async (req,res) => {
 const userOrders = async (req,res) => {
     try {
         
-        const { userId } = req.body
+        const { userId } = req.user; // Get userId from auth middleware
 
         const orders = await orderModel.find({ userId })
         res.json({success:true,orders})

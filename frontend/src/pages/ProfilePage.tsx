@@ -3,8 +3,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "sonner";
+import { showToast, toastMessages } from "@/config/toastConfig";
 import { config } from "@/config/env";
+import { useCart } from "@/contexts/CartContext";
 
 interface OrderItem {
   _id: string;
@@ -27,6 +28,7 @@ type ProfileTab = 'account' | 'addresses' | 'orders';
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
+  const { clearCart, loadUserCartFromBackend } = useCart();
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<ProfileTab>('account');
@@ -76,10 +78,10 @@ const ProfilePage: React.FC = () => {
           // In case API returns array directly
           setOrders(res.data as OrderItem[]);
         } else {
-          toast.error(res.data?.message || 'Failed to load orders');
+          showToast.error(res.data?.message || toastMessages.profile.ordersLoadFailed);
         }
       } catch (err) {
-        toast.error('Failed to load orders');
+        showToast.error(toastMessages.profile.ordersLoadFailed);
       } finally {
         setLoading(false);
       }
@@ -89,6 +91,15 @@ const ProfilePage: React.FC = () => {
       try {
         const res = await axios.get(`${config.api.baseUrl}/user/me`, { headers: { token } });
         if (res.data?.success && res.data.user) {
+          // Sort addresses: default first, then others
+          if (res.data.user.addresses && Array.isArray(res.data.user.addresses)) {
+            const sortedAddresses = res.data.user.addresses.sort((a: any, b: any) => {
+              if (a.isDefault && !b.isDefault) return -1;
+              if (!a.isDefault && b.isDefault) return 1;
+              return 0;
+            });
+            res.data.user.addresses = sortedAddresses;
+          }
           setProfile(res.data.user);
         }
       } catch (err) {
@@ -99,9 +110,19 @@ const ProfilePage: React.FC = () => {
       }
     };
 
+    // Load user's persistent cart from backend
+    const loadCart = async () => {
+      try {
+        await loadUserCartFromBackend();
+      } catch (error) {
+        console.error('Failed to load user cart:', error);
+      }
+    };
+
     fetchOrders();
     fetchProfile();
-  }, [navigate, token]);
+    loadCart();
+  }, [navigate, token]); // Removed loadUserCartFromBackend dependency since it's now memoized
 
   // Update edit form when profile changes
   useEffect(() => {
@@ -115,7 +136,8 @@ const ProfilePage: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    toast.success('Logged out');
+    clearCart(); // Clear cart state and localStorage
+    showToast.success(toastMessages.profile.loggedOut);
     navigate('/');
   };
 
@@ -125,12 +147,12 @@ const ProfilePage: React.FC = () => {
       if (res.data?.success) {
         setProfile(res.data.user);
         setIsEditing(false);
-        toast.success('Profile updated successfully');
+        showToast.success(toastMessages.profile.profileUpdated);
       } else {
-        toast.error(res.data?.message || 'Failed to update profile');
+        showToast.error(res.data?.message || toastMessages.profile.profileUpdateFailed);
       }
     } catch (err) {
-      toast.error('Failed to update profile');
+      showToast.error(toastMessages.profile.profileUpdateFailed);
     }
   };
 
@@ -166,17 +188,28 @@ const ProfilePage: React.FC = () => {
         { headers: { token } }
       );
       if (res.data?.success) {
+        // Sort addresses: default first, then others, and remove duplicates
+        const uniqueAddresses = res.data.addresses.filter((address: any, index: number, self: any[]) => 
+          index === self.findIndex(addr => addr.id === address.id)
+        );
+        
+        const sortedAddresses = uniqueAddresses.sort((a: any, b: any) => {
+          if (a.isDefault && !b.isDefault) return -1;
+          if (!a.isDefault && b.isDefault) return 1;
+          return 0;
+        });
+        
         setProfile(prev => ({
           ...prev!,
-          addresses: res.data.addresses
+          addresses: sortedAddresses
         }));
         setEditingAddressId(null);
-        toast.success('Address updated successfully');
+        showToast.success(toastMessages.profile.addressUpdated);
       } else {
-        toast.error(res.data?.message || 'Failed to update address');
+        showToast.error(res.data?.message || toastMessages.profile.addressUpdateFailed);
       }
     } catch (err) {
-      toast.error('Failed to update address');
+      showToast.error(toastMessages.profile.addressUpdateFailed);
     }
   };
 
@@ -189,16 +222,27 @@ const ProfilePage: React.FC = () => {
         { headers: { token } }
       );
       if (res.data?.success) {
+        // Sort addresses: default first, then others, and remove duplicates
+        const uniqueAddresses = res.data.addresses.filter((address: any, index: number, self: any[]) => 
+          index === self.findIndex(addr => addr.id === address.id)
+        );
+        
+        const sortedAddresses = uniqueAddresses.sort((a: any, b: any) => {
+          if (a.isDefault && !b.isDefault) return -1;
+          if (!a.isDefault && b.isDefault) return 1;
+          return 0;
+        });
+        
         setProfile(prev => ({
           ...prev!,
-          addresses: res.data.addresses
+          addresses: sortedAddresses
         }));
-        toast.success('Address deleted successfully');
+        showToast.success(toastMessages.profile.addressDeleted);
       } else {
-        toast.error(res.data?.message || 'Failed to delete address');
+        showToast.error(res.data?.message || toastMessages.profile.addressDeleteFailed);
       }
     } catch (err) {
-      toast.error('Failed to delete address');
+      showToast.error(toastMessages.profile.addressDeleteFailed);
     }
   };
 

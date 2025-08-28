@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import axios from "axios";
-import { toast } from "sonner";
+import { showToast, toastMessages } from "@/config/toastConfig";
 import { config } from "@/config/env";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { useCart } from "@/contexts/CartContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { migrateGuestWishlist } = useWishlist();
+  const { migrateGuestCartToUser, loadUserCartFromBackend } = useCart();
 
   const [authMode, setAuthMode] = useState<"Login" | "Sign Up">("Login");
   const [name, setName] = useState("");
@@ -29,17 +31,17 @@ const Login: React.FC = () => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!emailRegex.test(trimmedEmail)) {
-        toast.error("Please enter a valid email address.");
+        showToast.error(toastMessages.auth.invalidEmail);
         return;
       }
 
       if (authMode === "Sign Up" && trimmedPassword.length < 8) {
-        toast.error("Password must be at least 8 characters.");
+        showToast.error(toastMessages.auth.passwordTooShort);
         return;
       }
 
       if (authMode === "Sign Up" && name.trim().length < 2) {
-        toast.error("Please enter your name.");
+        showToast.error(toastMessages.auth.nameRequired);
         return;
       }
 
@@ -50,26 +52,35 @@ const Login: React.FC = () => {
       if (response.data?.success && response.data?.token) {
         localStorage.setItem("token", response.data.token);
         
-        // Migrate guest wishlist to authenticated account
+        // Get current guest cart before migration
+        const guestCart = JSON.parse(localStorage.getItem('cart') || '[]');
+        
+        // Migrate guest wishlist and cart to authenticated account
         try {
-          await migrateGuestWishlist();
+          await Promise.all([
+            migrateGuestWishlist(),
+            migrateGuestCartToUser(guestCart)
+          ]);
+          
+          // Load user's persistent cart from backend
+          await loadUserCartFromBackend();
           
           // Show single, appropriate message based on auth mode
           if (authMode === "Sign Up") {
             // New user - show welcome message with wishlist info
-            toast.success("Welcome! Your account has been created and wishlist saved.");
+            showToast.success(toastMessages.auth.welcomeNewUser);
           } else {
             // Existing user - show login success with wishlist info
-            toast.success("Welcome back! Your wishlist has been synced.");
+            showToast.success(toastMessages.auth.welcomeBackUser);
           }
         } catch (error) {
-          console.error('Failed to migrate wishlist:', error);
+          console.error('Failed to migrate guest data:', error);
           
           // Show message without wishlist info if migration fails
           if (authMode === "Sign Up") {
-            toast.success("Welcome! Your account has been created successfully.");
+            showToast.success(toastMessages.auth.welcomeNewUserFallback);
           } else {
-            toast.success("Welcome back! Login successful.");
+            showToast.success(toastMessages.auth.welcomeBackUserFallback);
           }
         }
         
@@ -78,14 +89,14 @@ const Login: React.FC = () => {
           navigate("/");
         }, 1500);
       } else {
-        toast.error(response.data?.message || "Something went wrong");
+        showToast.error(response.data?.message || toastMessages.general.error);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.message || "Request failed";
-        toast.error(errorMessage);
+        const errorMessage = error.response?.data?.message || toastMessages.auth.requestFailed;
+        showToast.error(errorMessage);
       } else {
-        toast.error("An unexpected error occurred. Please try again.");
+        showToast.error(toastMessages.auth.unexpectedError);
       }
     } finally {
       setLoading(false);

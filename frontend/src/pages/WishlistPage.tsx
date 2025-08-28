@@ -8,13 +8,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
 import { useProduct } from "@/hooks/useProducts";
-import { useToast } from "@/hooks/use-toast";
+import { showToast, toastMessages } from "@/config/toastConfig";
 import { isAuthenticated } from "@/utils/auth";
 
 const WishlistPage = () => {
   const { state: wishlistState, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
-  const { toast } = useToast();
+
   const wishlistProducts = wishlistState.items;
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
@@ -55,11 +55,9 @@ const WishlistPage = () => {
     });
     removeFromWishlist(modalProduct._id);
     setIsSizeModalOpen(false);
-    toast({
-      title: "Moved to Cart",
-      description: `${modalProduct.name} (${selectedSize}) added to your cart`,
-      duration: 2500,
-    });
+    showToast.success(
+      toastMessages.wishlist.movedToCart(modalProduct.name, selectedSize)
+    );
   };
 
 
@@ -160,14 +158,12 @@ const WishlistPage = () => {
                     {/* Remove icon overlay */}
                     <button
                       aria-label="Remove from wishlist"
-                      onClick={() => {
-                        removeFromWishlist(product.productId);
-                        toast({
-                          title: "Removed from Wishlist",
-                          description: `${product.name} removed from your wishlist`,
-                          duration: 2500,
-                        });
-                      }}
+                                              onClick={() => {
+                          removeFromWishlist(product.productId);
+                          showToast.success(
+                            toastMessages.wishlist.removed(product.name)
+                          );
+                        }}
                       className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-white/90 border border-gray-300 text-gray-500 hover:text-black shadow-sm flex items-center justify-center"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">

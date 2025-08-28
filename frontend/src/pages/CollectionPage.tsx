@@ -9,7 +9,7 @@ import { Error } from "@/components/ui/error";
 import { useProducts } from "@/hooks/useProducts";
 import { cn } from "@/lib/utils";
 import { getCategoryBySlug, isValidCategorySlug, PRODUCT_CATEGORIES } from "@/constants/categories";
-import { toast } from "@/components/ui/use-toast";
+import { showToast, toastMessages } from "@/config/toastConfig";
 
 const CollectionPage = () => {
   const [gridLayout, setGridLayout] = useState(4);
@@ -49,18 +49,14 @@ const CollectionPage = () => {
     // Show simple toast message for wishlist actions
     if (isWishlisted) {
       // Product was added to wishlist
-      toast({
-        title: "Added to Wishlist!",
-        description: "Item added to your wishlist",
-        duration: 3000,
-      });
+      showToast.success(
+        toastMessages.wishlist.added("Item")
+      );
     } else {
       // Product was removed from wishlist
-      toast({
-        title: "Removed from Wishlist",
-        description: "Item removed from your wishlist",
-        duration: 2000,
-      });
+      showToast.info(
+        toastMessages.wishlist.removed("Item")
+      );
     }
   };
 

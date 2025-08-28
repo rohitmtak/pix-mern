@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useScrollToTop } from "./hooks/use-scroll-to-top";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
+import CartLoader from "./components/CartLoader";
 import Index from "./pages/Index";
 import CollectionPage from "./pages/CollectionPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
@@ -50,6 +51,7 @@ const App = () => (
     <TooltipProvider>
       <CartProvider>
         <WishlistProvider>
+          <CartLoader />
           <Toaster />
           <Sonner />
           <BrowserRouter>

@@ -4,11 +4,13 @@ import Footer from "@/components/Footer";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
+import { showToast, toastMessages } from "@/config/toastConfig";
 
 const CartPage = () => {
   const navigate = useNavigate();
   const { state: cartState, updateQuantity, removeFromCart, clearCart } = useCart();
   const cartItems = cartState.items;
+  const isSyncing = cartState.isSyncing;
 
   // Calculate totals based on cart items
   const calculateTotals = () => {
@@ -27,19 +29,60 @@ const CartPage = () => {
 
   const handleQuantityChange = (productId: string, size: string, color: string, newQuantity: number) => {
     if (newQuantity < 1) return;
+    
+    // Find the item to get its name for the toast message
+    const item = cartItems.find(item => 
+      item.productId === productId && 
+      item.size === size && 
+      item.color === color
+    );
+    
     updateQuantity(productId, size, color, newQuantity);
+    
+    // Show toast notification for quantity update
+    if (item) {
+      showToast.success(toastMessages.cart.updated(item.name));
+    }
   };
 
   const handleRemoveItem = (productId: string, size: string, color: string) => {
+    // Find the item to get its name for the toast message
+    const item = cartItems.find(item => 
+      item.productId === productId && 
+      item.size === size && 
+      item.color === color
+    );
+    
     removeFromCart(productId, size, color);
+    
+    // Show toast notification
+    if (item) {
+      showToast.success(toastMessages.cart.removed(item.name));
+    }
   };
 
   const handleProceedToCheckout = () => {
+    // Check if user is authenticated
+    const token = localStorage.getItem("token");
+    
+    if (!token) {
+      // User is not logged in, redirect to login page
+      showToast.error(toastMessages.cart.loginRequired);
+      navigate("/login");
+      return;
+    }
+    
+    // User is authenticated, proceed to checkout
     navigate("/checkout");
   };
 
   const handleContinueShopping = () => {
     navigate("/collection");
+  };
+
+  const handleClearCart = () => {
+    clearCart();
+    showToast.success(toastMessages.cart.cleared);
   };
 
   return (
@@ -58,6 +101,16 @@ const CartPage = () => {
             >
               CART
             </h1>
+            
+            {/* Cart Sync Status */}
+            {isSyncing && (
+              <div className="mt-4 text-sm text-gray-600">
+                <span className="inline-flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin"></div>
+                  Syncing cart...
+                </span>
+              </div>
+            )}
 
             {/* Breadcrumb */}
             <div className="flex justify-center items-center gap-2 mt-4 text-sm text-gray-600">
@@ -177,8 +230,8 @@ const CartPage = () => {
                   ))}
                 </div>
 
-                {/* Continue Shopping Button */}
-                <div className="mt-8 pt-8 border-t border-gray-200">
+                {/* Cart Actions */}
+                <div className="mt-8 pt-8 border-t border-gray-200 flex justify-between items-center">
                   <Button
                     variant="outline"
                     onClick={handleContinueShopping}
@@ -186,6 +239,16 @@ const CartPage = () => {
                   >
                     ← Continue Shopping
                   </Button>
+                  
+                                     {cartItems.length > 0 && (
+                     <Button
+                       variant="outline"
+                       onClick={handleClearCart}
+                       className="border-gray-300 hover:bg-gray-50"
+                     >
+                       Clear Cart
+                     </Button>
+                   )}
                 </div>
               </div>
 
