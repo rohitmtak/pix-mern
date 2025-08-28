@@ -372,7 +372,7 @@ const ProductDetailPage = () => {
                              onClick={() => handleSizeSelection(size)}
                              disabled={!isAvailable}
                                                           className={cn(
-                                "w-9 h-9 rounded-full border-2 transition-all duration-300 ease-in-out text-sm font-medium flex items-center justify-center",
+                                "w-9 h-9 rounded-full border transition-all duration-300 ease-in-out text-sm font-medium flex items-center justify-center",
                                 selectedSize === size
                                   ? "border-black bg-black text-white"
                                   : "border-gray-300 hover:border-gray-400 text-gray-700",
@@ -743,264 +743,229 @@ const ProductDetailPage = () => {
                   <table className="w-full text-sm border border-gray-300">
                     <thead>
                       <tr className="border-b border-gray-300">
-                        <th className="text-left py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                        <th className="text-left py-3 px-4 font-medium border-r border-gray-300">
                           SINGLE SIZE
                         </th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300">
                           XS
                         </th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300">
                           S
                         </th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300">
                           M
                         </th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300">
                           L
                         </th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300">
                           XL
                         </th>
-                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300 bg-gray-50">
+                        <th className="text-center py-3 px-2 font-medium border-r border-gray-300">
                           XXL
                         </th>
-                        <th className="text-center py-3 px-2 font-medium bg-gray-50">
+                        <th className="text-center py-3 px-2 font-medium">
                           XXXL
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300">
                           BUST
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "32" : "81"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "34" : "86"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "36" : "91.5"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "38" : "96.5"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "40" : "102"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "43" : "109"}
                         </td>
                         <td
                           className="py-3 px-2 text-center"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "45" : "114"}
                         </td>
                       </tr>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300">
                           WAIST
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "23.5" : "60"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "26" : "66"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "28" : "71"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "29.5" : "75"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "32" : "81"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "34.5" : "87.5"}
                         </td>
                         <td
                           className="py-3 px-2 text-center"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "38.5" : "98"}
                         </td>
                       </tr>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300">
                           HIPS
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "34.75" : "88"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "36.75" : "93"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "38" : "96.5"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "40.5" : "103"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "42.5" : "108"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "44.5" : "113"}
                         </td>
                         <td
                           className="py-3 px-2 text-center"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "48.5" : "123"}
                         </td>
                       </tr>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300">
                           SHOULDER
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "14.5" : "37"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "15" : "38"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "15.5" : "39"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "16" : "40.5"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "16.5" : "42"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "17.25" : "44"}
                         </td>
                         <td
                           className="py-3 px-2 text-center"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "17.75" : "45"}
                         </td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-gray-50">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300">
                           ARM HOLE
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "15" : "38"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "15.5" : "39"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "16" : "40.5"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "16.5" : "42"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "17.5" : "44.5"}
                         </td>
                         <td
                           className="py-3 px-2 text-center border-r border-gray-300"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "18.5" : "47"}
                         </td>
                         <td
                           className="py-3 px-2 text-center"
-                          style={{ backgroundColor: "#f2f2f2" }}
                         >
                           {selectedUnit === "inches" ? "19" : "48.5"}
                         </td>
