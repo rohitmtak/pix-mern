@@ -188,7 +188,7 @@ const Header = () => {
                             >
                               <div className="aspect-[4/5] overflow-hidden">
                                 <img 
-                                  src="/images/img9.png" 
+                                  src="/images/img9.1.jpg" 
                                   alt="Signature Collection"
                                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                                   onError={(e) => {
@@ -207,7 +207,7 @@ const Header = () => {
                             >
                               <div className="aspect-[4/5] overflow-hidden">
                                 <img 
-                                  src="/images/img7.png" 
+                                  src="/images/img7.1.jpg" 
                                   alt="Bridal Couture"
                                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                                   onError={(e) => {
@@ -245,7 +245,7 @@ const Header = () => {
                             >
                               <div className="aspect-[4/5] overflow-hidden">
                                 <img 
-                                  src="/images/img8.png" 
+                                  src="/images/img8.1.jpg" 
                                   alt="Luxury Fusion Lounge"
                                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                                   onError={(e) => {
