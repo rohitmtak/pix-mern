@@ -483,7 +483,7 @@ const CheckoutPage = () => {
             </div>
           ) : (
             /* Checkout Content */
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-16">
               
               {/* Checkout Form */}
               <div>
@@ -538,7 +538,7 @@ const CheckoutPage = () => {
                     form="checkout-form" 
                     type="submit" 
                     disabled={!selectedAddressId && addresses.length > 0}
-                    className={`w-full h-12 text-lg font-medium ${
+                    className={`w-full h-12 text-lg font-normal ${
                       selectedAddressId || addresses.length === 0 
                         ? 'bg-black text-white hover:bg-gray-800' 
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
