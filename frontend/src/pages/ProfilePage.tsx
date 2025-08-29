@@ -268,7 +268,9 @@ const ProfilePage: React.FC = () => {
           <div className="max-w-screen-2xl mx-auto">
             {/* Welcome */}
             <div className="text-center mb-12">
-              <h1 className="text-4xl font-jost uppercase tracking-widest">Welcome,</h1>
+              <h1 className="text-4xl font-jost uppercase tracking-widest">
+                Welcome, {profileLoading ? '...' : (profile?.name ? profile.name.split(' ')[0] : 'User')}
+              </h1>
             </div>
 
             <div className="grid grid-cols-12 gap-8">
@@ -387,14 +389,21 @@ const ProfilePage: React.FC = () => {
                           <div className="space-y-2 text-sm">
                             <div>Address Information</div>
                             {profile?.addresses && profile.addresses.length > 0 ? (
-                              profile.addresses.map((addr: any) => (
-                                <div key={addr.id} className="space-y-2">
-                                  <div className="text-gray-700">Name: <span className="text-gray-600">{addr.fullName} {addr.isDefault ? '(Default)' : ''}</span></div>
-                                  <div className="text-gray-700">Address: <span className="text-gray-600">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}</span></div>
-                                  <div className="text-gray-700">City: <span className="text-gray-600">{addr.city}, {addr.state} {addr.postalCode}, {addr.country}</span></div>
-                                  <div className="text-gray-700">Phone: <span className="text-gray-600">{addr.phone}</span></div>
-                                </div>
-                              ))
+                              (() => {
+                                const defaultAddress = profile.addresses.find((addr: any) => addr.isDefault);
+                                if (defaultAddress) {
+                                  return (
+                                    <div className="space-y-2">
+                                      <div className="text-gray-700">Name: <span className="text-gray-600">{defaultAddress.fullName} (Default)</span></div>
+                                      <div className="text-gray-700">Address: <span className="text-gray-600">{defaultAddress.line1}{defaultAddress.line2 ? `, ${defaultAddress.line2}` : ''}</span></div>
+                                      <div className="text-gray-700">City: <span className="text-gray-600">{defaultAddress.city}, {defaultAddress.state} {defaultAddress.postalCode}, {defaultAddress.country}</span></div>
+                                      <div className="text-gray-700">Phone: <span className="text-gray-600">{defaultAddress.phone}</span></div>
+                                    </div>
+                                  );
+                                } else {
+                                  return <div className="text-gray-700">No Default Address Set</div>;
+                                }
+                              })()
                             ) : (
                               <div className="text-gray-700">No Active Address</div>
                             )}

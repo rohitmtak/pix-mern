@@ -42,7 +42,7 @@ const OrderSuccessPage = () => {
             <h1 
               className="text-black font-normal uppercase mb-6"
               style={{
-                fontSize: '50px',
+                fontSize: '35px',
                 fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
                 fontWeight: 400,
                 lineHeight: '60px',
@@ -55,7 +55,7 @@ const OrderSuccessPage = () => {
             <p 
               className="text-gray-600 mb-8 max-w-md mx-auto"
               style={{
-                fontSize: '18px',
+                fontSize: '16px',
                 fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
                 lineHeight: '28px'
               }}
@@ -64,7 +64,7 @@ const OrderSuccessPage = () => {
             </p>
 
             {/* Order Details */}
-            <div className="bg-gray-50 p-8 rounded-lg mb-8 text-left">
+            <div className="bg-gray-50 p-8 mb-8 text-left">
               <h2 
                 className="text-black font-medium mb-4"
                 style={{

@@ -52,7 +52,7 @@ const OrderSummary = ({
             CART
           </h2>
           <p className="text-gray-600 text-xs">
-            {items.length} PRODUCT{items.length !== 1 ? 'S' : ''} • {items.reduce((sum, item) => sum + item.quantity, 0)} ITEMS
+            {items.length} PRODUCT{items.length !== 1 ? 'S' : ''} • {items.reduce((sum, item) => sum + item.quantity, 0)} {items.reduce((sum, item) => sum + item.quantity, 0) === 1 ? 'ITEM' : 'ITEMS'}
           </p>
         </div>
 
