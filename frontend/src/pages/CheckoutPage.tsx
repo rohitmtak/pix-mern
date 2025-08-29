@@ -50,8 +50,7 @@ const CheckoutPage = () => {
 
   // Debug cart items
   useEffect(() => {
-    console.log('CheckoutPage - Cart items:', cartItems);
-    console.log('CheckoutPage - Cart state:', cartState);
+    // Removed debug console logs
   }, [cartItems, cartState]);
 
   // Load user addresses on component mount
@@ -66,16 +65,10 @@ const CheckoutPage = () => {
         if (response.data?.success && response.data?.user?.addresses) {
           const userAddresses = response.data.user.addresses;
           
-          console.log('🔍 Raw addresses from backend:', userAddresses);
-          console.log('🔍 Address IDs from backend:', userAddresses.map(addr => ({ id: addr.id, isDefault: addr.isDefault, name: addr.fullName })));
-          
           // Sort addresses: default first, then others, and remove duplicates
           const uniqueAddresses = userAddresses.filter((address, index, self) => 
             index === self.findIndex(addr => addr.id === address.id)
           );
-          
-          console.log('🔍 After deduplication:', uniqueAddresses.length, 'addresses');
-          console.log('🔍 Unique address IDs:', uniqueAddresses.map(addr => ({ id: addr.id, isDefault: addr.isDefault, name: addr.fullName })));
           
           const sortedAddresses = uniqueAddresses.sort((a, b) => {
             if (a.isDefault && !b.isDefault) return -1;
@@ -83,30 +76,23 @@ const CheckoutPage = () => {
             return 0;
           });
           
-          console.log('🔍 After sorting:', sortedAddresses.length, 'addresses');
-          console.log('🔍 Final address order:', sortedAddresses.map(addr => ({ id: addr.id, isDefault: addr.isDefault, name: addr.fullName })));
-          
           setAddresses(sortedAddresses);
           
           // If user has addresses, don't show the form by default
           if (sortedAddresses.length > 0) {
-            console.log('🏠 User has addresses, setting showAddressForm to false');
             setShowAddressForm(false);
             // Set the default address as selected
             const defaultAddr = sortedAddresses.find(addr => addr.isDefault) || sortedAddresses[0];
             if (defaultAddr) {
-              console.log('📍 Setting default address as selected:', defaultAddr.id);
               setSelectedAddressId(defaultAddr.id);
             }
           } else {
-            console.log('🏠 No addresses found, setting showAddressForm to true');
             setShowAddressForm(true);
           }
         } else {
           setShowAddressForm(true);
         }
       } catch (error) {
-        console.error('Failed to load user addresses:', error);
         setShowAddressForm(true);
       } finally {
         setLoadingAddresses(false);
@@ -136,23 +122,15 @@ const CheckoutPage = () => {
   const totalValue = subtotalValue; // Shipping is Free
 
   const handleFormSubmit = async (formData: any) => {
-    console.log('🚀 Form submission started');
-    console.log('📝 Form data received:', formData);
-    console.log('🏠 Addresses:', addresses);
-    console.log('🔘 Selected address ID:', selectedAddressId);
-    console.log('📋 Show address form:', showAddressForm);
     
     try {
       setIsSubmitting(true);
 
       // If user has saved addresses and didn't fill the form, use the selected address
       if (addresses.length > 0 && !showAddressForm && selectedAddressId) {
-        console.log('🔍 Using saved address logic');
         const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
-        console.log('📍 Selected address found:', selectedAddress);
         
         if (selectedAddress) {
-          const originalFormData = { ...formData };
           formData = {
             firstName: selectedAddress.fullName.split(' ')[0] || '',
             lastName: selectedAddress.fullName.split(' ').slice(1).join(' ') || '',
@@ -165,19 +143,13 @@ const CheckoutPage = () => {
             country: selectedAddress.country,
             payment: { method: 'card' as const }
           };
-          console.log('🔄 Form data transformed from saved address:', { original: originalFormData, transformed: formData });
-        } else {
-          console.warn('⚠️ Selected address not found for ID:', selectedAddressId);
         }
       } else if (addresses.length > 0 && selectedAddressId) {
         // User has saved addresses and one is selected, but form is showing
         // This means they want to use the selected address, not fill the form
-        console.log('🔍 Using selected saved address (form was showing but address is selected)');
         const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
-        console.log('📍 Selected address found:', selectedAddress);
         
         if (selectedAddress) {
-          const originalFormData = { ...formData };
           formData = {
             firstName: selectedAddress.fullName.split(' ')[0] || '',
             lastName: selectedAddress.fullName.split(' ').slice(1).join(' ') || '',
@@ -190,12 +162,7 @@ const CheckoutPage = () => {
             country: selectedAddress.country,
             payment: { method: 'card' as const }
           };
-          console.log('🔄 Form data transformed from selected saved address:', { original: originalFormData, transformed: formData });
-        } else {
-          console.warn('⚠️ Selected address not found for ID:', selectedAddressId);
         }
-      } else {
-        console.log('🔍 Using form input logic (no saved addresses or form is shown)');
       }
 
       // Validate cart has items
@@ -224,20 +191,10 @@ const CheckoutPage = () => {
       };
 
       // Validate address fields
-      console.log('🔍 Validating address fields:', address);
       if (!address.fullName || !address.phone || !address.line1 || !address.city || !address.state || !address.postalCode) {
-        console.error('❌ Address validation failed:', {
-          fullName: !!address.fullName,
-          phone: !!address.phone,
-          line1: !!address.line1,
-          city: !!address.city,
-          state: !!address.state,
-          postalCode: !!address.postalCode
-        });
         showToast.error('Please fill in all required address fields.');
         return;
       }
-      console.log('✅ Address validation passed');
 
       const items = cartItems.map(item => ({
         productId: item.productId,
@@ -273,17 +230,10 @@ const CheckoutPage = () => {
         const userResponse = await axios.get(`${config.api.baseUrl}/user/me`, { headers: { token } });
         if (userResponse.data?.success && userResponse.data?.user?.email) {
           userEmail = userResponse.data.user.email;
-          console.log('User email fetched successfully:', userEmail);
-        } else {
-          console.warn('User profile response missing email:', userResponse.data);
-          // Keep the default fallback
         }
       } catch (error) {
-        console.error('Failed to fetch user email from profile:', error);
         // Keep the default fallback
       }
-      
-      console.log('Final user email for order:', userEmail);
 
       // Create Razorpay order on backend with enhanced data
       const orderPayload = { 
@@ -299,9 +249,7 @@ const CheckoutPage = () => {
         paymentMethod: formData.payment?.method || 'card'
       };
 
-      console.log('Sending order payload:', orderPayload);
-      console.log('Cart items:', cartItems);
-      console.log('Total value:', totalValue);
+
 
       const res = await axios.post(
         `${config.api.baseUrl}/order/razorpay`,
@@ -315,12 +263,9 @@ const CheckoutPage = () => {
       }
 
       const key = (import.meta as any).env?.VITE_RAZORPAY_KEY_ID as string | undefined;
-      console.log('🔑 Razorpay key check:', { key: key ? 'Present' : 'Missing' });
-      console.log('🌍 Environment variables:', import.meta.env);
       
       if (!key) {
         showToast.error('Razorpay key missing');
-        console.error('❌ Razorpay key is missing. Please check VITE_RAZORPAY_KEY_ID in .env file');
         return;
       }
 
@@ -341,7 +286,7 @@ const CheckoutPage = () => {
         }
       };
 
-      console.log('Razorpay Configuration:', razorpayConfig);
+
 
       const rzp = new (window as any).Razorpay({
         ...razorpayConfig,
@@ -406,7 +351,6 @@ const CheckoutPage = () => {
 
   // Handler for adding a new address
   const handleAddNewAddress = () => {
-    console.log('🔧 handleAddNewAddress called - setting showAddressForm to true');
     setShowAddressForm(true);
   };
 

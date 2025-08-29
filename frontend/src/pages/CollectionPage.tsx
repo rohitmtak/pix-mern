@@ -9,6 +9,7 @@ import { Error } from "@/components/ui/error";
 import { useProducts } from "@/hooks/useProducts";
 import { cn } from "@/lib/utils";
 import { getCategoryBySlug, isValidCategorySlug, PRODUCT_CATEGORIES } from "@/constants/categories";
+
 import { showToast, toastMessages } from "@/config/toastConfig";
 
 const CollectionPage = () => {

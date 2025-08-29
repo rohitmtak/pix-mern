@@ -126,6 +126,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 isWishlisted={isInWishlist(product._id)}
                 onWishlistToggle={onWishlistToggle}
                 className="h-full"
+                product={product} // Pass the full product object
               />
             </div>
           );
