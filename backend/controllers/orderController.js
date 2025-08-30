@@ -1,15 +1,11 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
-import Stripe from 'stripe'
 import razorpay from 'razorpay'
 
 // global variables
 const currency = 'inr'
-const deliveryCharge = 10
 
 // gateway initialize
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-
 const razorpayInstance = new razorpay({
     key_id : process.env.RAZORPAY_KEY_ID,
     key_secret : process.env.RAZORPAY_KEY_SECRET,
@@ -40,87 +36,6 @@ const placeOrder = async (req,res) => {
         res.json({success:true,message:"Order Placed"})
 
 
-    } catch (error) {
-        console.log(error)
-        res.json({success:false,message:error.message})
-    }
-
-}
-
-// Placing orders using Stripe Method
-const placeOrderStripe = async (req,res) => {
-    try {
-        
-        const { items, amount, address} = req.body
-        const { userId } = req.user; // Get userId from auth middleware
-        const { origin } = req.headers;
-
-        const orderData = {
-            userId,
-            items,
-            address,
-            amount,
-            paymentMethod:"Stripe",
-            payment:false,
-            date: Date.now()
-        }
-
-        const newOrder = new orderModel(orderData)
-        await newOrder.save()
-
-        const line_items = items.map((item) => ({
-            price_data: {
-                currency:currency,
-                product_data: {
-                    name:item.name
-                },
-                unit_amount: item.price * 100
-            },
-            quantity: item.quantity
-        }))
-
-        line_items.push({
-            price_data: {
-                currency:currency,
-                product_data: {
-                    name:'Delivery Charges'
-                },
-                unit_amount: deliveryCharge * 100
-            },
-            quantity: 1
-        })
-
-        const session = await stripe.checkout.sessions.create({
-            success_url: `${origin}/verify?success=true&orderId=${newOrder._id}`,
-            cancel_url:  `${origin}/verify?success=false&orderId=${newOrder._id}`,
-            line_items,
-            mode: 'payment',
-        })
-
-        res.json({success:true,session_url:session.url});
-
-    } catch (error) {
-        console.log(error)
-        res.json({success:false,message:error.message})
-    }
-}
-
-// Verify Stripe 
-const verifyStripe = async (req,res) => {
-
-    const { orderId, success } = req.body
-    const { userId } = req.user; // Get userId from auth middleware
-
-    try {
-        if (success === "true") {
-            await orderModel.findByIdAndUpdate(orderId, {payment:true});
-            await userModel.findByIdAndUpdate(userId, {cartData: {}})
-            res.json({success: true});
-        } else {
-            await orderModel.findByIdAndDelete(orderId)
-            res.json({success:false})
-        }
-        
     } catch (error) {
         console.log(error)
         res.json({success:false,message:error.message})
@@ -186,13 +101,11 @@ const placeOrderRazorpay = async (req,res) => {
 
         // Calculate totals properly
         const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-        const tax = Math.round(subtotal * 0.15)
         const shipping = 0 // Free shipping
-        const total = subtotal + tax + shipping
+        const total = subtotal + shipping
 
         console.log('Calculated totals:');
         console.log('subtotal:', subtotal);
-        console.log('tax:', tax);
         console.log('shipping:', shipping);
         console.log('total:', total);
 
@@ -204,7 +117,6 @@ const placeOrderRazorpay = async (req,res) => {
             customerPhone: customerPhone || address.phone,
             items,
             subtotal,
-            tax,
             shipping,
             total,
             shippingAddress: address,
@@ -314,7 +226,6 @@ const verifyRazorpay = async (req,res) => {
     }
 }
 
-
 // All Orders data for Admin Panel
 const allOrders = async (req,res) => {
 
@@ -330,7 +241,7 @@ const allOrders = async (req,res) => {
 
 }
 
-// User Order Data For Forntend
+// User Order Data For Frontend
 const userOrders = async (req,res) => {
     try {
         
@@ -360,4 +271,4 @@ const updateStatus = async (req,res) => {
     }
 }
 
-export {verifyRazorpay, verifyStripe ,placeOrder, placeOrderStripe, placeOrderRazorpay, allOrders, userOrders, updateStatus}
+export {verifyRazorpay, placeOrder, placeOrderRazorpay, allOrders, userOrders, updateStatus}

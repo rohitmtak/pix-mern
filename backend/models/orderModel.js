@@ -24,7 +24,7 @@ const addressSchema = new mongoose.Schema({
 
 const paymentDetailsSchema = new mongoose.Schema({
     method: { type: String, enum: ['card', 'netbanking', 'upi'], required: true },
-    gateway: { type: String, enum: ['razorpay', 'stripe'], required: true },
+    gateway: { type: String, enum: ['razorpay'], required: true },
     transactionId: { type: String },
     gatewayOrderId: { type: String }
 }, { _id: false })
@@ -40,7 +40,7 @@ const orderSchema = new mongoose.Schema({
     // Order details
     items: [orderItemSchema],
     subtotal: { type: Number, required: true, min: 0 },
-    tax: { type: Number, required: true, min: 0 },
+    tax: { type: Number, default: 0, min: 0 },
     shipping: { type: Number, default: 0 },
     total: { type: Number, required: true, min: 0 },
     

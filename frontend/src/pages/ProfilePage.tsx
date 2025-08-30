@@ -188,12 +188,8 @@ const ProfilePage: React.FC = () => {
         { headers: { token } }
       );
       if (res.data?.success) {
-        // Sort addresses: default first, then others, and remove duplicates
-        const uniqueAddresses = res.data.addresses.filter((address: any, index: number, self: any[]) => 
-          index === self.findIndex(addr => addr.id === address.id)
-        );
-        
-        const sortedAddresses = uniqueAddresses.sort((a: any, b: any) => {
+        // Sort addresses: default first, then others
+        const sortedAddresses = res.data.addresses.sort((a: any, b: any) => {
           if (a.isDefault && !b.isDefault) return -1;
           if (!a.isDefault && b.isDefault) return 1;
           return 0;
@@ -222,12 +218,8 @@ const ProfilePage: React.FC = () => {
         { headers: { token } }
       );
       if (res.data?.success) {
-        // Sort addresses: default first, then others, and remove duplicates
-        const uniqueAddresses = res.data.addresses.filter((address: any, index: number, self: any[]) => 
-          index === self.findIndex(addr => addr.id === address.id)
-        );
-        
-        const sortedAddresses = uniqueAddresses.sort((a: any, b: any) => {
+        // Sort addresses: default first, then others
+        const sortedAddresses = res.data.addresses.sort((a: any, b: any) => {
           if (a.isDefault && !b.isDefault) return -1;
           if (!a.isDefault && b.isDefault) return 1;
           return 0;
@@ -258,6 +250,34 @@ const ProfilePage: React.FC = () => {
       postalCode: '',
       country: 'IN'
     });
+  };
+
+  const handleSetDefaultAddress = async (addressId: string) => {
+    try {
+      const res = await axios.put(
+        `${config.api.baseUrl}/user/addresses/${addressId}`,
+        { address: { isDefault: true } },
+        { headers: { token } }
+      );
+      if (res.data?.success) {
+        // Sort addresses: default first, then others
+        const sortedAddresses = res.data.addresses.sort((a: any, b: any) => {
+          if (a.isDefault && !b.isDefault) return -1;
+          if (!a.isDefault && b.isDefault) return 1;
+          return 0;
+        });
+        
+        setProfile(prev => ({
+          ...prev!,
+          addresses: sortedAddresses
+        }));
+        showToast.success('Default address updated successfully');
+      } else {
+        showToast.error(res.data?.message || 'Failed to update default address');
+      }
+    } catch (err) {
+      showToast.error('Failed to update default address');
+    }
   };
 
   return (
@@ -533,6 +553,14 @@ const ProfilePage: React.FC = () => {
                                       >
                                         Delete
                                       </button>
+                                      {!addr.isDefault && (
+                                        <button 
+                                          onClick={() => handleSetDefaultAddress(addr.id)}
+                                          className="text-sm text-green-600 hover:underline"
+                                        >
+                                          Set as Default
+                                        </button>
+                                      )}
                                     </div>
                                   </div>
                                 )}
@@ -561,7 +589,7 @@ const ProfilePage: React.FC = () => {
                           {orders.map((order) => (
                             <div key={order._id} className="border border-gray-200 p-4 bg-white">
                               <div className="flex items-center justify-between mb-2">
-                                <div className="text-sm text-gray-600">Order ID: {order._id}</div>
+                                <div className="text-sm text-gray-600">Order #{order._id.slice(0, 8)}</div>
                                 <div className="text-sm text-gray-600">{new Date(order.date).toLocaleString()}</div>
                               </div>
                               <div className="text-sm mb-2">Status: <span className="font-medium">{order.status}</span></div>

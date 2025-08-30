@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CheckoutForm from "@/components/checkout/CheckoutForm";
@@ -13,8 +13,15 @@ import { showToast, toastMessages } from "@/config/toastConfig";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { state: cartState, clearCart } = useCart();
+  const location = useLocation();
+  const { state: cartState, clearCart, removeFromCart } = useCart();
   const cartItems = cartState.items;
+  
+  // Get selected items from navigation state, or use all items if none specified
+  const selectedItemIds = location.state?.selectedItemIds || [];
+  const selectedCartItems = selectedItemIds.length > 0 
+    ? cartItems.filter(item => selectedItemIds.includes(`${item.productId}-${item.size}-${item.color}`))
+    : cartItems;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addresses, setAddresses] = useState<any[]>([]);
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -196,7 +203,7 @@ const CheckoutPage = () => {
         return;
       }
 
-      const items = cartItems.map(item => ({
+      const items = selectedCartItems.map(item => ({
         productId: item.productId,
         name: item.name,
         price: item.price,
@@ -310,27 +317,48 @@ const CheckoutPage = () => {
 
             // Always save address to address book (like profile info)
             try {
-              const addressPayload = {
-                address: {
-                  id: String(Date.now()),
-                  fullName: address.fullName,
-                  phone: address.phone,
-                  line1: address.line1,
-                  line2: address.line2,
-                  city: address.city,
-                  state: address.state,
-                  postalCode: address.postalCode,
-                  country: address.country,
-                  isDefault: true,
-                },
-              };
-              await axios.post(`${config.api.baseUrl}/user/addresses`, addressPayload, { headers: { token } });
+              // Check if this address already exists to prevent duplicates
+              const existingAddresses = addresses || [];
+              const isDuplicate = existingAddresses.some(existingAddr => 
+                existingAddr.fullName === address.fullName &&
+                existingAddr.phone === address.phone &&
+                existingAddr.line1 === address.line1 &&
+                existingAddr.line2 === address.line2 &&
+                existingAddr.city === address.city &&
+                existingAddr.state === address.state &&
+                existingAddr.postalCode === address.postalCode &&
+                existingAddr.country === address.country
+              );
+
+              // Only save if it's not a duplicate
+              if (!isDuplicate) {
+                const addressPayload = {
+                  address: {
+                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // More unique ID
+                    fullName: address.fullName,
+                    phone: address.phone,
+                    line1: address.line1,
+                    line2: address.line2,
+                    city: address.city,
+                    state: address.state,
+                    postalCode: address.postalCode,
+                    country: address.country,
+                    isDefault: addresses.length === 0, // Only set as default if no addresses exist
+                  },
+                };
+                await axios.post(`${config.api.baseUrl}/user/addresses`, addressPayload, { headers: { token } });
+              } else {
+                console.log('Address not saved - already exists in address book');
+              }
             } catch (_) {
               // non-blocking
             }
 
-            clearCart();
-            showToast.success(toastMessages.cart.cleared);
+            // Remove only the purchased items from cart
+            selectedCartItems.forEach(item => {
+              removeFromCart(item.productId, item.size, item.color);
+            });
+            
             navigate('/order-success', { 
               state: { orderId: res.data.orderId } 
             });
@@ -462,7 +490,7 @@ const CheckoutPage = () => {
               {/* Order Summary */}
               <div className="lg:sticky lg:top-8 lg:self-start">
                 <OrderSummary
-                  items={cartItems.map(item => ({
+                  items={selectedCartItems.map(item => ({
                     id: item.id,
                     imageUrl: item.imageUrl,
                     title: item.name,

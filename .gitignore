@@ -65,3 +65,18 @@ uploads/
 # Test files
 test.tsx
 test2.tsx
+
+# Markdown files (except README.md)
+*.md
+!README.md
+
+# Additional environment files
+.env.test
+.env.staging
+
+# IDE files
+.history/
+
+# OS files
+desktop.ini
+._*

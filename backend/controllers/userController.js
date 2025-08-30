@@ -144,6 +144,23 @@ const addAddress = async (req, res) => {
         if (!address || !address.id) return res.json({ success: false, message: 'Address id required' })
         const user = await userModel.findById(req.user.userId)
         if (!user) return res.json({ success: false, message: 'User not found' })
+        
+        // Check for duplicate addresses
+        const isDuplicate = user.addresses.some(existingAddr => 
+            existingAddr.fullName === address.fullName &&
+            existingAddr.phone === address.phone &&
+            existingAddr.line1 === address.line1 &&
+            existingAddr.line2 === address.line2 &&
+            existingAddr.city === address.city &&
+            existingAddr.state === address.state &&
+            existingAddr.postalCode === address.postalCode &&
+            existingAddr.country === address.country
+        );
+        
+        if (isDuplicate) {
+            return res.json({ success: false, message: 'Address already exists' })
+        }
+        
         if (address.isDefault) {
             user.addresses.forEach(a => a.isDefault = false)
         }
