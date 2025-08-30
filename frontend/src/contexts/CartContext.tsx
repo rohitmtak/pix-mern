@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback, useState } from 'react';
 import { isAuthenticated, getToken } from '@/utils/auth';
 import { config } from '@/config/env';
 
@@ -17,7 +17,7 @@ interface CartState {
   items: CartItem[];
   totalItems: number;
   totalPrice: number;
-  isSyncing: boolean;
+  lastModified: number; // Added for debouncing
 }
 
 type CartAction =
@@ -25,14 +25,13 @@ type CartAction =
   | { type: 'REMOVE_FROM_CART'; payload: { productId: string; size: string; color: string } }
   | { type: 'UPDATE_QUANTITY'; payload: { productId: string; size: string; color: string; quantity: number } }
   | { type: 'CLEAR_CART' }
-  | { type: 'LOAD_CART'; payload: CartItem[] }
-  | { type: 'SET_SYNCING'; payload: boolean };
+  | { type: 'LOAD_CART'; payload: CartItem[] };
 
 const initialState: CartState = {
   items: [],
   totalItems: 0,
   totalPrice: 0,
-  isSyncing: false,
+  lastModified: 0, // Initialize lastModified
 };
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
@@ -66,6 +65,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         items: newItems,
         totalItems,
         totalPrice,
+        lastModified: Date.now(), // Update lastModified
       };
     }
 
@@ -85,6 +85,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         items: newItems,
         totalItems,
         totalPrice,
+        lastModified: Date.now(), // Update lastModified
       };
     }
 
@@ -105,6 +106,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         items: newItems,
         totalItems,
         totalPrice,
+        lastModified: Date.now(), // Update lastModified
       };
     }
 
@@ -114,6 +116,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         items: [],
         totalItems: 0,
         totalPrice: 0,
+        lastModified: Date.now(), // Update lastModified
       };
 
     case 'LOAD_CART': {
@@ -125,14 +128,11 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         items: action.payload,
         totalItems,
         totalPrice,
+        lastModified: Date.now(), // Update lastModified
       };
     }
 
-    case 'SET_SYNCING':
-      return {
-        ...state,
-        isSyncing: action.payload,
-      };
+
 
     default:
       return state;
@@ -168,6 +168,7 @@ interface CartProviderProps {
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
+  const [lastLoadTime, setLastLoadTime] = useState(0);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -175,7 +176,14 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     if (savedCart) {
       try {
         const parsedCart = JSON.parse(savedCart);
-        dispatch({ type: 'LOAD_CART', payload: parsedCart });
+        // Handle both old format (just items array) and new format (with lastModified)
+        if (Array.isArray(parsedCart)) {
+          // Old format - just items array
+          dispatch({ type: 'LOAD_CART', payload: parsedCart });
+        } else if (parsedCart.items && Array.isArray(parsedCart.items)) {
+          // New format - with lastModified timestamp
+          dispatch({ type: 'LOAD_CART', payload: parsedCart.items });
+        }
       } catch (error) {
         console.error('Error loading cart from localStorage:', error);
       }
@@ -184,17 +192,18 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(state.items));
-  }, [state.items]);
+    localStorage.setItem('cart', JSON.stringify({
+      items: state.items,
+      lastModified: state.lastModified
+    }));
+  }, [state.items, state.lastModified]);
 
   // Note: Removed automatic sync to prevent infinite loops
   // Cart is now synced only when explicitly calling syncCartWithBackend
 
   // Function to sync cart with backend
-  const syncCartWithBackend = async () => {
-    if (!isAuthenticated() || state.isSyncing) return;
-    
-    dispatch({ type: 'SET_SYNCING', payload: true });
+  const syncCartWithBackend = useCallback(async () => {
+    if (!isAuthenticated()) return;
     
     try {
       const token = getToken();
@@ -230,19 +239,21 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Failed to sync cart with backend:', error);
-    } finally {
-      dispatch({ type: 'SET_SYNCING', payload: false });
     }
-  };
+  }, [state.items]);
 
   // Function to load user cart from backend
-  const loadUserCartFromBackend = async () => {
+  const loadUserCartFromBackend = useCallback(async () => {
     if (!isAuthenticated()) return;
     
-    // Simple guard to prevent multiple simultaneous calls
-    if (state.isSyncing) return;
+    // Debounce: prevent loading from backend too frequently
+    const now = Date.now();
+    const timeSinceLastLoad = now - lastLoadTime;
+    const minLoadInterval = 2 * 1000; // 2 seconds minimum between loads
     
-    dispatch({ type: 'SET_SYNCING', payload: true });
+    if (timeSinceLastLoad < minLoadInterval) {
+      return;
+    }
     
     try {
       const token = getToken();
@@ -271,19 +282,24 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             imageUrl: item.imageUrl
           }));
           
-          // Load backend cart into state
-          dispatch({ type: 'LOAD_CART', payload: cartItems });
+          // Only load backend cart if frontend cart is empty or if frontend hasn't been modified recently
+          // This prevents backend from overriding recent frontend changes (like removals)
+          const timeSinceLastModification = now - state.lastModified;
+          const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+          
+          if (state.items.length === 0 || timeSinceLastModification > fiveMinutes) {
+            dispatch({ type: 'LOAD_CART', payload: cartItems });
+            setLastLoadTime(now);
+          }
         }
       }
     } catch (error) {
       console.error('Failed to load cart from backend:', error);
-    } finally {
-      dispatch({ type: 'SET_SYNCING', payload: false });
     }
-  };
+  }, [state.items.length, state.lastModified, lastLoadTime]);
 
   // Function to migrate guest cart to authenticated user
-  const migrateGuestCartToUser = async (guestCart: CartItem[]) => {
+  const migrateGuestCartToUser = useCallback(async (guestCart: CartItem[]) => {
     if (!isAuthenticated() || guestCart.length === 0) return;
     
     try {
@@ -315,7 +331,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Failed to migrate guest cart:', error);
     }
-  };
+  }, [state.items]);
 
   const addToCart = async (item: Omit<CartItem, 'id'>) => {
     const cartItem: CartItem = {
@@ -361,7 +377,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         const token = getToken();
         if (!token) return;
 
-        await fetch(`${config.api.baseUrl}/cart/remove`, {
+        const response = await fetch(`${config.api.baseUrl}/cart/remove`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -369,8 +385,22 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
           },
           body: JSON.stringify({ productId, size, color })
         });
+
+        if (!response.ok) {
+          console.error('Backend cart removal failed:', response.status, response.statusText);
+          // Don't revert frontend change - let it stay removed locally
+        } else {
+          // Check if the response indicates success
+          const data = await response.json();
+          if (!data.success) {
+            // Item not found in backend cart - this is expected when frontend removes an item
+            // that wasn't in the backend or was already removed
+            console.log('Item not found in backend cart (expected for frontend removals)');
+          }
+        }
       } catch (error) {
         console.error('Failed to sync cart with backend:', error);
+        // Don't revert frontend change - let it stay removed locally
       }
     }
   };
@@ -407,15 +437,21 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         const token = getToken();
         if (!token) return;
 
-        await fetch(`${config.api.baseUrl}/cart/clear`, {
+        const response = await fetch(`${config.api.baseUrl}/cart/clear`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
             'token': token
           }
         });
+
+        if (!response.ok) {
+          console.error('Backend cart clear failed:', response.status, response.statusText);
+          // Don't revert frontend change - let it stay cleared locally
+        }
       } catch (error) {
         console.error('Failed to sync cart with backend:', error);
+        // Don't revert frontend change - let it stay cleared locally
       }
     }
   };

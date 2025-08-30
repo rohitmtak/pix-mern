@@ -25,6 +25,9 @@ if (!fs.existsSync(uploadsDir)) {
 const app = express()
 const port = process.env.PORT || 4000
 
+// Export app for testing
+export { app }
+
 // Initialize database and cloudinary connections
 const initializeApp = async () => {
     try {

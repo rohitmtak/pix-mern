@@ -354,10 +354,8 @@ const CheckoutPage = () => {
               // non-blocking
             }
 
-            // Remove only the purchased items from cart
-            selectedCartItems.forEach(item => {
-              removeFromCart(item.productId, item.size, item.color);
-            });
+            // Don't remove items from frontend cart - let backend handle it
+            // The backend will clear the cart after successful payment verification
             
             navigate('/order-success', { 
               state: { orderId: res.data.orderId } 

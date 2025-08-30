@@ -174,7 +174,7 @@ export const removeFromCart = async (req, res) => {
         );
         
         if (itemIndex === -1) {
-            return res.status(404).json({
+            return res.status(200).json({
                 success: false,
                 message: 'Item not found in cart'
             });

@@ -1,12 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 // import CollectionSection from "@/components/CollectionSection";
 import StoreInfo from "@/components/StoreInfo";
 import Footer from "@/components/Footer";
+import { useCart } from "@/contexts/CartContext";
 
 const Index = () => {
+  const { loadUserCartFromBackend } = useCart();
+
+  // Load cart from backend when user visits home page (only once)
+  useEffect(() => {
+    loadUserCartFromBackend();
+  }, []); // Empty dependency array to run only once
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}

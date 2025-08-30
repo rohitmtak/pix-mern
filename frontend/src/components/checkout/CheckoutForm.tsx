@@ -30,13 +30,7 @@ const CheckoutForm = ({
   selectedAddressId
 }: CheckoutFormProps) => {
   
-  // Debug logging
-  console.log('🔍 CheckoutForm props:', {
-    addressesCount: addresses.length,
-    showAddressForm,
-    hasAddresses: addresses.length > 0,
-    shouldShowSavedAddresses: addresses.length > 0 && !showAddressForm
-  });
+  // Debug logging removed for cleaner console
   // Strong validation schema
   const shippingSchema = z.object({
     firstName: z.string().min(2, { message: "Enter a first name" }),
@@ -110,11 +104,11 @@ const CheckoutForm = ({
       : addresses[0];
       
     if (!selectedAddress) {
-      console.error('❌ No address selected or found');
+      console.error('No address selected or found');
       return;
     }
     
-    console.log('🔍 Submitting form with selected address:', selectedAddress);
+    // Debug logging removed for cleaner console
     
     const formData = {
       firstName: selectedAddress.fullName.split(' ')[0] || '',
@@ -132,15 +126,7 @@ const CheckoutForm = ({
   };
 
   // If user has saved addresses and we're not showing the form, display saved addresses
-  console.log('🔍 CheckoutForm conditional logic:', {
-    addressesLength: addresses.length,
-    showAddressForm,
-    condition: addresses.length > 0 && !showAddressForm,
-    willShowSavedAddresses: addresses.length > 0 && !showAddressForm
-  });
-  
   if (addresses.length > 0 && !showAddressForm) {
-    console.log('✅ Showing saved addresses display');
     
     return (
       <form id="checkout-form" onSubmit={handleSavedAddressSubmit} className={cn("space-y-8", className)}>

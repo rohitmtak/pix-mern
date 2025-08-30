@@ -1,6 +1,14 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
+import cartModel from "../models/cartModel.js";
 import razorpay from 'razorpay'
+
+// Environment detection
+const isProduction = process.env.NODE_ENV === 'production';
+const isTestMode = process.env.RAZORPAY_KEY_ID?.startsWith('rzp_test_');
+
+console.log(`🚀 Server running in ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);
+console.log(`💳 Razorpay ${isTestMode ? 'TEST' : 'LIVE'} mode`);
 
 // global variables
 const currency = 'inr'
@@ -109,6 +117,33 @@ const placeOrderRazorpay = async (req,res) => {
         console.log('shipping:', shipping);
         console.log('total:', total);
 
+        // Validate amount limits for Razorpay (environment-aware)
+        const maxAmount = process.env.RAZORPAY_MAX_AMOUNT ? parseInt(process.env.RAZORPAY_MAX_AMOUNT) : (isTestMode ? 100000 : 1000000); // ₹1 lakh test, ₹10 lakhs production
+        if (total > maxAmount) {
+            const suggestedParts = Math.ceil(total / maxAmount);
+            return res.json({
+                success: false,
+                message: `Order amount ₹${total.toLocaleString()} exceeds the maximum allowed amount of ₹${maxAmount.toLocaleString()}. Please split your order into ${suggestedParts} parts or contact support.`,
+                suggestedParts: suggestedParts,
+                maxAmount: maxAmount
+            });
+        }
+
+        // Validate minimum amount
+        const minAmount = process.env.RAZORPAY_MIN_AMOUNT ? parseInt(process.env.RAZORPAY_MIN_AMOUNT) : 1; // ₹1 minimum
+        if (total < minAmount) {
+            return res.json({
+                success: false,
+                message: `Order amount ₹${total} is below the minimum required amount of ₹${minAmount}.`
+            });
+        }
+
+        console.log('Amount validation passed:');
+        console.log('Total amount:', total);
+        console.log('Max allowed:', maxAmount);
+        console.log('Min required:', minAmount);
+        console.log('Environment:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
+
         // Prepare order data with both new and legacy structure
         const orderData = {
             // New structured fields
@@ -152,8 +187,30 @@ const placeOrderRazorpay = async (req,res) => {
 
         await razorpayInstance.orders.create(options, (error, razorpayOrder) => {
             if (error) {
-                console.log('Razorpay error:', error)
-                return res.json({success:false, message: error})
+                // Environment-aware error logging
+                if (isProduction) {
+                    console.log('Payment gateway error occurred');
+                    console.log('Error type:', error.error?.code || 'unknown');
+                } else {
+                    console.log('Razorpay error:', error);
+                }
+                
+                // Extract error message from nested structure
+                let errorMessage = 'Payment gateway error';
+                if (error.error && error.error.description) {
+                    errorMessage = error.error.description;
+                } else if (error.description) {
+                    errorMessage = error.description;
+                } else if (error.message) {
+                    errorMessage = error.message;
+                } else if (typeof error === 'string') {
+                    errorMessage = error;
+                }
+                
+                return res.json({
+                    success: false, 
+                    message: errorMessage
+                })
             }
             
             // Update order with Razorpay order ID
@@ -202,8 +259,27 @@ const verifyRazorpay = async (req,res) => {
             )
 
             if (updatedOrder) {
-                // Clear user's cart
+                // Clear user's cart from both systems
                 await userModel.findByIdAndUpdate(userId, { cartData: {} })
+                
+                // Remove only the ordered items from cart collection
+                const cart = await cartModel.findOne({ userId });
+                if (cart) {
+                    // Get the ordered item IDs
+                    const orderedItemIds = updatedOrder.items.map(item => item.productId.toString());
+                    
+                    // Remove only the ordered items
+                    cart.items = cart.items.filter(item => 
+                        !orderedItemIds.includes(item.productId.toString())
+                    );
+                    
+                    // Recalculate totals
+                    cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+                    cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    cart.lastUpdated = new Date();
+                    
+                    await cart.save();
+                }
                 
                 res.json({ 
                     success: true, 
@@ -214,6 +290,15 @@ const verifyRazorpay = async (req,res) => {
                 // Fallback to legacy method if new method fails
                 await orderModel.findByIdAndUpdate(orderInfo.receipt, { payment: true });
                 await userModel.findByIdAndUpdate(userId, { cartData: {} })
+                
+                // Also clear the cart collection in fallback
+                await cartModel.findOneAndUpdate({ userId }, { 
+                    items: [], 
+                    totalItems: 0, 
+                    totalPrice: 0,
+                    lastUpdated: new Date()
+                });
+                
                 res.json({ success: true, message: "Payment Successful" })
             }
         } else {

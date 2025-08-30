@@ -53,7 +53,19 @@ const Login: React.FC = () => {
         localStorage.setItem("token", response.data.token);
         
         // Get current guest cart before migration
-        const guestCart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const savedCart = localStorage.getItem('cart') || '[]';
+        let guestCart = [];
+        try {
+          const parsedCart = JSON.parse(savedCart);
+          if (Array.isArray(parsedCart)) {
+            guestCart = parsedCart;
+          } else if (parsedCart.items && Array.isArray(parsedCart.items)) {
+            guestCart = parsedCart.items;
+          }
+        } catch (error) {
+          console.error('Error parsing guest cart:', error);
+          guestCart = [];
+        }
         
         // Migrate guest wishlist and cart to authenticated account
         try {

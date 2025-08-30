@@ -12,10 +12,15 @@ const Header = () => {
   const [isHeaderHovered, setIsHeaderHovered] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { state: cartState } = useCart();
+  const { state: cartState, loadUserCartFromBackend } = useCart();
 
   // Check if we're on the home page
   const isHomePage = location.pathname === "/";
+
+  // Load cart from backend when component mounts (for authenticated users)
+  useEffect(() => {
+    loadUserCartFromBackend();
+  }, []); // Empty dependency array to run only once
 
   useEffect(() => {
     const handleScroll = () => {

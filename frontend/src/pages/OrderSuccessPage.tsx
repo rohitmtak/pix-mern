@@ -2,9 +2,22 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "@/contexts/CartContext";
+import { useEffect } from "react";
 
 const OrderSuccessPage = () => {
   const navigate = useNavigate();
+  const { loadUserCartFromBackend } = useCart();
+
+  // Load the updated cart from backend after successful order
+  useEffect(() => {
+    // Small delay to ensure backend has processed the order
+    const timer = setTimeout(() => {
+      loadUserCartFromBackend();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []); // Empty dependency array to run only once
 
   return (
     <div className="min-h-screen bg-white">
