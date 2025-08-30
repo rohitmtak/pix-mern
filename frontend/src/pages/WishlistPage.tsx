@@ -161,7 +161,7 @@ const WishlistPage = () => {
                                               onClick={() => {
                           removeFromWishlist(product.productId);
                           showToast.success(
-                            toastMessages.wishlist.removed(product.name)
+                            toastMessages.wishlist.removed
                           );
                         }}
                       className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-white/90 border border-gray-300 text-gray-500 hover:text-black shadow-sm flex items-center justify-center"

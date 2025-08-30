@@ -36,6 +36,7 @@ const ProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<{ name: string; email: string; phone?: string; addresses?: any[] } | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editForm, setEditForm] = useState<{ name: string; phone: string }>({ name: '', phone: '' });
+  const [phoneError, setPhoneError] = useState<string>('');
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [addressEditForm, setAddressEditForm] = useState<{
     fullName: string;
@@ -56,6 +57,8 @@ const ProfilePage: React.FC = () => {
     postalCode: '',
     country: 'IN'
   });
+  const [addressPhoneError, setAddressPhoneError] = useState<string>('');
+  const [postalCodeError, setPostalCodeError] = useState<string>('');
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -141,7 +144,39 @@ const ProfilePage: React.FC = () => {
     navigate('/');
   };
 
+  const validatePhone = (phone: string): boolean => {
+    const phoneRegex = /^(\+91\d{10}|\d{10})$/;
+    if (!phone) {
+      setPhoneError('Phone number is required');
+      return false;
+    }
+    if (!phoneRegex.test(phone)) {
+      setPhoneError('Please enter a valid phone number. It should be 10 digits long or include the +91 country code.');
+      return false;
+    }
+    setPhoneError('');
+    return true;
+  };
+
+  const validatePostalCode = (postalCode: string): boolean => {
+    const postalCodeRegex = /^\d{6}$/;
+    if (!postalCode) {
+      setPostalCodeError('Postal code is required');
+      return false;
+    }
+    if (!postalCodeRegex.test(postalCode)) {
+      setPostalCodeError('Please enter a valid 6-digit postal code');
+      return false;
+    }
+    setPostalCodeError('');
+    return true;
+  };
+
   const handleEditProfile = async () => {
+    if (!validatePhone(editForm.phone)) {
+      return;
+    }
+    
     try {
       const res = await axios.put(`${config.api.baseUrl}/user/me`, editForm, { headers: { token } });
       if (res.data?.success) {
@@ -181,6 +216,15 @@ const ProfilePage: React.FC = () => {
   const handleUpdateAddress = async () => {
     if (!editingAddressId) return;
     
+    if (!validatePhone(addressEditForm.phone)) {
+      setAddressPhoneError('Please enter a valid phone number. It should be 10 digits long or include the +91 country code.');
+      return;
+    }
+    
+    if (!validatePostalCode(addressEditForm.postalCode)) {
+      return;
+    }
+    
     try {
       const res = await axios.put(
         `${config.api.baseUrl}/user/addresses/${editingAddressId}`,
@@ -200,6 +244,8 @@ const ProfilePage: React.FC = () => {
           addresses: sortedAddresses
         }));
         setEditingAddressId(null);
+        setAddressPhoneError('');
+        setPostalCodeError('');
         showToast.success(toastMessages.profile.addressUpdated);
       } else {
         showToast.error(res.data?.message || toastMessages.profile.addressUpdateFailed);
@@ -362,10 +408,19 @@ const ProfilePage: React.FC = () => {
                               <input
                                 type="tel"
                                 value={editForm.phone}
-                                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                placeholder="Enter phone number"
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/[^0-9+]/g, ''); // Only allow digits and +
+                                  if (value.length <= 13) { // +91 + 10 digits = 13 max
+                                    setEditForm({ ...editForm, phone: value });
+                                    setPhoneError(''); // Clear error when user types
+                                  }
+                                }}
+                                className={`w-full px-3 py-2 border rounded-md text-sm ${phoneError ? 'border-red-500' : 'border-gray-300'}`}
+                                placeholder="Enter phone number (10 digits or +91XXXXXXXXXX)"
                               />
+                              {phoneError && (
+                                <p className="text-sm text-red-600 mt-1">{phoneError}</p>
+                              )}
                             </div>
                             <div className="flex gap-2 mt-4">
                               <button
@@ -460,9 +515,19 @@ const ProfilePage: React.FC = () => {
                                         <input
                                           type="tel"
                                           value={addressEditForm.phone}
-                                          onChange={(e) => setAddressEditForm({ ...addressEditForm, phone: e.target.value })}
-                                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                          onChange={(e) => {
+                                            const value = e.target.value.replace(/[^0-9+]/g, ''); // Only allow digits and +
+                                            if (value.length <= 13) { // +91 + 10 digits = 13 max
+                                              setAddressEditForm({ ...addressEditForm, phone: value });
+                                              setAddressPhoneError(''); // Clear error when user types
+                                            }
+                                          }}
+                                          className={`w-full px-3 py-2 border rounded-md text-sm ${addressPhoneError ? 'border-red-500' : 'border-gray-300'}`}
+                                          placeholder="Enter phone number (10 digits or +91XXXXXXXXXX)"
                                         />
+                                        {addressPhoneError && (
+                                          <p className="text-sm text-red-600 mt-1">{addressPhoneError}</p>
+                                        )}
                                       </div>
                                       <div className="md:col-span-2">
                                         <label className="block text-sm text-gray-700 mb-1">Address Line 1:</label>
@@ -505,9 +570,19 @@ const ProfilePage: React.FC = () => {
                                         <input
                                           type="text"
                                           value={addressEditForm.postalCode}
-                                          onChange={(e) => setAddressEditForm({ ...addressEditForm, postalCode: e.target.value })}
-                                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                          onChange={(e) => {
+                                            const value = e.target.value.replace(/[^0-9]/g, ''); // Only allow digits
+                                            if (value.length <= 6) { // Max 6 digits
+                                              setAddressEditForm({ ...addressEditForm, postalCode: value });
+                                              setPostalCodeError(''); // Clear error when user types
+                                            }
+                                          }}
+                                          className={`w-full px-3 py-2 border rounded-md text-sm ${postalCodeError ? 'border-red-500' : 'border-gray-300'}`}
+                                          placeholder="Enter 6-digit postal code"
                                         />
+                                        {postalCodeError && (
+                                          <p className="text-sm text-red-600 mt-1">{postalCodeError}</p>
+                                        )}
                                       </div>
                                       <div>
                                         <label className="block text-sm text-gray-700 mb-1">Country:</label>

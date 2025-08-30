@@ -150,7 +150,7 @@ const Login: React.FC = () => {
                     className="w-full px-3 py-2 h-11 border border-gray-300 focus:outline-none"
                     autoComplete="email"
                     disabled={loading}
-                    placeholder="you@example.com"
+                    placeholder="Enter your email"
                     aria-label="Email"
                     required
                   />
@@ -164,10 +164,10 @@ const Login: React.FC = () => {
                       onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                       value={password}
                       type={showPassword ? "text" : "password"}
-                      className="w-full pr-10 pl-3 py-2 h-11 border border-gray-300 focus:outline-none text-black text-base md:text-base placeholder-gray-600"
+                      className="w-full pr-10 pl-3 py-2 h-11 border border-gray-300 focus:outline-none text-black text-base md:text-base"
                       autoComplete={authMode === "Login" ? "current-password" : "new-password"}
                       disabled={loading}
-                      placeholder="••••••••"
+                      placeholder="Enter your password"
                       aria-label="Password"
                       minLength={authMode === "Sign Up" ? 8 : undefined}
                       required
@@ -190,7 +190,11 @@ const Login: React.FC = () => {
                 </div>
 
                 <div className="w-full flex justify-between text-sm -mt-1">
-                  <button type="button" className="text-black hover:opacity-70 transition-opacity">
+                  <button 
+                    type="button" 
+                    onClick={() => navigate("/forgot-password")}
+                    className="text-black hover:opacity-70 transition-opacity"
+                  >
                     Forgot your password?
                   </button>
                   {authMode === "Login" ? (

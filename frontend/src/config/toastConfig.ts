@@ -15,7 +15,7 @@ export const toastConfig = {
   styles: {
     success: {
       variant: "success" as const,
-      className: "border-green-200 bg-green-50 text-green-800",
+      className: "border-0 bg-black text-white",
     },
     error: {
       variant: "destructive" as const,
@@ -27,11 +27,11 @@ export const toastConfig = {
     },
     info: {
       variant: "info" as const,
-      className: "border-blue-200 bg-blue-50 text-blue-800",
+      className: "border-0 bg-black text-white",
     },
     default: {
       variant: "default" as const,
-      className: "border-gray-200 bg-gray-50 text-gray-800",
+      className: "border-0 bg-black text-white",
     },
   },
 };
@@ -40,7 +40,7 @@ export const toastConfig = {
 export const showToast = {
   success: (description: string, customTitle?: string, customDuration?: number) =>
     toast({
-      title: customTitle || "Success",
+      title: undefined,
       description,
       duration: customDuration || toastConfig.durations.success,
       variant: toastConfig.styles.success.variant,
@@ -49,7 +49,7 @@ export const showToast = {
 
   error: (description: string, customTitle?: string, customDuration?: number) =>
     toast({
-      title: customTitle || "Error",
+      title: undefined,
       description,
       duration: customDuration || toastConfig.durations.error,
       variant: toastConfig.styles.error.variant,
@@ -58,7 +58,7 @@ export const showToast = {
 
   warning: (description: string, customTitle?: string, customDuration?: number) =>
     toast({
-      title: customTitle || "Warning",
+      title: undefined,
       description,
       duration: customDuration || toastConfig.durations.warning,
       variant: toastConfig.styles.warning.variant,
@@ -67,7 +67,7 @@ export const showToast = {
 
   info: (description: string, customTitle?: string, customDuration?: number) =>
     toast({
-      title: customTitle || "Info",
+      title: undefined,
       description,
       duration: customDuration || toastConfig.durations.info,
       variant: toastConfig.styles.info.variant,
@@ -94,53 +94,53 @@ export const showToast = {
 // Common toast messages for consistency
 export const toastMessages = {
   cart: {
-    added: (productName: string) => `${productName} has been added to your cart successfully!`,
-    removed: (productName: string) => `${productName} has been removed from your cart`,
-    updated: (productName: string) => `Quantity updated for ${productName}`,
-    cleared: "Your cart has been cleared",
-    loginRequired: "Please log in to proceed with checkout",
+    added: "Item added to cart",
+    removed: "Item removed from cart",
+    updated: "Quantity updated",
+    cleared: "Cart cleared",
+    loginRequired: "Please sign in to checkout",
   },
   wishlist: {
-    added: (productName: string) => `${productName} added to your wishlist`,
-    removed: (productName: string) => `${productName} removed from your wishlist`,
-    movedToCart: (productName: string, size: string) => `${productName} (${size}) added to your cart`,
+    added: "Item added to wishlist",
+    removed: "Item removed from wishlist",
+    movedToCart: (size: string) => `Item (${size}) added to cart`,
   },
   auth: {
-    loginSuccess: "Successfully logged in",
-    logoutSuccess: "Successfully logged out",
-    registerSuccess: "Account created successfully",
-    loginRequired: "Please log in to continue",
-    welcomeNewUser: "Welcome! Your account has been created and wishlist saved.",
-    welcomeBackUser: "Welcome back! Your wishlist has been synced.",
-    welcomeNewUserFallback: "Welcome! Your account has been created successfully.",
-    welcomeBackUserFallback: "Welcome back! Login successful.",
-    invalidEmail: "Please enter a valid email address.",
-    passwordTooShort: "Password must be at least 8 characters.",
-    nameRequired: "Please enter your name.",
+    loginSuccess: "Welcome back",
+    logoutSuccess: "Signed out",
+    registerSuccess: "Account created",
+    loginRequired: "Please sign in",
+    welcomeNewUser: "Welcome! Your wishlist has been saved.",
+    welcomeBackUser: "Welcome back! Your wishlist synced.",
+    welcomeNewUserFallback: "Welcome! Account created.",
+    welcomeBackUserFallback: "Welcome back!",
+    invalidEmail: "Please enter a valid email",
+    passwordTooShort: "Password must be at least 8 characters",
+    nameRequired: "Please enter your name",
     requestFailed: "Request failed",
-    unexpectedError: "An unexpected error occurred. Please try again.",
+    unexpectedError: "Something went wrong. Please try again.",
   },
   product: {
-    outOfStock: "This product is currently out of stock",
+    outOfStock: "Out of stock",
     sizeRequired: "Please select a size",
     colorRequired: "Please select a color",
-    addedToWishlist: "Product added to wishlist",
-    removedFromWishlist: "Product removed from wishlist",
+    addedToWishlist: "Added to wishlist",
+    removedFromWishlist: "Removed from wishlist",
   },
   general: {
     loading: "Loading...",
-    saved: "Changes saved successfully",
-    deleted: "Item deleted successfully",
-    updated: "Item updated successfully",
-    error: "Something went wrong. Please try again.",
+    saved: "Saved",
+    deleted: "Deleted",
+    updated: "Updated",
+    error: "Something went wrong",
   },
   profile: {
-    loggedOut: "Logged out successfully. Your cart has been cleared.",
-    profileUpdated: "Profile updated successfully",
+    loggedOut: "Signed out. Cart cleared.",
+    profileUpdated: "Profile updated",
     profileUpdateFailed: "Failed to update profile",
-    addressUpdated: "Address updated successfully",
+    addressUpdated: "Address updated",
     addressUpdateFailed: "Failed to update address",
-    addressDeleted: "Address deleted successfully",
+    addressDeleted: "Address deleted",
     addressDeleteFailed: "Failed to delete address",
     ordersLoadFailed: "Failed to load orders",
   },

@@ -11,7 +11,10 @@ import {
   deleteAddress,
   listWishlist,
   addWishlist,
-  removeWishlist
+  removeWishlist,
+  forgotPassword,
+  resetPassword,
+  verifyResetToken
 } from '../controllers/userController.js';
 import authUser from '../middleware/auth.js'
 
@@ -20,6 +23,11 @@ const userRouter = express.Router();
 userRouter.post('/register',registerUser)
 userRouter.post('/login',loginUser)
 userRouter.post('/admin',adminLogin)
+
+// Password reset routes
+userRouter.post('/forgot-password', forgotPassword)
+userRouter.post('/reset-password', resetPassword)
+userRouter.get('/verify-reset-token/:token', verifyResetToken)
 
 // Profile
 userRouter.get('/me', authUser, getMe)

@@ -157,12 +157,12 @@ const ProductDetailPage = () => {
     if (isWishlisted) {
       // Product was added to wishlist
       showToast.success(
-        toastMessages.wishlist.added("Item")
+        toastMessages.wishlist.added
       );
     } else {
       // Product was removed from wishlist
       showToast.info(
-        toastMessages.wishlist.removed("Item")
+        toastMessages.wishlist.removed
       );
     }
   };
@@ -510,7 +510,7 @@ const ProductDetailPage = () => {
 
                        // Show success feedback
                        showToast.success(
-                         toastMessages.cart.added(product.name)
+                         toastMessages.cart.added
                        );
                      }
                    }}

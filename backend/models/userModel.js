@@ -22,7 +22,10 @@ const userSchema = new mongoose.Schema({
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'product', default: [] }],
     cartData: { type: Object, default: {} },
     lastLoginAt: { type: Date },
-    role: { type: String, enum: ['user','admin'], default: 'user' }
+    role: { type: String, enum: ['user','admin'], default: 'user' },
+    // Password reset fields
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date }
 }, { minimize: false, timestamps: true })
 
 const userModel = mongoose.models.user || mongoose.model('user',userSchema);

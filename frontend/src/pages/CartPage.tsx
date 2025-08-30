@@ -78,7 +78,7 @@ const CartPage = () => {
     
     // Show toast notification for quantity update
     if (item) {
-      showToast.success(toastMessages.cart.updated(item.name));
+      showToast.success(toastMessages.cart.updated);
     }
   };
 
@@ -94,7 +94,7 @@ const CartPage = () => {
     
     // Show toast notification
     if (item) {
-      showToast.success(toastMessages.cart.removed(item.name));
+      showToast.success(toastMessages.cart.removed);
     }
   };
 

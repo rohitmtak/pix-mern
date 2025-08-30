@@ -1,7 +1,9 @@
 import validator from "validator";
 import bcrypt from "bcryptjs"
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 import userModel from "../models/userModel.js";
+import { sendPasswordResetEmail, sendPasswordResetSuccessEmail } from "../utils/emailService.js";
 
 
 const createToken = (id) => {
@@ -242,4 +244,145 @@ const removeWishlist = async (req, res) => {
     }
 }
 
-export { loginUser, registerUser, adminLogin, getMe, updateMe, listAddresses, addAddress, updateAddress, deleteAddress, listWishlist, addWishlist, removeWishlist }
+// Forgot password - send reset email
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.json({ success: false, message: "Email is required" });
+        }
+
+        if (!validator.isEmail(email)) {
+            return res.json({ success: false, message: "Please enter a valid email" });
+        }
+
+        const user = await userModel.findOne({ email });
+
+        if (!user) {
+            return res.json({ success: false, message: "User with this email does not exist" });
+        }
+
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        // Save reset token to user
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = resetTokenExpiry;
+        await user.save();
+
+        // Create reset URL
+        const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
+
+        // Send email
+        const emailSent = await sendPasswordResetEmail(email, resetToken, resetUrl);
+
+        if (emailSent) {
+            res.json({ 
+                success: true, 
+                message: "Password reset email sent successfully. Please check your email." 
+            });
+        } else {
+            res.json({ 
+                success: false, 
+                message: "Failed to send password reset email. Please try again." 
+            });
+        }
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// Reset password - verify token and update password
+const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.json({ success: false, message: "Token and new password are required" });
+        }
+
+        if (newPassword.length < 8) {
+            return res.json({ success: false, message: "Password must be at least 8 characters long" });
+        }
+
+        // Find user with valid reset token
+        const user = await userModel.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.json({ success: false, message: "Invalid or expired reset token" });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update password and clear reset token
+        user.password = hashedPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        // Send success email
+        await sendPasswordResetSuccessEmail(user.email, user.name);
+
+        res.json({ 
+            success: true, 
+            message: "Password reset successful. You can now login with your new password." 
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// Verify reset token
+const verifyResetToken = async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        if (!token) {
+            return res.json({ success: false, message: "Token is required" });
+        }
+
+        const user = await userModel.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.json({ success: false, message: "Invalid or expired reset token" });
+        }
+
+        res.json({ success: true, message: "Token is valid" });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export { 
+    loginUser, 
+    registerUser, 
+    adminLogin, 
+    getMe, 
+    updateMe, 
+    listAddresses, 
+    addAddress, 
+    updateAddress, 
+    deleteAddress, 
+    listWishlist, 
+    addWishlist, 
+    removeWishlist,
+    forgotPassword,
+    resetPassword,
+    verifyResetToken
+}

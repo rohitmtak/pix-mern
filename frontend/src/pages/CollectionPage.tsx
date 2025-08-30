@@ -51,12 +51,12 @@ const CollectionPage = () => {
     if (isWishlisted) {
       // Product was added to wishlist
       showToast.success(
-        toastMessages.wishlist.added("Item")
+        toastMessages.wishlist.added
       );
     } else {
       // Product was removed from wishlist
       showToast.info(
-        toastMessages.wishlist.removed("Item")
+        toastMessages.wishlist.removed
       );
     }
   };

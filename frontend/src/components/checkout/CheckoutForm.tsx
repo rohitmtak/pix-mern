@@ -51,6 +51,7 @@ const CheckoutForm = ({
     country: z.string().min(1, { message: "Select a country" }),
     phone: z
       .string()
+      .min(1, { message: "Phone number is required" })
       .regex(/^(\+91\d{10}|\d{10})$/, { message: "Please enter a valid phone number. It should be 10 digits long or include the +91 country code." }),
     sameAsShipping: z.boolean().optional().default(true),
   });
@@ -242,7 +243,22 @@ const CheckoutForm = ({
           </div>
           <div>
             <Label htmlFor="postalCode">PIN code</Label>
-            <Input id="postalCode" className={cn("mt-1", errors.postalCode && "border-red-500")} {...register("postalCode")} />
+            <Input 
+              id="postalCode" 
+              className={cn("mt-1", errors.postalCode && "border-red-500")} 
+              placeholder="Enter 6-digit PIN code"
+              {...register("postalCode", {
+                onChange: (e) => {
+                  // Only allow digits, max 6 characters
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  if (value.length <= 6) {
+                    e.target.value = value;
+                  } else {
+                    e.target.value = value.slice(0, 6);
+                  }
+                }
+              })} 
+            />
             {errors.postalCode && (
               <p className="text-sm text-red-600 mt-1">{errors.postalCode.message}</p>
             )}
@@ -272,8 +288,18 @@ const CheckoutForm = ({
             <Input 
               id="phone" 
               className={cn("mt-1", errors.phone && "border-red-500")} 
-              placeholder=""
-              {...register("phone")} 
+              placeholder="Enter phone number (10 digits or +91XXXXXXXXXX)"
+              {...register("phone", {
+                onChange: (e) => {
+                  // Only allow digits and +, max 13 characters
+                  const value = e.target.value.replace(/[^0-9+]/g, '');
+                  if (value.length <= 13) {
+                    e.target.value = value;
+                  } else {
+                    e.target.value = value.slice(0, 13);
+                  }
+                }
+              })} 
             />
             {errors.phone && (
               <p className="text-sm text-red-600 mt-1">{errors.phone.message}</p>
@@ -508,11 +534,17 @@ const CheckoutForm = ({
               <Input
                 id="billingPostal"
                 value={paymentData.billingAddress.postalCode}
-                onChange={(e) => setPaymentData(prev => ({
-                  ...prev,
-                  billingAddress: { ...prev.billingAddress, postalCode: e.target.value }
-                }))}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, ''); // Only allow digits
+                  if (value.length <= 6) { // Max 6 digits
+                    setPaymentData(prev => ({
+                      ...prev,
+                      billingAddress: { ...prev.billingAddress, postalCode: value }
+                    }));
+                  }
+                }}
                 className="mt-1"
+                placeholder="Enter 6-digit postal code"
                 required={!paymentData.sameAsShipping}
               />
             </div>
