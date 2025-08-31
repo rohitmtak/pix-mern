@@ -1,6 +1,7 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import cartModel from "../models/cartModel.js";
+import productModel from "../models/productModel.js";
 import razorpay from 'razorpay'
 
 // Environment detection
@@ -12,6 +13,90 @@ console.log(`💳 Razorpay ${isTestMode ? 'TEST' : 'LIVE'} mode`);
 
 // global variables
 const currency = 'inr'
+
+// Function to validate stock availability
+const validateStockAvailability = async (items) => {
+    try {
+        const outOfStockItems = [];
+        
+        for (const item of items) {
+            const product = await productModel.findById(item.productId);
+            if (!product) {
+                return {
+                    success: false,
+                    message: `Product ${item.name} not found`
+                };
+            }
+
+            const colorVariant = product.colorVariants.find(
+                variant => variant.color.toLowerCase() === item.color.toLowerCase()
+            );
+
+            if (!colorVariant) {
+                return {
+                    success: false,
+                    message: `Color variant ${item.color} not found for ${item.name}`
+                };
+            }
+
+            if (!colorVariant.sizes.includes(item.size)) {
+                return {
+                    success: false,
+                    message: `Size ${item.size} not available for ${item.name} in ${item.color}`
+                };
+            }
+
+            if (colorVariant.stock < item.quantity) {
+                outOfStockItems.push({
+                    productId: item.productId,
+                    name: item.name,
+                    color: item.color,
+                    size: item.size,
+                    requestedQuantity: item.quantity,
+                    availableStock: colorVariant.stock
+                });
+            }
+        }
+
+        if (outOfStockItems.length > 0) {
+            return {
+                success: false,
+                message: 'Some items are out of stock or have insufficient quantity',
+                outOfStockItems
+            };
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Stock validation error:', error);
+        return {
+            success: false,
+            message: 'Error validating stock availability'
+        };
+    }
+};
+
+// Function to reduce stock after successful order
+const reduceStock = async (items) => {
+    try {
+        for (const item of items) {
+            const product = await productModel.findById(item.productId);
+            if (product) {
+                const colorVariant = product.colorVariants.find(
+                    variant => variant.color.toLowerCase() === item.color.toLowerCase()
+                );
+                
+                if (colorVariant) {
+                    colorVariant.stock -= item.quantity;
+                    await product.save();
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Stock reduction error:', error);
+        throw error;
+    }
+};
 
 // gateway initialize
 const razorpayInstance = new razorpay({
@@ -85,6 +170,16 @@ const placeOrderRazorpay = async (req,res) => {
                     address: !!address
                 }
             })
+        }
+
+        // Validate stock availability before processing order
+        const stockValidation = await validateStockAvailability(items);
+        if (!stockValidation.success) {
+            return res.json({
+                success: false,
+                message: stockValidation.message,
+                outOfStockItems: stockValidation.outOfStockItems
+            });
         }
 
         // Additional validation for items array
@@ -259,6 +354,14 @@ const verifyRazorpay = async (req,res) => {
             )
 
             if (updatedOrder) {
+                // Reduce stock for ordered items
+                try {
+                    await reduceStock(updatedOrder.items);
+                } catch (stockError) {
+                    console.error('Failed to reduce stock:', stockError);
+                    // Continue with order completion even if stock reduction fails
+                }
+
                 // Clear user's cart from both systems
                 await userModel.findByIdAndUpdate(userId, { cartData: {} })
                 

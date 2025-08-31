@@ -69,19 +69,17 @@ const ColorVariantSelector: React.FC<ColorVariantSelectorProps> = ({
       <div className="flex gap-2 flex-wrap">
         {colorVariants.map((variant) => {
           const hexColor = colorMap[variant.color] || "#CCCCCC";
-          const isAvailable = variant.stock > 0;
           const isSelected = selectedColor === variant.color;
 
           return (
             <button
               key={variant.color}
               onClick={() => handleColorClick(variant.color)}
-              disabled={disabled || !isAvailable}
+              disabled={disabled}
               className={cn(
                 "relative transition-all duration-200 ease-in-out",
                 getSizeClasses(),
                 "rounded-full",
-                !isAvailable && "opacity-50 cursor-not-allowed",
                 disabled && "cursor-not-allowed opacity-60",
                 // Enhanced styling for collection page context
                 disabled && "hover:ring-gray-200", // Prevent hover effects when disabled
@@ -92,7 +90,7 @@ const ColorVariantSelector: React.FC<ColorVariantSelectorProps> = ({
                 // Subtle hover effect without rings
                 !disabled && "hover:border-gray-300"
               )}
-              title={`${variant.color}${!isAvailable ? " - Out of Stock" : ""}`}
+              title={variant.color}
             >
               <div
                 className="w-full h-full rounded-full"
@@ -121,10 +119,7 @@ const ColorVariantSelector: React.FC<ColorVariantSelectorProps> = ({
                 </div>
               )}
               
-              {/* Out of stock indicator */}
-              {!isAvailable && (
-                <div className="absolute inset-0 rounded-full bg-gray-400 opacity-60" />
-              )}
+
             </button>
           );
         })}

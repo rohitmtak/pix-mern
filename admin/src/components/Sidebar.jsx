@@ -4,26 +4,80 @@ import { assets } from '../assets/assets'
 
 const Sidebar = () => {
   return (
-    <div className='w-[18%] min-h-screen border-r-2'>
-        <div className='flex flex-col gap-4 pt-6 pl-[20%] text-[15px]'>
-
-            <NavLink className='flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l' to="/add">
-                <img className='w-5 h-5' src={assets.add_icon} alt="" />
-                <p className='hidden md:block'>Add Items</p>
-            </NavLink>
-
-            <NavLink className='flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l' to="/list">
-                <img className='w-5 h-5' src={assets.order_icon} alt="" />
-                <p className='hidden md:block'>List Items</p>
-            </NavLink>
-
-            <NavLink className='flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l' to="/orders">
-                <img className='w-5 h-5' src={assets.order_icon} alt="" />
-                <p className='hidden md:block'>Orders</p>
-            </NavLink>
-
+    <div className='w-64 min-h-screen bg-white border-r border-gray-200'>
+      <style>
+        {`
+          .bg-black img {
+            filter: brightness(0) invert(1);
+          }
+        `}
+      </style>
+      <div className='p-6'>
+        <div className='mb-8'>
+          <h2 className='text-lg font-semibold text-gray-800 mb-1'>Navigation</h2>
+          <p className='text-sm text-gray-600'>Manage your store</p>
         </div>
+        
+        <nav className='space-y-2'>
+          <NavLink 
+            className={({ isActive }) => 
+              `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
+                isActive 
+                  ? 'bg-black text-white' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`
+            } 
+            to="/add"
+          >
+            <img className='w-5 h-5' src={assets.add_icon} alt="" />
+            <span className='font-medium'>Add Products</span>
+          </NavLink>
 
+          <NavLink 
+            className={({ isActive }) => 
+              `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
+                isActive 
+                  ? 'bg-black text-white' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`
+            } 
+            to="/list"
+          >
+            <img className='w-5 h-5' src={assets.order_icon} alt="" />
+            <span className='font-medium'>Product List</span>
+          </NavLink>
+
+          <NavLink 
+            className={({ isActive }) => 
+              `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
+                isActive 
+                  ? 'bg-black text-white' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`
+            } 
+            to="/orders"
+          >
+            <img className='w-5 h-5' src={assets.order_icon} alt="" />
+            <span className='font-medium'>Orders</span>
+          </NavLink>
+
+          <NavLink 
+            className={({ isActive }) => 
+              `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
+                isActive 
+                  ? 'bg-black text-white' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`
+            } 
+            to="/stock"
+          >
+            <svg className='w-5 h-5' fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+            </svg>
+            <span className='font-medium'>Stock Management</span>
+          </NavLink>
+        </nav>
+      </div>
     </div>
   )
 }

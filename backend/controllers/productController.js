@@ -269,4 +269,140 @@ const getProductsBySubCategory = async (req, res) => {
     }
 }
 
-export { listProducts, addProduct, removeProduct, singleProduct, getBestsellerProducts, searchProducts, getProductsByCategory, getProductsBySubCategory }
+// function for updating product stock
+const updateProductStock = async (req, res) => {
+    try {
+        const { productId, colorVariantIndex, newStock } = req.body;
+        
+        const product = await productModel.findById(productId);
+        if (!product) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Product not found" 
+            });
+        }
+
+        if (colorVariantIndex >= product.colorVariants.length) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Invalid color variant index" 
+            });
+        }
+
+        // Update stock for specific color variant
+        product.colorVariants[colorVariantIndex].stock = newStock;
+        await product.save();
+
+        res.json({ 
+            success: true, 
+            message: "Stock updated successfully",
+            updatedStock: newStock
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+};
+
+// function for checking stock availability
+const checkStockAvailability = async (req, res) => {
+    try {
+        const { productId, color, size, quantity } = req.body;
+        
+        const product = await productModel.findById(productId);
+        if (!product) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Product not found" 
+            });
+        }
+
+        const colorVariant = product.colorVariants.find(
+            variant => variant.color.toLowerCase() === color.toLowerCase()
+        );
+
+        if (!colorVariant) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Color variant not found" 
+            });
+        }
+
+        const isSizeAvailable = colorVariant.sizes.includes(size);
+        const currentStock = colorVariant.stock;
+        const isStockSufficient = currentStock >= quantity;
+
+        res.json({
+            success: true,
+            data: {
+                available: isSizeAvailable && isStockSufficient,
+                currentStock: currentStock,
+                requestedQuantity: quantity,
+                sizeAvailable: isSizeAvailable,
+                stockSufficient: isStockSufficient
+            }
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+};
+
+// function for getting products with low stock
+const getLowStockProducts = async (req, res) => {
+    try {
+        const { threshold = 5 } = req.query; // Default threshold of 5 items
+        
+        const products = await productModel.find({
+            'colorVariants.stock': { $lte: parseInt(threshold) }
+        });
+
+        const lowStockProducts = products.map(product => ({
+            _id: product._id,
+            name: product.name,
+            category: product.category,
+            lowStockVariants: product.colorVariants.filter(variant => 
+                variant.stock <= parseInt(threshold)
+            ).map(variant => ({
+                color: variant.color,
+                stock: variant.stock,
+                price: variant.price
+            }))
+        }));
+
+        res.json({
+            success: true,
+            data: lowStockProducts,
+            threshold: parseInt(threshold)
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+};
+
+export { 
+    listProducts, 
+    addProduct, 
+    removeProduct, 
+    singleProduct, 
+    getBestsellerProducts, 
+    searchProducts, 
+    getProductsByCategory, 
+    getProductsBySubCategory,
+    updateProductStock,
+    checkStockAvailability,
+    getLowStockProducts
+}

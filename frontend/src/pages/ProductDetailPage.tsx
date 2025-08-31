@@ -50,6 +50,8 @@ const ProductDetailPage = () => {
     refetch,
   } = useProduct(id || "");
 
+
+
   // Debug logging for product data
   useEffect(() => {
     if (product) {
@@ -326,6 +328,8 @@ const ProductDetailPage = () => {
                   >
                     Rs.{currentColorVariant?.price || "Price not available"}
                   </p>
+                  
+
                 </div>
               </div>
 
@@ -352,30 +356,17 @@ const ProductDetailPage = () => {
                   </div>
                                      <div className="flex gap-3 flex-wrap">
                      {sizes.map((size) => {
-                       // Check if this size is available for the selected color
-                       const colorVariant = product?.colorVariants?.find(
-                         (variant) =>
-                           variant.color.toLowerCase() ===
-                           selectedColor.toLowerCase()
-                       );
-
-                       const isAvailable =
-                         colorVariant && colorVariant.sizes.includes(size);
-
                        return (
                                                   <button
                              key={size}
                              onClick={() => handleSizeSelection(size)}
-                             disabled={!isAvailable}
                                                           className={cn(
                                 "w-9 h-9 rounded-full border transition-all duration-300 ease-in-out text-sm font-medium flex items-center justify-center",
                                 selectedSize === size
                                   ? "border-black bg-black text-white"
-                                  : "border-gray-300 hover:border-gray-400 text-gray-700",
-                                !isAvailable &&
-                                  "opacity-50 cursor-not-allowed border-gray-200 text-gray-400"
+                                  : "border-gray-300 hover:border-gray-400 text-gray-700"
                               )}
-                             title={`${size}${!isAvailable ? " - Out of Stock" : ""}`}
+                             title={size}
                            >
                              {size}
                            </button>
@@ -403,11 +394,7 @@ const ProductDetailPage = () => {
                         <span className="font-normal text-gray-600">
                           {selectedColor}
                         </span>
-                        {currentColorVariant && (
-                          <span className="ml-2 text-sm text-green-600">
-                            • Available
-                          </span>
-                        )}
+
                       </>
                     )}
                   </h3>
@@ -431,27 +418,17 @@ const ProductDetailPage = () => {
 
                       const hexColor = colorMap[color] || "#CCCCCC"; // Default gray if color not found
 
-                      // Check if this color variant is available
-                      const colorVariant = product?.colorVariants?.find(
-                        (variant) =>
-                          variant.color.toLowerCase() === color.toLowerCase()
-                      );
-
-                      const isAvailable =
-                        colorVariant && colorVariant.stock > 0;
                       const isSelected = selectedColor === color;
 
                       return (
                                                  <button
                            key={color}
                            onClick={() => handleColorSelection(color)}
-                           disabled={!isAvailable}
                            className={cn(
                              "w-7 h-7 rounded-full transition-all duration-200 ease-in-out relative",
-                             "ring-1 ring-gray-200 hover:ring-gray-400",
-                             !isAvailable && "opacity-50 cursor-not-allowed"
+                             "ring-1 ring-gray-200 hover:ring-gray-400"
                            )}
-                           title={`${color}${!isAvailable ? " - Out of Stock" : ""}`}
+                           title={color}
                          >
                           <div
                             className="w-full h-full rounded-full"
@@ -475,9 +452,7 @@ const ProductDetailPage = () => {
                               </svg>
                             </div>
                           )}
-                          {!isAvailable && (
-                            <div className="absolute inset-0 rounded-full bg-gray-400 opacity-60" />
-                          )}
+
                           
                         </button>
                       );

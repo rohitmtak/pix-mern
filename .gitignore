@@ -80,3 +80,6 @@ test2.tsx
 # OS files
 desktop.ini
 ._*
+
+# Windows-specific files
+nul

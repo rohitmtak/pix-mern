@@ -10,16 +10,6 @@ export const PRODUCT_SUBCATEGORIES = {
   BRIDAL: "Bridal",
   LEHENGA: "Lehenga",
   SAREE: "Saree",
-  ANARKALI: "Anarkali",
-  GOWN: "Gown",
-  KURTA: "Kurta",
-  PALAZZO: "Palazzo",
-  DRESS: "Dress",
-  TOP: "Top",
-  BOTTOM: "Bottom",
-  JEWELRY: "Jewelry",
-  BAGS: "Bags",
-  SHOES: "Shoes"
 };
 
 // Validation function to check if a category is valid

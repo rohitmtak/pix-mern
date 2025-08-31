@@ -1,6 +1,6 @@
 import express from 'express'
 import multer from 'multer'
-import { listProducts, addProduct, removeProduct, singleProduct, getBestsellerProducts, searchProducts, getProductsByCategory, getProductsBySubCategory } from '../controllers/productController.js'
+import { listProducts, addProduct, removeProduct, singleProduct, getBestsellerProducts, searchProducts, getProductsByCategory, getProductsBySubCategory, updateProductStock, checkStockAvailability, getLowStockProducts } from '../controllers/productController.js'
 import upload from '../middleware/multer.js';
 import adminAuth from '../middleware/adminAuth.js';
 import { getAllCategories, getAllSubcategories } from '../constants/categories.js';
@@ -64,5 +64,10 @@ productRouter.get('/categories', (req, res) => {
 productRouter.get('/subcategories', (req, res) => {
     res.json({ success: true, data: getAllSubcategories() });
 });
+
+// Stock management endpoints
+productRouter.post('/stock/update', adminAuth, updateProductStock);
+productRouter.post('/stock/check', checkStockAvailability);
+productRouter.get('/stock/low', getLowStockProducts);
 
 export default productRouter

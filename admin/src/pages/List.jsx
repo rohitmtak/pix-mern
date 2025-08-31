@@ -6,30 +6,29 @@ import { toast } from 'react-toastify'
 const List = ({ token }) => {
 
   const [list, setList] = useState([])
+  const [loading, setLoading] = useState(true)
 
   const fetchList = async () => {
     try {
-      console.log('Fetching products from:', backendUrl + '/api/product/list')
+      setLoading(true);
       const response = await axios.get(backendUrl + '/api/product/list')
-      console.log('API Response:', response.data)
       
       if (response.data.success) {
         setList(response.data.data.reverse());
-        console.log('Products set:', response.data.data)
       }
       else {
         toast.error(response.data.message)
       }
 
     } catch (error) {
-      console.log('Error fetching products:', error)
       toast.error(error.message)
+    } finally {
+      setLoading(false);
     }
   }
 
   const removeProduct = async (id) => {
     try {
-
       const response = await axios.post(backendUrl + '/api/product/remove', { id }, { headers: { token } })
 
       if (response.data.success) {
@@ -40,7 +39,6 @@ const List = ({ token }) => {
       }
 
     } catch (error) {
-      console.log(error)
       toast.error(error.message)
     }
   }
@@ -69,58 +67,137 @@ const List = ({ token }) => {
   }, [])
 
   return (
-    <>
-      <p className='mb-2'>All Products List</p>
-      <div className='flex flex-col gap-2'>
-
-        {/* ------- List Table Title ---------- */}
-
-        <div className='hidden md:grid grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm'>
-          <b>Image</b>
-          <b>Name</b>
-          <b>Category</b>
-          <b>Price</b>
-          <b className='text-center'>Variants</b>
-          <b className='text-center'>Action</b>
-        </div>
-
-        {/* ------ Product List ------ */}
-
-        {list.length === 0 ? (
-          <div className='text-center py-4 text-gray-500'>
-            No products found. Loading...
-          </div>
-        ) : (
-          list.map((item, index) => (
-            <div className='grid grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr] md:grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr] items-center gap-2 py-1 px-2 border text-sm' key={index}>
-              <img className='w-12 h-12 object-cover' src={getProductImage(item)} alt="" />
-              <p>{item.name}</p>
-              <p>{item.category}</p>
-              <p>{currency}{getProductPrice(item)}</p>
-              <div className='text-center'>
-                {item.colorVariants && item.colorVariants.length > 0 ? (
-                  <div className='text-xs'>
-                    {item.colorVariants.map((variant, vIndex) => (
-                      <div key={vIndex} className='mb-1'>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          variant.video ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {variant.color} {variant.video ? '🎥' : ''}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <span className='text-gray-400'>-</span>
-                )}
-              </div>
-              <p onClick={()=>removeProduct(item._id)} className='text-right md:text-center cursor-pointer text-lg'>X</p>
-            </div>
-          ))
-        )}
-
+    <div className="max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="font-jost text-3xl font-light text-gray-800 mb-2">Product Management</h1>
+        <p className="text-gray-600">Manage your product catalog and inventory</p>
       </div>
-    </>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading products...</p>
+          </div>
+        </div>
+      ) : list.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-gray-400 text-6xl mb-4">📦</div>
+          <h3 className="text-xl font-medium text-gray-800 mb-2">No Products Found</h3>
+          <p className="text-gray-600">Start by adding your first product to the catalog.</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          {/* Table Header */}
+          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
+              <div className="col-span-2">Image</div>
+              <div className="col-span-3">Product Name</div>
+              <div className="col-span-2">Category</div>
+              <div className="col-span-1">Price</div>
+              <div className="col-span-2">Variants</div>
+              <div className="col-span-1">Status</div>
+              <div className="col-span-1 text-center">Action</div>
+            </div>
+          </div>
+
+          {/* Product List */}
+          <div className="divide-y divide-gray-200">
+            {list.map((item, index) => (
+              <div key={index} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <div className="grid grid-cols-12 gap-4 items-center">
+                  {/* Product Image */}
+                  <div className="col-span-2">
+                    <img 
+                      className="w-16 h-16 object-cover rounded-lg border border-gray-200" 
+                      src={getProductImage(item)} 
+                      alt={item.name}
+                      onError={(e) => {
+                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEg0NFY0NEgyMFYyMFoiIGZpbGw9IiNEMUQ1REIiLz4KPHBhdGggZD0iTTI4IDI4SDM2VjM2SDI4VjI4WiIgZmlsbD0iIzlDQTNBRiIvPgo8L3N2Zz4K'
+                      }}
+                    />
+                  </div>
+
+                  {/* Product Name */}
+                  <div className="col-span-3">
+                    <h3 className="font-medium text-gray-800 mb-1">{item.name}</h3>
+                    <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+                  </div>
+
+                  {/* Category */}
+                  <div className="col-span-2">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {item.category}
+                    </span>
+                  </div>
+
+                  {/* Price */}
+                  <div className="col-span-1">
+                    <span className="font-medium text-gray-800">{currency}{getProductPrice(item)}</span>
+                  </div>
+
+                  {/* Variants */}
+                  <div className="col-span-2">
+                    <div className="flex flex-wrap gap-1">
+                      {item.colorVariants && item.colorVariants.length > 0 ? (
+                        item.colorVariants.map((variant, vIndex) => (
+                          <span 
+                            key={vIndex} 
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              variant.video 
+                                ? 'bg-green-100 text-green-700' 
+                                : 'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            {variant.color} {variant.video && '🎥'}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-gray-400 text-sm">-</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Status */}
+                  <div className="col-span-1">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      item.bestseller 
+                        ? 'bg-yellow-100 text-yellow-800' 
+                        : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {item.bestseller ? 'Featured' : 'Standard'}
+                    </span>
+                  </div>
+
+                  {/* Action */}
+                  <div className="col-span-1 text-center">
+                    <button
+                      onClick={() => removeProduct(item._id)}
+                      className="text-red-600 hover:text-red-800 transition-colors p-2 rounded-full hover:bg-red-50"
+                      title="Delete product"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Summary */}
+      {!loading && list.length > 0 && (
+        <div className="mt-6 bg-white p-4 rounded-lg border border-gray-200">
+          <div className="flex justify-between items-center text-sm text-gray-600">
+            <span>Total Products: {list.length}</span>
+            <span>Last updated: {new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
