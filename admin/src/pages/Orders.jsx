@@ -11,6 +11,14 @@ const Orders = ({ token }) => {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [openStatusDropdown, setOpenStatusDropdown] = useState(null)
+  const [showShippingModal, setShowShippingModal] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [shippingForm, setShippingForm] = useState({
+    courier: 'Shiprocket',
+    trackingNumber: '',
+    estimatedDelivery: '',
+    shippingNotes: ''
+  })
 
   const statusOptions = [
     { value: "Order Placed", label: "📋 Order Placed", color: "bg-blue-100 text-blue-800" },
@@ -81,8 +89,16 @@ const Orders = ({ token }) => {
   }
 
   const handleStatusChange = (orderId, newStatus) => {
-    statusHandler(orderId, newStatus)
-    setOpenStatusDropdown(null)
+    if (newStatus === 'Shipped') {
+      // Find the order details
+      const order = orders.find(o => o._id === orderId)
+      setSelectedOrder(order)
+      setShowShippingModal(true)
+      setOpenStatusDropdown(null)
+    } else {
+      statusHandler(orderId, newStatus)
+      setOpenStatusDropdown(null)
+    }
   }
 
   // Close dropdowns when clicking outside
@@ -98,6 +114,42 @@ const Orders = ({ token }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const handleShippingSubmit = async () => {
+    try {
+      // Demo: Simulate API call
+      console.log('Shipping details:', {
+        orderId: selectedOrder._id,
+        courier: shippingForm.courier,
+        trackingNumber: shippingForm.trackingNumber,
+        estimatedDelivery: shippingForm.estimatedDelivery,
+        notes: shippingForm.shippingNotes
+      })
+      
+      // Update order status with shipping info
+      await statusHandler(selectedOrder._id, 'Shipped')
+      
+      // Reset form and close modal
+      setShippingForm({
+        courier: 'Shiprocket',
+        trackingNumber: '',
+        estimatedDelivery: '',
+        shippingNotes: ''
+      })
+      setShowShippingModal(false)
+      setSelectedOrder(null)
+      
+      toast.success('Order shipped successfully! Customer will be notified.')
+    } catch (error) {
+      toast.error('Failed to process shipping')
+    }
+  }
+
+  const generateTrackingNumber = () => {
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase()
+    const timestamp = Date.now().toString().slice(-6)
+    return `SR${random}${timestamp}`
+  }
 
   useEffect(() => {
     fetchAllOrders();
@@ -319,6 +371,122 @@ const Orders = ({ token }) => {
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-900">📊 Total Orders: {orders.length}</span>
             <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Shipping Modal */}
+      {showShippingModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">🚚 Ship Order #{selectedOrder._id.slice(-8).toUpperCase()}</h3>
+                <button
+                  onClick={() => setShowShippingModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Customer Info */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <h4 className="font-medium text-gray-900 mb-2">📦 Shipping to:</h4>
+                <div className="text-sm text-gray-700">
+                  <div><strong>{selectedOrder.shippingAddress?.fullName || selectedOrder.customer?.firstName || 'N/A'}</strong></div>
+                  <div>{selectedOrder.shippingAddress?.line1 || selectedOrder.address?.street || 'N/A'}</div>
+                  <div>{selectedOrder.shippingAddress?.city || selectedOrder.address?.city || 'N/A'}, {selectedOrder.shippingAddress?.state || selectedOrder.address?.state || 'N/A'}</div>
+                  <div>📞 {selectedOrder.shippingAddress?.phone || selectedOrder.customerPhone || 'N/A'}</div>
+                </div>
+              </div>
+
+              {/* Shipping Form */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Courier Service</label>
+                  <select
+                    value={shippingForm.courier}
+                    onChange={(e) => setShippingForm({...shippingForm, courier: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Shiprocket">🚚 Shiprocket (Recommended)</option>
+                    <option value="Delhivery">📦 Delhivery</option>
+                    <option value="Blue Dart">✈️ Blue Dart</option>
+                    <option value="DTDC">🚛 DTDC</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tracking Number</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={shippingForm.trackingNumber}
+                      onChange={(e) => setShippingForm({...shippingForm, trackingNumber: e.target.value})}
+                      placeholder="Enter tracking number"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      onClick={() => setShippingForm({...shippingForm, trackingNumber: generateTrackingNumber()})}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                    >
+                      Generate
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Delivery</label>
+                  <input
+                    type="date"
+                    value={shippingForm.estimatedDelivery}
+                    onChange={(e) => setShippingForm({...shippingForm, estimatedDelivery: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Notes</label>
+                  <textarea
+                    value={shippingForm.shippingNotes}
+                    onChange={(e) => setShippingForm({...shippingForm, shippingNotes: e.target.value})}
+                    placeholder="Any special instructions for delivery..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Demo Features */}
+              <div className="bg-blue-50 p-4 rounded-lg mt-6">
+                <h4 className="font-medium text-blue-900 mb-2">🎯 Demo Features:</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• 📧 Customer will receive SMS/Email notification</li>
+                  <li>• 🏷️ Shipping label will be generated automatically</li>
+                  <li>• 📱 Tracking link will be sent to customer</li>
+                  <li>• 📊 Order analytics will be updated</li>
+                </ul>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleShippingSubmit}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium"
+                >
+                  🚚 Ship Order & Notify Customer
+                </button>
+                <button
+                  onClick={() => setShowShippingModal(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

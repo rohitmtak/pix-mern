@@ -10,6 +10,7 @@ import axios from "axios";
 import { config } from "@/config/env";
 
 import { showToast, toastMessages } from "@/config/toastConfig";
+import { getStateName, getCountryName } from "@/utils/addressUtils";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -32,11 +33,20 @@ const CheckoutPage = () => {
   useEffect(() => {
     // Suppress OTP-credentials console messages from Razorpay
     const originalConsoleError = console.error;
+    const originalConsoleWarn = console.warn;
+    
     console.error = (...args) => {
       if (args[0] && typeof args[0] === 'string' && args[0].includes('otp-credentials')) {
         return; // Suppress OTP-credentials messages
       }
       originalConsoleError.apply(console, args);
+    };
+    
+    console.warn = (...args) => {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('otp-credentials')) {
+        return; // Suppress OTP-credentials messages
+      }
+      originalConsoleWarn.apply(console, args);
     };
 
     const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]') as HTMLScriptElement | null;
@@ -50,8 +60,9 @@ const CheckoutPage = () => {
       if (s && s.parentElement) {
         s.parentElement.removeChild(s);
       }
-      // Restore original console.error
+      // Restore original console methods
       console.error = originalConsoleError;
+      console.warn = originalConsoleWarn;
     };
   }, []);
 
@@ -133,7 +144,17 @@ const CheckoutPage = () => {
     try {
       setIsSubmitting(true);
 
-      // If user has saved addresses and didn't fill the form, use the selected address
+      // Validate formData exists
+      if (!formData) {
+        showToast.error('Form data is missing. Please try again.');
+        console.error('formData is undefined');
+        return;
+      }
+
+      console.log('Form data received:', formData);
+
+      // If user has saved addresses and one is selected, and the form is not showing,
+      // use the selected address
       if (addresses.length > 0 && !showAddressForm && selectedAddressId) {
         const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
         
@@ -151,25 +172,30 @@ const CheckoutPage = () => {
             payment: { method: 'card' as const }
           };
         }
-      } else if (addresses.length > 0 && selectedAddressId) {
-        // User has saved addresses and one is selected, but form is showing
-        // This means they want to use the selected address, not fill the form
-        const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
-        
-        if (selectedAddress) {
-          formData = {
-            firstName: selectedAddress.fullName.split(' ')[0] || '',
-            lastName: selectedAddress.fullName.split(' ').slice(1).join(' ') || '',
-            phone: selectedAddress.phone,
-            address: selectedAddress.line1,
-            apartment: selectedAddress.line2 || '',
-            city: selectedAddress.city,
-            state: selectedAddress.state,
-            postalCode: selectedAddress.postalCode,
-            country: selectedAddress.country,
-            payment: { method: 'card' as const }
-          };
+      } else if (addresses.length > 0 && showAddressForm) {
+        // User has saved addresses and the form is showing
+        // Check if they want to use a selected address or the new form
+        if (selectedAddressId && !formData.firstName) {
+          // User selected a saved address but didn't fill the form
+          const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
+          
+          if (selectedAddress) {
+            formData = {
+              firstName: selectedAddress.fullName.split(' ')[0] || '',
+              lastName: selectedAddress.fullName.split(' ').slice(1).join(' ') || '',
+              phone: selectedAddress.phone,
+              address: selectedAddress.line1,
+              apartment: selectedAddress.line2 || '',
+              city: selectedAddress.city,
+              state: selectedAddress.state,
+              postalCode: selectedAddress.postalCode,
+              country: selectedAddress.country,
+              payment: { method: 'card' as const }
+            };
+          }
         }
+        // If formData.firstName exists, it means they filled the new address form
+        // so we'll use that data
       }
 
       // Validate cart has items
@@ -213,10 +239,25 @@ const CheckoutPage = () => {
         image: item.imageUrl,
       }));
 
-      // Prepare billing address (if different from shipping)
-      const billingAddress = !formData.payment?.sameAsShipping
-        ? formData.payment.billingAddress 
-        : address;
+      // Prepare billing address based on checkbox state
+      let billingAddress = address; // Default to shipping address
+      
+      if (formData.payment?.method === 'card' && !formData.payment?.sameAsShipping && formData.payment?.billingAddress) {
+        // For card payments with different billing address
+        billingAddress = {
+          fullName: `${formData.firstName || ''} ${formData.lastName || ''}`.trim(),
+          phone: formData.phone,
+          line1: formData.payment.billingAddress.address,
+          line2: '',
+          city: formData.payment.billingAddress.city,
+          state: formData.payment.billingAddress.state,
+          postalCode: formData.payment.billingAddress.postalCode,
+          country: formData.payment.billingAddress.country || 'IN',
+        };
+      } else {
+        // For UPI, NetBanking, COD, or card payments with same address
+        billingAddress = address;
+      }
 
       // Calculate totals (use the existing calculated values)
       const subtotal = subtotalValue;
@@ -272,7 +313,8 @@ const CheckoutPage = () => {
       const key = (import.meta as any).env?.VITE_RAZORPAY_KEY_ID as string | undefined;
       
       if (!key) {
-        showToast.error('Razorpay key missing');
+        showToast.error('Razorpay configuration missing. Please check your environment setup.');
+        console.error('VITE_RAZORPAY_KEY_ID is not set in environment variables');
         return;
       }
 
@@ -369,7 +411,16 @@ const CheckoutPage = () => {
 
       rzp.open();
     } catch (error: any) {
-      showToast.error(error?.response?.data?.message || 'Order failed');
+      console.error('Order creation error:', error);
+      
+      // Provide more specific error messages
+      if (error?.response?.data?.message) {
+        showToast.error(error.response.data.message);
+      } else if (error?.message) {
+        showToast.error(error.message);
+      } else {
+        showToast.error('Order failed. Please check your connection and try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -378,6 +429,43 @@ const CheckoutPage = () => {
   // Handler for adding a new address
   const handleAddNewAddress = () => {
     setShowAddressForm(true);
+  };
+
+  // Handler for saving a new address
+  const handleSaveAddress = async (addressData: any) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      showToast.error('Authentication required. Please log in.');
+      return;
+    }
+
+    try {
+      // Save address to backend
+      const response = await axios.post(
+        `${config.api.baseUrl}/user/addresses`,
+        { address: addressData },
+        { headers: { token } }
+      );
+
+      if (response.data?.success) {
+        // Add the new address to the local state
+        const newAddress = response.data.address || addressData;
+        setAddresses(prev => [...prev, newAddress]);
+        
+        // Set the new address as selected
+        setSelectedAddressId(newAddress.id);
+        
+        // Hide the address form
+        setShowAddressForm(false);
+        
+        showToast.success('Address saved successfully!');
+      } else {
+        showToast.error('Failed to save address. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Error saving address:', error);
+      showToast.error(error.response?.data?.message || 'Failed to save address. Please try again.');
+    }
   };
 
   // Listen for address selection event
@@ -470,6 +558,7 @@ const CheckoutPage = () => {
                     showAddressForm={showAddressForm}
                     onToggleAddressForm={() => setShowAddressForm(!showAddressForm)}
                     selectedAddressId={selectedAddressId}
+                    onSaveAddress={handleSaveAddress}
                   />
                 )}
                 
@@ -505,16 +594,58 @@ const CheckoutPage = () => {
                 {/* Submit button full width above security info */}
                 <div className="mt-6">
                   <Button 
-                    form="checkout-form" 
-                    type="submit" 
-                    disabled={!selectedAddressId && addresses.length > 0}
+                    onClick={() => {
+                      console.log('Button clicked - current state:', {
+                        addressesLength: addresses.length,
+                        showAddressForm,
+                        selectedAddressId
+                      });
+                      
+                      // Handle form submission based on current state
+                      if (addresses.length > 0 && !showAddressForm && selectedAddressId) {
+                        // User has saved addresses and one is selected - submit with saved address
+                        const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
+                        if (selectedAddress) {
+                                                  const formData = {
+                          firstName: selectedAddress.fullName.split(' ')[0] || '',
+                          lastName: selectedAddress.fullName.split(' ').slice(1).join(' ') || '',
+                          phone: selectedAddress.phone,
+                          address: selectedAddress.line1,
+                          apartment: selectedAddress.line2 || '',
+                          city: selectedAddress.city,
+                          state: selectedAddress.state,
+                          postalCode: selectedAddress.postalCode,
+                          country: selectedAddress.country,
+                          payment: { 
+                            method: 'upi' as const,
+                            sameAsShipping: true,
+                            billingAddress: {
+                              address: "",
+                              city: "",
+                              state: "",
+                              postalCode: "",
+                              country: "IN"
+                            }
+                          }
+                        };
+                          handleFormSubmit(formData);
+                        }
+                      } else {
+                        // User is filling out the form - trigger form submission
+                        const form = document.getElementById('checkout-form') as HTMLFormElement;
+                        if (form) {
+                          form.requestSubmit();
+                        }
+                      }
+                    }}
+                    disabled={!selectedAddressId && addresses.length > 0 && !showAddressForm}
                     className={`w-full h-12 text-lg font-normal ${
-                      selectedAddressId || addresses.length === 0 
+                      selectedAddressId || addresses.length === 0 || showAddressForm
                         ? 'bg-black text-white hover:bg-gray-800' 
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >
-                    {!selectedAddressId && addresses.length > 0 ? 'SELECT ADDRESS TO CONTINUE' : 'COMPLETE PURCHASE'}
+                    {!selectedAddressId && addresses.length > 0 && !showAddressForm ? 'SELECT ADDRESS TO CONTINUE' : 'COMPLETE PURCHASE'}
                   </Button>
                 </div>
 

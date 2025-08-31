@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { MapPin, Plus } from 'lucide-react';
+import { getStateName, getCountryName } from '@/utils/addressUtils';
 
 interface Address {
   id: string;
@@ -19,12 +20,14 @@ interface SavedAddressDisplayProps {
   addresses: Address[];
   onAddNewAddress: () => void;
   selectedAddressId?: string;
+  showAddButton?: boolean;
 }
 
 const SavedAddressDisplay: React.FC<SavedAddressDisplayProps> = ({
   addresses,
   onAddNewAddress,
-  selectedAddressId
+  selectedAddressId,
+  showAddButton = true
 }) => {
   const defaultAddress = addresses.find(addr => addr.isDefault) || addresses[0];
   const selectedAddress = selectedAddressId 
@@ -60,7 +63,7 @@ const SavedAddressDisplay: React.FC<SavedAddressDisplayProps> = ({
 
         {/* Address Options */}
         {addresses.map((address, index) => (
-          <div key={address.id} className="border border-gray-200 rounded-lg p-4 bg-white hover:border-gray-300 transition-colors">
+          <div key={address.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50 hover:border-gray-300 transition-colors">
             <div className="flex items-start gap-3">
               <input
                 type="radio"
@@ -89,8 +92,8 @@ const SavedAddressDisplay: React.FC<SavedAddressDisplayProps> = ({
                   <div className="space-y-1 text-gray-600">
                     <p>{address.line1}</p>
                     {address.line2 && <p>{address.line2}</p>}
-                    <p>{address.city}, {address.state} {address.postalCode}</p>
-                    <p>{address.country}</p>
+                    <p>{address.city}, {getStateName(address.state)} {address.postalCode}</p>
+                    <p>{getCountryName(address.country)}</p>
                     <p>{address.phone}</p>
                   </div>
                 </div>
@@ -100,17 +103,19 @@ const SavedAddressDisplay: React.FC<SavedAddressDisplayProps> = ({
         ))}
       </div>
 
-      {/* Add New Address Button */}
-      <div className="flex justify-start pt-2">
-        <Button 
-          variant="outline"
-          onClick={onAddNewAddress}
-          className="border-gray-300 hover:bg-gray-50"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Add New Address
-        </Button>
-      </div>
+      {/* Add New Address Button - only show if showAddButton is true */}
+      {showAddButton && (
+        <div className="flex justify-start pt-2">
+          <Button 
+            variant="outline"
+            onClick={onAddNewAddress}
+            className="border-gray-300 hover:bg-gray-50"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Add New Address
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

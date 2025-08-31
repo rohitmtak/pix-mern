@@ -73,6 +73,16 @@ const List = ({ token }) => {
         <p className="text-gray-600">Manage your product catalog and inventory</p>
       </div>
 
+      {/* Summary */}
+      {!loading && list.length > 0 && (
+        <div className="mb-6 bg-white p-4 rounded-lg border border-gray-200">
+          <div className="flex justify-between items-center text-sm text-gray-600">
+            <span>Total Products: {list.length}</span>
+            <span>Last updated: {new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
@@ -96,7 +106,7 @@ const List = ({ token }) => {
               <div className="col-span-2">Category</div>
               <div className="col-span-1">Price</div>
               <div className="col-span-2">Variants</div>
-              <div className="col-span-1">Status</div>
+              <div className="col-span-1 text-center">Status</div>
               <div className="col-span-1 text-center">Action</div>
             </div>
           </div>
@@ -159,7 +169,7 @@ const List = ({ token }) => {
                   </div>
 
                   {/* Status */}
-                  <div className="col-span-1">
+                  <div className="col-span-1 text-center">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       item.bestseller 
                         ? 'bg-yellow-100 text-yellow-800' 
@@ -184,16 +194,6 @@ const List = ({ token }) => {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* Summary */}
-      {!loading && list.length > 0 && (
-        <div className="mt-6 bg-white p-4 rounded-lg border border-gray-200">
-          <div className="flex justify-between items-center text-sm text-gray-600">
-            <span>Total Products: {list.length}</span>
-            <span>Last updated: {new Date().toLocaleDateString()}</span>
           </div>
         </div>
       )}

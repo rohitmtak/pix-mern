@@ -6,6 +6,8 @@ import axios from "axios";
 import { showToast, toastMessages } from "@/config/toastConfig";
 import { config } from "@/config/env";
 import { useCart } from "@/contexts/CartContext";
+import { getStateName, getCountryName } from "@/utils/addressUtils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface OrderItem {
   _id: string;
@@ -55,7 +57,7 @@ const ProfilePage: React.FC = () => {
     city: '',
     state: '',
     postalCode: '',
-    country: 'IN'
+    country: 'India'
   });
   const [addressPhoneError, setAddressPhoneError] = useState<string>('');
   const [postalCodeError, setPostalCodeError] = useState<string>('');
@@ -209,7 +211,7 @@ const ProfilePage: React.FC = () => {
       city: address.city || '',
       state: address.state || '',
       postalCode: address.postalCode || '',
-      country: address.country || 'IN'
+      country: address.country || 'India'
     });
   };
 
@@ -294,7 +296,7 @@ const ProfilePage: React.FC = () => {
       city: '',
       state: '',
       postalCode: '',
-      country: 'IN'
+      country: 'India'
     });
   };
 
@@ -377,113 +379,119 @@ const ProfilePage: React.FC = () => {
               <section className="col-span-12 md:col-span-9">
                 <div className="border border-gray-200 p-8 bg-[#fafafa]">
                   {activeTab === 'account' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                      <div>
-                        <div className="text-lg font-medium mb-4">My Profile</div>
-                        {profileLoading ? (
-                          <div className="text-sm text-gray-600">Loading profile...</div>
-                        ) : isEditing ? (
-                          <div className="space-y-3">
-                            <div>Profile Information</div>
-                            <div>
-                              <label className="block text-sm text-gray-700 mb-1">Name:</label>
-                              <input
-                                type="text"
-                                value={editForm.name}
-                                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                              />
+                    <div className="space-y-4">
+                      <div className="text-xl font-medium mb-4">My Account</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* My Profile Card */}
+                        <div className="border border-gray-200 p-4 bg-white">
+                          <div className="text-lg font-medium mb-4">My Profile</div>
+                          {profileLoading ? (
+                            <div className="text-sm text-gray-600">Loading profile...</div>
+                          ) : isEditing ? (
+                            <div className="space-y-3">
+                              <div>Profile Information</div>
+                              <div>
+                                <label className="block text-sm text-gray-700 mb-1">Name:</label>
+                                <input
+                                  type="text"
+                                  value={editForm.name}
+                                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm text-gray-700 mb-1">Email:</label>
+                                <input
+                                  type="email"
+                                  value={profile?.email || ''}
+                                  disabled
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm text-gray-700 mb-1">Mobile:</label>
+                                <input
+                                  type="tel"
+                                  value={editForm.phone}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/[^0-9+]/g, ''); // Only allow digits and +
+                                    if (value.length <= 13) { // +91 + 10 digits = 13 max
+                                      setEditForm({ ...editForm, phone: value });
+                                      setPhoneError(''); // Clear error when user types
+                                    }
+                                  }}
+                                  className={`w-full px-3 py-2 border rounded-md text-sm ${phoneError ? 'border-red-500' : 'border-gray-300'}`}
+                                  placeholder="Enter phone number (10 digits or +91XXXXXXXXXX)"
+                                />
+                                {phoneError && (
+                                  <p className="text-sm text-red-600 mt-1">{phoneError}</p>
+                                )}
+                              </div>
+                              <div className="flex gap-2 mt-4">
+                                <button
+                                  onClick={handleEditProfile}
+                                  className="px-4 py-2 bg-black text-white text-sm hover:bg-gray-800"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="px-4 py-2 border border-gray-300 text-sm hover:bg-gray-50"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
                             </div>
-                            <div>
-                              <label className="block text-sm text-gray-700 mb-1">Email:</label>
-                              <input
-                                type="email"
-                                value={profile?.email || ''}
-                                disabled
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100"
-                              />
+                          ) : (
+                            <div className="space-y-2 text-sm">
+                              <div>Profile Information</div>
+                              <div className="text-gray-700">Name: <span className="text-gray-600">{profile?.name || '-'}</span></div>
+                              <div className="text-gray-700">Email: <span className="text-gray-600">{profile?.email || '-'}</span></div>
+                              <div className="text-gray-700">Mobile: <span className="text-gray-600">{profile?.phone || '-'}</span></div>
                             </div>
-                            <div>
-                              <label className="block text-sm text-gray-700 mb-1">Mobile:</label>
-                              <input
-                                type="tel"
-                                value={editForm.phone}
-                                onChange={(e) => {
-                                  const value = e.target.value.replace(/[^0-9+]/g, ''); // Only allow digits and +
-                                  if (value.length <= 13) { // +91 + 10 digits = 13 max
-                                    setEditForm({ ...editForm, phone: value });
-                                    setPhoneError(''); // Clear error when user types
+                          )}
+                          {!isEditing && (
+                            <div className="mt-4">
+                              <button 
+                                onClick={() => setIsEditing(true)}
+                                className="text-black hover:opacity-70"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* My Address Book Card */}
+                        <div className="border border-gray-200 p-4 bg-white">
+                          <div className="text-lg font-medium mb-4">My Address Book</div>
+                          {profileLoading ? (
+                            <div className="text-sm text-gray-600">Loading...</div>
+                          ) : (
+                            <div className="space-y-2 text-sm">
+                              <div>Address Information</div>
+                              {profile?.addresses && profile.addresses.length > 0 ? (
+                                (() => {
+                                  const defaultAddress = profile.addresses.find((addr: any) => addr.isDefault);
+                                  if (defaultAddress) {
+                                    return (
+                                      <div className="space-y-2">
+                                        <div className="text-gray-700">Name: <span className="text-gray-600">{defaultAddress.fullName} (Default)</span></div>
+                                        <div className="text-gray-700">Address: <span className="text-gray-600">{defaultAddress.line1}{defaultAddress.line2 ? `, ${defaultAddress.line2}` : ''}</span></div>
+                                        <div className="text-gray-700">City: <span className="text-gray-600">{defaultAddress.city}, {getStateName(defaultAddress.state)} {defaultAddress.postalCode}, {getCountryName(defaultAddress.country)}</span></div>
+                                        <div className="text-gray-700">Phone: <span className="text-gray-600">{defaultAddress.phone}</span></div>
+                                      </div>
+                                    );
+                                  } else {
+                                    return <div className="text-gray-700">No Default Address Set</div>;
                                   }
-                                }}
-                                className={`w-full px-3 py-2 border rounded-md text-sm ${phoneError ? 'border-red-500' : 'border-gray-300'}`}
-                                placeholder="Enter phone number (10 digits or +91XXXXXXXXXX)"
-                              />
-                              {phoneError && (
-                                <p className="text-sm text-red-600 mt-1">{phoneError}</p>
+                                })()
+                              ) : (
+                                <div className="text-gray-700">No Active Address</div>
                               )}
                             </div>
-                            <div className="flex gap-2 mt-4">
-                              <button
-                                onClick={handleEditProfile}
-                                className="px-4 py-2 bg-black text-white text-sm hover:bg-gray-800"
-                              >
-                                Save
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="px-4 py-2 border border-gray-300 text-sm hover:bg-gray-50"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="space-y-2 text-sm">
-                            <div>Profile Information</div>
-                            <div className="text-gray-700">Name: <span className="text-gray-600">{profile?.name || '-'}</span></div>
-                            <div className="text-gray-700">Email: <span className="text-gray-600">{profile?.email || '-'}</span></div>
-                            <div className="text-gray-700">Mobile: <span className="text-gray-600">{profile?.phone || '-'}</span></div>
-                          </div>
-                        )}
-                        {!isEditing && (
-                          <div className="mt-4">
-                            <button 
-                              onClick={() => setIsEditing(true)}
-                              className="text-black hover:opacity-70"
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <div className="text-lg font-medium mb-4">My Address Book</div>
-                        {profileLoading ? (
-                          <div className="text-sm text-gray-600">Loading...</div>
-                        ) : (
-                          <div className="space-y-2 text-sm">
-                            <div>Address Information</div>
-                            {profile?.addresses && profile.addresses.length > 0 ? (
-                              (() => {
-                                const defaultAddress = profile.addresses.find((addr: any) => addr.isDefault);
-                                if (defaultAddress) {
-                                  return (
-                                    <div className="space-y-2">
-                                      <div className="text-gray-700">Name: <span className="text-gray-600">{defaultAddress.fullName} (Default)</span></div>
-                                      <div className="text-gray-700">Address: <span className="text-gray-600">{defaultAddress.line1}{defaultAddress.line2 ? `, ${defaultAddress.line2}` : ''}</span></div>
-                                      <div className="text-gray-700">City: <span className="text-gray-600">{defaultAddress.city}, {defaultAddress.state} {defaultAddress.postalCode}, {defaultAddress.country}</span></div>
-                                      <div className="text-gray-700">Phone: <span className="text-gray-600">{defaultAddress.phone}</span></div>
-                                    </div>
-                                  );
-                                } else {
-                                  return <div className="text-gray-700">No Default Address Set</div>;
-                                }
-                              })()
-                            ) : (
-                              <div className="text-gray-700">No Active Address</div>
-                            )}
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -558,12 +566,21 @@ const ProfilePage: React.FC = () => {
                                       </div>
                                       <div>
                                         <label className="block text-sm text-gray-700 mb-1">State:</label>
-                                        <input
-                                          type="text"
-                                          value={addressEditForm.state}
-                                          onChange={(e) => setAddressEditForm({ ...addressEditForm, state: e.target.value })}
-                                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                        />
+                                        <Select 
+                                          value={addressEditForm.state} 
+                                          onValueChange={(value) => setAddressEditForm({ ...addressEditForm, state: getStateName(value) })}
+                                        >
+                                          <SelectTrigger className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                            <SelectValue placeholder="Select state" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="DL">Delhi</SelectItem>
+                                            <SelectItem value="MH">Maharashtra</SelectItem>
+                                            <SelectItem value="KA">Karnataka</SelectItem>
+                                            <SelectItem value="TN">Tamil Nadu</SelectItem>
+                                            <SelectItem value="WB">West Bengal</SelectItem>
+                                          </SelectContent>
+                                        </Select>
                                       </div>
                                       <div>
                                         <label className="block text-sm text-gray-700 mb-1">Postal Code:</label>
@@ -586,12 +603,17 @@ const ProfilePage: React.FC = () => {
                                       </div>
                                       <div>
                                         <label className="block text-sm text-gray-700 mb-1">Country:</label>
-                                        <input
-                                          type="text"
-                                          value={addressEditForm.country}
-                                          onChange={(e) => setAddressEditForm({ ...addressEditForm, country: e.target.value })}
-                                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                        />
+                                        <Select 
+                                          value={addressEditForm.country} 
+                                          onValueChange={(value) => setAddressEditForm({ ...addressEditForm, country: getCountryName(value) })}
+                                        >
+                                          <SelectTrigger className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                            <SelectValue placeholder="Select country" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="IN">India</SelectItem>
+                                          </SelectContent>
+                                        </Select>
                                       </div>
                                     </div>
                                     <div className="flex gap-2 mt-4">
@@ -613,7 +635,7 @@ const ProfilePage: React.FC = () => {
                                   <div>
                                     <div className="font-medium mb-2">{addr.fullName} {addr.isDefault ? '(Default)' : ''}</div>
                                     <div className="text-sm text-gray-600 mb-1">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}</div>
-                                    <div className="text-sm text-gray-600 mb-1">{addr.city}, {addr.state} {addr.postalCode}, {addr.country}</div>
+                                    <div className="text-sm text-gray-600 mb-1">{addr.city}, {getStateName(addr.state)} {addr.postalCode}, {getCountryName(addr.country)}</div>
                                     <div className="text-sm text-gray-600 mb-2">Phone: {addr.phone}</div>
                                     <div className="flex gap-2">
                                       <button 
