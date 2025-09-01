@@ -4,6 +4,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/lib/api';
 import { cn } from "@/lib/utils";
 import { useWishlist } from '@/contexts/WishlistContext';
+import { formatProductPrice } from '@/utils/priceUtils';
 
 interface ProductGridProps {
   products?: Product[];
@@ -120,7 +121,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     : undefined
                 }
                 title={product.name}
-                price={`Rs.${product.colorVariants?.[0]?.price || 0}`}
+                price={formatProductPrice(product.colorVariants?.[0]?.price || 0)}
                 category={product.category}
                 alt={product.name}
                 isWishlisted={isInWishlist(product._id)}

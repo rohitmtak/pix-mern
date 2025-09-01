@@ -195,7 +195,7 @@ const placeOrderRazorpay = async (req,res) => {
             const suggestedParts = Math.ceil(total / maxAmount);
             return res.json({
                 success: false,
-                message: `Order amount ₹${total.toLocaleString()} exceeds the maximum allowed amount of ₹${maxAmount.toLocaleString()}. Please split your order into ${suggestedParts} parts or contact support.`,
+                message: `Order amount ${total.toLocaleString('en-IN')} exceeds the maximum allowed amount of ${maxAmount.toLocaleString('en-IN')}. Please split your order into ${suggestedParts} parts or contact support.`,
                 suggestedParts: suggestedParts,
                 maxAmount: maxAmount
             });

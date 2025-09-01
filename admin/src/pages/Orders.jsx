@@ -6,6 +6,11 @@ import { backendUrl, currency } from '../App'
 import { toast } from 'react-toastify'
 import { assets } from '../assets/assets'
 
+// Helper function to format price with proper comma separators
+const formatPrice = (price) => {
+  return `₹${price.toLocaleString('en-IN')}`;
+};
+
 const Orders = ({ token }) => {
 
   const [orders, setOrders] = useState([])
@@ -186,8 +191,18 @@ const Orders = ({ token }) => {
         </button>
       </div>
 
+      {/* Summary - Moved to top */}
+      {!loading && orders.length > 0 && (
+        <div className="bg-white rounded-lg border-2 border-gray-300 p-4">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium text-gray-900">📊 Total Orders: {orders.length}</span>
+            <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
+      )}
+
       {orders.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
+        <div className="bg-white rounded-lg border-2 border-gray-300 p-8 text-center">
           <div className="text-gray-400 text-6xl mb-4">📦</div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Orders Found</h3>
           <p className="text-gray-600">Orders will appear here when customers place them.</p>
@@ -195,7 +210,7 @@ const Orders = ({ token }) => {
       ) : (
         <div className="space-y-6">
           {orders.map((order, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+            <div key={index} className="bg-white rounded-lg border-2 border-gray-300 overflow-hidden">
               {/* Order Header */}
               <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
@@ -315,7 +330,7 @@ const Orders = ({ token }) => {
                                 <span className="text-sm text-gray-900">{item.quantity}</span>
                               </td>
                               <td className="px-4 py-3 text-right">
-                                <span className="text-sm font-semibold text-gray-900">{currency}{(item.price * item.quantity).toFixed(2)}</span>
+                                <span className="text-sm font-semibold text-gray-900">{formatPrice(item.price * item.quantity)}</span>
                               </td>
                             </tr>
                           ))}
@@ -373,16 +388,6 @@ const Orders = ({ token }) => {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Summary */}
-      {!loading && orders.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-900">📊 Total Orders: {orders.length}</span>
-            <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleDateString()}</span>
-          </div>
         </div>
       )}
 

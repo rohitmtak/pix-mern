@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import axios from "axios";
 import { config } from "@/config/env";
-
 import { showToast, toastMessages } from "@/config/toastConfig";
 import { getStateName, getCountryName } from "@/utils/addressUtils";
+import { formatCartPrice } from '@/utils/priceUtils';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -120,15 +120,15 @@ const CheckoutPage = () => {
     loadUserAddresses();
   }, []);
 
-  // Calculate totals based on actual cart items
+  // Calculate totals based on selected cart items
   const calculateTotals = () => {
-    const subtotalValue = cartItems.reduce((sum, item) => {
+    const subtotalValue = selectedCartItems.reduce((sum, item) => {
       return sum + (item.price * item.quantity);
     }, 0);
     
-    const subtotal = `${subtotalValue.toLocaleString()}/-`;
+    const subtotal = formatCartPrice(subtotalValue);
     const shipping = "Free";
-    const total = `${subtotalValue.toLocaleString()}/-`;
+    const total = formatCartPrice(subtotalValue);
     
     return { subtotal, shipping, total };
   };
@@ -136,7 +136,7 @@ const CheckoutPage = () => {
   const { subtotal, shipping, total } = calculateTotals();
 
   // Numeric totals for backend amount field
-  const subtotalValue = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotalValue = selectedCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalValue = subtotalValue; // Shipping is Free
 
   const handleFormSubmit = async (formData: any) => {
@@ -582,7 +582,7 @@ const CheckoutPage = () => {
                     id: item.id,
                     imageUrl: item.imageUrl,
                     title: item.name,
-                    price: `Rs.${item.price}`,
+                    price: formatCartPrice(item.price),
                     size: item.size,
                     color: item.color,
                     quantity: item.quantity
