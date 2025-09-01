@@ -220,7 +220,7 @@ const CheckoutPage = () => {
         city: formData.city,
         state: formData.state,
         postalCode: formData.postalCode,
-        country: formData.country || 'IN',
+        country: formData.country || 'India',
       };
 
       // Validate address fields
@@ -252,7 +252,7 @@ const CheckoutPage = () => {
           city: formData.payment.billingAddress.city,
           state: formData.payment.billingAddress.state,
           postalCode: formData.payment.billingAddress.postalCode,
-          country: formData.payment.billingAddress.country || 'IN',
+          country: formData.payment.billingAddress.country || 'India',
         };
       } else {
         // For UPI, NetBanking, COD, or card payments with same address
@@ -345,7 +345,8 @@ const CheckoutPage = () => {
               `${config.api.baseUrl}/order/verifyRazorpay`,
               { 
                 razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id
+                razorpay_payment_id: response.razorpay_payment_id,
+                orderData: orderPayload // Pass the order data to backend
               },
               { headers: { token } }
             );
@@ -624,7 +625,7 @@ const CheckoutPage = () => {
                               city: "",
                               state: "",
                               postalCode: "",
-                              country: "IN"
+                              country: "India"
                             }
                           }
                         };

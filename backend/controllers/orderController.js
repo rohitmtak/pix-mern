@@ -3,6 +3,7 @@ import userModel from "../models/userModel.js";
 import cartModel from "../models/cartModel.js";
 import productModel from "../models/productModel.js";
 import razorpay from 'razorpay'
+import NotificationService from '../utils/notificationService.js'
 
 // Environment detection
 const isProduction = process.env.NODE_ENV === 'production';
@@ -109,37 +110,8 @@ const razorpayInstance = new razorpay({
     key_secret : process.env.RAZORPAY_KEY_SECRET,
 })
 
-// Placing orders using COD Method
-const placeOrder = async (req,res) => {
-    
-    try {
-        
-        const { userId, items, amount, address} = req.body;
-
-        const orderData = {
-            userId,
-            items,
-            address,
-            amount,
-            paymentMethod:"COD",
-            payment:false,
-            date: Date.now()
-        }
-
-        const newOrder = new orderModel(orderData)
-        await newOrder.save()
-
-        await userModel.findByIdAndUpdate(userId,{cartData:{}})
-
-        res.json({success:true,message:"Order Placed"})
 
 
-    } catch (error) {
-        console.log(error)
-        res.json({success:false,message:error.message})
-    }
-
-}
 
 // Placing orders using Razorpay Method
 const placeOrderRazorpay = async (req,res) => {
@@ -273,14 +245,14 @@ const placeOrderRazorpay = async (req,res) => {
         }
 
         const newOrder = new orderModel(orderData)
-        await newOrder.save()
+        // Don't save yet - wait for payment confirmation
 
         const options = {
             amount: total * 100, // Use calculated total
             currency: currency.toUpperCase(),
-            receipt: newOrder._id.toString(),
+            receipt: 'temp_' + Date.now(), // Temporary receipt ID
             notes: {
-                orderId: newOrder._id.toString(),
+                orderData: JSON.stringify(orderData), // Store order data in notes
                 customerEmail: orderData.customerEmail
             }
         }
@@ -313,16 +285,10 @@ const placeOrderRazorpay = async (req,res) => {
                 })
             }
             
-            // Update order with Razorpay order ID
-            orderModel.findByIdAndUpdate(
-                newOrder._id, 
-                { 'paymentDetails.gatewayOrderId': razorpayOrder.id }
-            ).exec()
-            
             res.json({
                 success: true, 
                 order: razorpayOrder,
-                orderId: newOrder._id
+                orderData: orderData // Send order data to frontend
             })
         })
 
@@ -335,80 +301,97 @@ const placeOrderRazorpay = async (req,res) => {
 const verifyRazorpay = async (req,res) => {
     try {
         
-        const { razorpay_order_id, razorpay_payment_id } = req.body
+        const { razorpay_order_id, razorpay_payment_id, orderData } = req.body
         const { userId } = req.user; // Get userId from auth middleware
 
         // Fetch order from Razorpay
         const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id)
         
         if (orderInfo.status === 'paid') {
-            // Update order with both new and legacy fields
-            const updatedOrder = await orderModel.findOneAndUpdate(
-                { 'paymentDetails.gatewayOrderId': razorpay_order_id },
-                { 
-                    // New structured fields
-                    paymentStatus: 'paid',
-                    paymentDate: new Date(),
-                    'paymentDetails.transactionId': razorpay_payment_id,
-                    status: 'confirmed',
-                    
-                    // Legacy fields for backward compatibility
-                    payment: true
+            // Create the order in database with payment details
+            const finalOrderData = {
+                userId: userId,
+                customerEmail: orderData.customerEmail,
+                customerPhone: orderData.customerPhone,
+                items: orderData.items,
+                subtotal: orderData.subtotal,
+                shipping: orderData.shipping,
+                total: orderData.total,
+                shippingAddress: orderData.address, // Map address to shippingAddress
+                billingAddress: orderData.billingAddress,
+                paymentDetails: {
+                    method: orderData.paymentMethod,
+                    gateway: 'razorpay',
+                    gatewayOrderId: razorpay_order_id,
+                    transactionId: razorpay_payment_id
                 },
-                { new: true }
-            )
-
-            if (updatedOrder) {
-                // Reduce stock for ordered items
-                try {
-                    await reduceStock(updatedOrder.items);
-                } catch (stockError) {
-                    console.error('Failed to reduce stock:', stockError);
-                    // Continue with order completion even if stock reduction fails
-                }
-
-                // Clear user's cart from both systems
-                await userModel.findByIdAndUpdate(userId, { cartData: {} })
-                
-                // Remove only the ordered items from cart collection
-                const cart = await cartModel.findOne({ userId });
-                if (cart) {
-                    // Get the ordered item IDs
-                    const orderedItemIds = updatedOrder.items.map(item => item.productId.toString());
-                    
-                    // Remove only the ordered items
-                    cart.items = cart.items.filter(item => 
-                        !orderedItemIds.includes(item.productId.toString())
-                    );
-                    
-                    // Recalculate totals
-                    cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
-                    cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    cart.lastUpdated = new Date();
-                    
-                    await cart.save();
-                }
-                
-                res.json({ 
-                    success: true, 
-                    message: "Payment Successful",
-                    orderId: updatedOrder._id
-                })
-            } else {
-                // Fallback to legacy method if new method fails
-                await orderModel.findByIdAndUpdate(orderInfo.receipt, { payment: true });
-                await userModel.findByIdAndUpdate(userId, { cartData: {} })
-                
-                // Also clear the cart collection in fallback
-                await cartModel.findOneAndUpdate({ userId }, { 
-                    items: [], 
-                    totalItems: 0, 
-                    totalPrice: 0,
-                    lastUpdated: new Date()
-                });
-                
-                res.json({ success: true, message: "Payment Successful" })
+                paymentStatus: 'paid',
+                paymentDate: new Date(),
+                status: 'confirmed',
+                // Legacy fields
+                amount: orderData.amount,
+                address: orderData.address,
+                paymentMethod: orderData.paymentMethod,
+                payment: true,
+                date: Date.now()
             }
+
+            console.log('Creating order with data:', finalOrderData);
+
+            const newOrder = new orderModel(finalOrderData)
+            try {
+                await newOrder.save()
+                console.log('Order created successfully:', newOrder._id);
+            } catch (saveError) {
+                console.error('Failed to save order:', saveError);
+                return res.json({ success: false, message: 'Failed to create order: ' + saveError.message });
+            }
+
+            // Send real-time notification to admin
+            await NotificationService.sendNewOrderNotification(newOrder)
+
+            // Send order and payment confirmation to customer via WhatsApp
+            try {
+                await NotificationService.sendOrderAndPaymentConfirmation(newOrder)
+            } catch (whatsappError) {
+                console.log('Customer WhatsApp notification failed:', whatsappError)
+            }
+
+            // Reduce stock for ordered items
+            try {
+                await reduceStock(newOrder.items);
+            } catch (stockError) {
+                console.error('Failed to reduce stock:', stockError);
+                // Continue with order completion even if stock reduction fails
+            }
+
+            // Clear user's cart from both systems
+            await userModel.findByIdAndUpdate(userId, { cartData: {} })
+            
+            // Remove only the ordered items from cart collection
+            const cart = await cartModel.findOne({ userId });
+            if (cart) {
+                // Get the ordered item IDs
+                const orderedItemIds = newOrder.items.map(item => item.productId.toString());
+                
+                // Remove only the ordered items
+                cart.items = cart.items.filter(item => 
+                    !orderedItemIds.includes(item.productId.toString())
+                );
+                
+                // Recalculate totals
+                cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+                cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                cart.lastUpdated = new Date();
+                
+                await cart.save();
+            }
+            
+            res.json({ 
+                success: true, 
+                message: "Payment Successful",
+                orderId: newOrder._id
+            })
         } else {
              res.json({ success: false, message: 'Payment Failed' });
         }
@@ -455,7 +438,15 @@ const updateStatus = async (req,res) => {
         
         const { orderId, status } = req.body
 
+        // Get the current order to check old status
+        const currentOrder = await orderModel.findById(orderId)
+        const oldStatus = currentOrder ? currentOrder.status : 'unknown'
+
         await orderModel.findByIdAndUpdate(orderId, { status })
+        
+        // Send real-time notification for status update
+        await NotificationService.sendOrderStatusUpdate(orderId, oldStatus, status)
+        
         res.json({success:true,message:'Status Updated'})
 
     } catch (error) {
@@ -464,4 +455,4 @@ const updateStatus = async (req,res) => {
     }
 }
 
-export {verifyRazorpay, placeOrder, placeOrderRazorpay, allOrders, userOrders, updateStatus}
+export {verifyRazorpay, placeOrderRazorpay, allOrders, userOrders, updateStatus}

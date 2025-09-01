@@ -113,9 +113,9 @@ const CheckoutForm = ({
           line1: values.address,
           line2: values.apartment || '',
           city: values.city,
-          state: getStateName(values.state),
+          state: values.state,
           postalCode: values.postalCode,
-          country: getCountryName(values.country),
+          country: values.country,
           isDefault: addresses.length === 0, // Set as default if no addresses exist
         };
         onSaveAddress(addressData);
@@ -149,9 +149,9 @@ const CheckoutForm = ({
           address: selectedAddress.line1,
           apartment: selectedAddress.line2 || '',
           city: selectedAddress.city,
-          state: getStateName(selectedAddress.state),
+          state: selectedAddress.state,
           postalCode: selectedAddress.postalCode,
-          country: getCountryName(selectedAddress.country),
+          country: selectedAddress.country,
           payment: paymentData
         };
         onSubmit(formData);
@@ -254,16 +254,19 @@ const CheckoutForm = ({
                   name="state"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={(value) => field.onChange(getStateName(value))} value={field.value}>
+                    <Select 
+                      onValueChange={(value) => field.onChange(value)} 
+                      value={field.value || ""}
+                    >
                       <SelectTrigger className={cn("mt-1", errors.state && "border-red-500")}> 
                         <SelectValue placeholder="Select state" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="DL">Delhi</SelectItem>
-                        <SelectItem value="MH">Maharashtra</SelectItem>
-                        <SelectItem value="KA">Karnataka</SelectItem>
-                        <SelectItem value="TN">Tamil Nadu</SelectItem>
-                        <SelectItem value="WB">West Bengal</SelectItem>
+                        <SelectItem value="Delhi">Delhi</SelectItem>
+                        <SelectItem value="Maharashtra">Maharashtra</SelectItem>
+                        <SelectItem value="Karnataka">Karnataka</SelectItem>
+                        <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
+                        <SelectItem value="West Bengal">West Bengal</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -300,12 +303,15 @@ const CheckoutForm = ({
                   name="country"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={(value) => field.onChange(getCountryName(value))} value={field.value}>
+                    <Select 
+                      onValueChange={(value) => field.onChange(value)} 
+                      value={field.value || ""}
+                    >
                       <SelectTrigger className={cn("mt-1", errors.country && "border-red-500")}> 
                         <SelectValue placeholder="Select country" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="IN">India</SelectItem>
+                        <SelectItem value="India">India</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -553,19 +559,22 @@ const CheckoutForm = ({
               </div>
               <div>
                 <Label htmlFor="billingState">State *</Label>
-                <Select onValueChange={(value) => setPaymentData(prev => ({
-                  ...prev,
-                  billingAddress: { ...prev.billingAddress, state: getStateName(value) }
-                }))} value={paymentData.billingAddress.state}>
+                <Select 
+                  onValueChange={(value) => setPaymentData(prev => ({
+                    ...prev,
+                    billingAddress: { ...prev.billingAddress, state: value }
+                  }))} 
+                  value={paymentData.billingAddress.state || ""}
+                >
                   <SelectTrigger className="mt-1"> 
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="DL">Delhi</SelectItem>
-                    <SelectItem value="MH">Maharashtra</SelectItem>
-                    <SelectItem value="KA">Karnataka</SelectItem>
-                    <SelectItem value="TN">Tamil Nadu</SelectItem>
-                    <SelectItem value="WB">West Bengal</SelectItem>
+                    <SelectItem value="Delhi">Delhi</SelectItem>
+                    <SelectItem value="Maharashtra">Maharashtra</SelectItem>
+                    <SelectItem value="Karnataka">Karnataka</SelectItem>
+                    <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
+                    <SelectItem value="West Bengal">West Bengal</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -590,15 +599,18 @@ const CheckoutForm = ({
               </div>
               <div>
                 <Label htmlFor="billingCountry">Country *</Label>
-                <Select onValueChange={(value) => setPaymentData(prev => ({
-                  ...prev,
-                  billingAddress: { ...prev.billingAddress, country: getCountryName(value) }
-                }))} value={paymentData.billingAddress.country}>
+                <Select 
+                  onValueChange={(value) => setPaymentData(prev => ({
+                    ...prev,
+                    billingAddress: { ...prev.billingAddress, country: value }
+                  }))} 
+                  value={paymentData.billingAddress.country || ""}
+                >
                   <SelectTrigger className="mt-1"> 
                     <SelectValue placeholder="Select country" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="IN">India</SelectItem>
+                    <SelectItem value="India">India</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

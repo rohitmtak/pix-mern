@@ -83,3 +83,18 @@ desktop.ini
 
 # Windows-specific files
 nul
+
+# Deployment and test scripts (contain sensitive information)
+deploy.sh
+run-tests.sh
+
+# WhatsApp Web.js cache and session files
+.wwebjs_auth/
+*/wwebjs_auth/
+backend/.wwebjs_auth/
+backend/wwebjs_auth/
+
+# WhatsApp Web.js cache files
+.wwebjs_cache/
+*/wwebjs_cache/
+backend/.wwebjs_cache/

@@ -129,6 +129,17 @@ const Orders = ({ token }) => {
       // Update order status with shipping info
       await statusHandler(selectedOrder._id, 'Shipped')
       
+      // Send shipping notification via WhatsApp
+      try {
+        await axios.post(`${backendUrl}/api/test/send-shipping-notification`, {
+          orderId: selectedOrder._id,
+          trackingNumber: shippingForm.trackingNumber,
+          courier: shippingForm.courier
+        })
+      } catch (whatsappError) {
+        console.log('WhatsApp notification failed:', whatsappError)
+      }
+      
       // Reset form and close modal
       setShippingForm({
         courier: 'Shiprocket',
@@ -139,7 +150,7 @@ const Orders = ({ token }) => {
       setShowShippingModal(false)
       setSelectedOrder(null)
       
-      toast.success('Order shipped successfully! Customer will be notified.')
+      toast.success('Order shipped successfully! Customer will be notified via WhatsApp.')
     } catch (error) {
       toast.error('Failed to process shipping')
     }

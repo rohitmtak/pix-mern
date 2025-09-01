@@ -7,6 +7,9 @@ import List from './pages/List'
 import Orders from './pages/Orders'
 import StockManager from './components/StockManager'
 import Login from './components/Login'
+import NotificationSystem from './components/NotificationSystem'
+import NotificationTester from './components/NotificationTester'
+import WhatsAppManager from './components/WhatsAppManager'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -43,6 +46,9 @@ const App = () => {
           <Sidebar />
           <div className="flex-1">
             <Navbar setToken={setToken} />
+            <NotificationSystem />
+            <NotificationTester />
+            <WhatsAppManager />
             <main className="p-8">
               <Routes>
                 <Route path='/' element={<Add token={token} />} />

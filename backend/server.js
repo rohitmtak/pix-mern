@@ -3,6 +3,8 @@ import cors from 'cors'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
 import 'dotenv/config'
 import connectDB from './config/mongodb.js'
 import connectCloudinary from './config/cloudinary.js'
@@ -10,6 +12,7 @@ import userRouter from './routes/userRoute.js'
 import productRouter from './routes/productRoute.js'
 import cartRouter from './routes/cartRoute.js'
 import orderRouter from './routes/orderRoute.js'
+import testRouter from './routes/testRoute.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -25,8 +28,18 @@ if (!fs.existsSync(uploadsDir)) {
 const app = express()
 const port = process.env.PORT || 4000
 
-// Export app for testing
-export { app }
+// Create HTTP server and Socket.io
+const httpServer = createServer(app)
+const io = new Server(httpServer, {
+  cors: {
+    origin: ["http://localhost:5173", "http://localhost:5174", "https://highstreetpix.netlify.app"],
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+})
+
+// Export app and io for testing
+export { app, io }
 
 // Initialize database and cloudinary connections
 const initializeApp = async () => {
@@ -70,6 +83,7 @@ const initializeApp = async () => {
         app.use('/api/product',productRouter)
         app.use('/api/cart',cartRouter)
         app.use('/api/order',orderRouter)
+        app.use('/api/test',testRouter)
 
         // Root health check for frontend
         app.get('/',(req,res)=>{
@@ -95,7 +109,20 @@ const initializeApp = async () => {
             })
         })
 
-        app.listen(port, ()=> console.log('Server started on PORT : '+ port))
+        // Socket.io connection handling
+        io.on('connection', (socket) => {
+          console.log('🟢 Admin connected:', socket.id)
+          
+          // Join admin room
+          socket.join('admin')
+          
+          socket.on('disconnect', () => {
+            console.log('🔴 Admin disconnected:', socket.id)
+          })
+        })
+
+        httpServer.listen(port, ()=> console.log('🚀 Server started on PORT : '+ port))
+        console.log('📡 Socket.io server ready for real-time notifications')
     } catch (error) {
         console.error('Failed to initialize app:', error)
         process.exit(1)
