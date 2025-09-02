@@ -43,7 +43,7 @@ const Sidebar = ({
             to="/add"
           >
             <img className='w-5 h-5' src={assets.add_icon} alt="" />
-            <span className='font-medium'>Add Products</span>
+            <span className=''>Add Products</span>
           </NavLink>
 
           <NavLink 
@@ -57,7 +57,7 @@ const Sidebar = ({
             to="/list"
           >
             <img className='w-5 h-5' src={assets.order_icon} alt="" />
-            <span className='font-medium'>Product List</span>
+            <span className=''>Product List</span>
           </NavLink>
 
           <NavLink 
@@ -71,7 +71,7 @@ const Sidebar = ({
             to="/orders"
           >
             <img className='w-5 h-5' src={assets.order_icon} alt="" />
-            <span className='font-medium'>Orders</span>
+            <span className=''>Orders</span>
           </NavLink>
 
           <NavLink 
@@ -87,7 +87,7 @@ const Sidebar = ({
             <svg className='w-5 h-5' fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
             </svg>
-            <span className='font-medium'>Stock Management</span>
+            <span className=''>Stock Management</span>
           </NavLink>
         </nav>
         

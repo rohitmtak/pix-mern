@@ -99,7 +99,7 @@ const App = () => {
               </div>
             )}
             
-            <main className="p-8">
+            <main className="p-8 bg-[#f1f2f2]">
               <Routes>
                 <Route path='/' element={<Add token={token} />} />
                 <Route path='/add' element={<Add token={token} />} />

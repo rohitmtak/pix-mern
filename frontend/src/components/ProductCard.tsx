@@ -74,7 +74,7 @@ const ProductCard = ({
   };
 
   return (
-    <div className={cn("flex flex-col w-full", compact ? "gap-0" : "gap-2", className)}>
+    <div className={cn("flex flex-col w-full", compact ? "gap-2" : "gap-2", className)}>
       {/* Product Image Container */}
       <div className="relative w-full group">
         <Link to={`/product/${id}`} className="block w-full">
@@ -142,9 +142,9 @@ const ProductCard = ({
         </div>
 
         {/* Color Variants - Positioned below product info for consistent alignment */}
-        <div className="px-1.5 pb-2">
+        <div className="">
           {product && product.colorVariants && product.colorVariants.length > 1 && (
-            <div>
+            <div className="px-1.5 pb-4">
               <ColorVariantSelector
                 colorVariants={product.colorVariants}
                 selectedColor={selectedColor}

@@ -193,7 +193,7 @@ const Orders = ({ token }) => {
 
       {/* Summary - Moved to top */}
       {!loading && orders.length > 0 && (
-        <div className="bg-white rounded-lg border-2 border-gray-300 p-4">
+        <div className="bg-white rounded-lg border border-gray-300 p-4">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-900">📊 Total Orders: {orders.length}</span>
             <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleDateString()}</span>
@@ -202,7 +202,7 @@ const Orders = ({ token }) => {
       )}
 
       {orders.length === 0 ? (
-        <div className="bg-white rounded-lg border-2 border-gray-300 p-8 text-center">
+        <div className="bg-white rounded-lg border border-gray-300 p-8 text-center">
           <div className="text-gray-400 text-6xl mb-4">📦</div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Orders Found</h3>
           <p className="text-gray-600">Orders will appear here when customers place them.</p>
@@ -210,15 +210,15 @@ const Orders = ({ token }) => {
       ) : (
         <div className="space-y-6">
           {orders.map((order, index) => (
-            <div key={index} className="bg-white rounded-lg border-2 border-gray-300 overflow-hidden">
+            <div key={index} className="bg-white rounded-lg border border-gray-300 overflow-hidden">
               {/* Order Header */}
               <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="text-lg font-bold text-gray-900 mr-12">
+                  <div className="flex items-center gap-4">
+                    <div className="text-lg font-bold text-gray-900">
                       #{order._id.slice(-8).toUpperCase()}
                     </div>
-                    <div className="text-sm text-gray-600 px-4 py-2 bg-gray-100 rounded-lg border border-gray-200 mr-12">
+                    <div className="text-sm text-gray-600 px-4 py-2 bg-gray-100 rounded-lg border border-gray-200">
                       {new Date(order.orderDate || order.date).toLocaleDateString()} • {new Date(order.orderDate || order.date).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
                     </div>
                     <div className="text-sm text-gray-600 px-4 py-2 bg-gray-100 rounded-lg border border-gray-200">
@@ -226,7 +226,7 @@ const Orders = ({ token }) => {
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center gap-8">
                     <div className="text-right">
                       <div className="text-lg font-bold text-gray-900">
                         {currency}{order.total || order.amount}
@@ -281,9 +281,9 @@ const Orders = ({ token }) => {
 
               {/* Order Content */}
               <div className="p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Order Items Table */}
-                  <div className="lg:col-span-2">
+                  <div className="">
                     <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -293,7 +293,7 @@ const Orders = ({ token }) => {
                     
                     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                       <table className="w-full">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-100">
                           <tr>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Variant</th>
@@ -340,7 +340,7 @@ const Orders = ({ token }) => {
                   </div>
 
                   {/* Customer Details */}
-                  <div className="lg:col-span-1">
+                  <div className="">
                     <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -350,7 +350,7 @@ const Orders = ({ token }) => {
                     
                     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                       <table className="w-full">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-100">
                           <tr>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>

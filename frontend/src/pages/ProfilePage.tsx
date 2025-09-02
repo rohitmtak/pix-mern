@@ -378,7 +378,7 @@ const ProfilePage: React.FC = () => {
 
               {/* Content */}
               <section className="col-span-12 md:col-span-9">
-                <div className="border border-gray-200 p-8 bg-gray-50">
+                <div className="border border-gray-200 p-8 bg-[#f2f2f2]">
                   {activeTab === 'account' && (
                     <div className="space-y-4">
                       <div className="text-xl font-medium mb-4">My Account</div>
