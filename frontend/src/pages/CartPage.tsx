@@ -12,7 +12,6 @@ const CartPage = () => {
   const navigate = useNavigate();
   const { state: cartState, updateQuantity, removeFromCart, clearCart } = useCart();
   const cartItems = cartState.items;
-  // const isSyncing = cartState.isSyncing;
 
   // Item selection state
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -152,16 +151,6 @@ const CartPage = () => {
               CART
             </h1>
             
-            {/* Cart Sync Status */}
-            {/* {isSyncing && (
-              <div className="mt-4 text-sm text-gray-600">
-                <span className="inline-flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin"></div>
-                  Syncing cart...
-                </span>
-              </div>
-            )} */}
-
             {/* Breadcrumb */}
             <div className="flex justify-center items-center gap-2 mt-4 text-sm text-gray-600">
               <button

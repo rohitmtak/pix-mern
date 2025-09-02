@@ -132,9 +132,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       };
     }
 
-
-
     default:
+      return state;
       return state;
   }
 };
