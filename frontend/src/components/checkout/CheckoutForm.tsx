@@ -193,7 +193,7 @@ const CheckoutForm = ({
 
         {/* Show new address form if showAddressForm is true */}
         {showAddressForm && (
-          <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+          <div className="mt-4 px-4 py-6 border border-gray-200 rounded-lg bg-gray-50">
             <div className="flex items-center justify-between mb-6">
               <h3 
                 className="text-black font-normal"

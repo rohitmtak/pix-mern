@@ -43,7 +43,7 @@ const OrderSummary = ({
   // Cart view (simplified)
   if (variant === 'cart') {
     return (
-      <div className={cn("bg-white p-8 border border-gray-200", className)}>
+      <div className={cn("p-8 border border-gray-200 bg-gray-50", className)}>
         {/* Cart Header */}
         <div className="text-center mb-6">
           <h2 
@@ -92,7 +92,7 @@ const OrderSummary = ({
 
   // Checkout view (original detailed design)
   return (
-    <div className={cn("bg-gray-50 p-8", className)}>
+    <div className={cn("bg-gray-50 p-8 border border-gray-200 rounded-lg", className)}>
       <h2 
         className="text-black font-normal uppercase mb-6"
         style={{

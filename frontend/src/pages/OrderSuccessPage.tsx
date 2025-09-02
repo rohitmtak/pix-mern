@@ -25,16 +25,16 @@ const OrderSuccessPage = () => {
       <Header />
 
       {/* Main Content */}
-      <main className="pt-36">
+      <main className="pt-8">
         <div className="container mx-auto px-16 py-24">
           <div className="max-w-2xl mx-auto text-center">
             
             {/* Success Icon */}
             <div className="mb-8">
-              <div className="w-24 h-24 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
                 <svg
-                  width="48"
-                  height="48"
+                  width="40"
+                  height="40"
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -53,7 +53,7 @@ const OrderSuccessPage = () => {
 
             {/* Success Message */}
             <h1 
-              className="text-black font-normal uppercase mb-6"
+              className="text-black font-normal uppercase mb-4"
               style={{
                 fontSize: '35px',
                 fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',

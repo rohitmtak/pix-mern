@@ -153,7 +153,7 @@ const ProductCard = ({
 
         {/* Color Variants - Positioned below product info for consistent alignment */}
         <div className="px-1.5 pb-2">
-          {product && product.colorVariants && product.colorVariants.length > 1 ? (
+          {product && product.colorVariants && product.colorVariants.length > 1 && (
             <div>
               <ColorVariantSelector
                 colorVariants={product.colorVariants}
@@ -165,9 +165,6 @@ const ProductCard = ({
                 className="justify-start" // Align to start instead of center
               />
             </div>
-          ) : (
-            // Placeholder div to maintain consistent height for products without color variants
-            <div className="h-5 mt-2"></div>
           )}
         </div>
       </div>
