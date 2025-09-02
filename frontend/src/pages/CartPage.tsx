@@ -6,6 +6,7 @@ import OrderSummary from "@/components/checkout/OrderSummary";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { showToast, toastMessages } from "@/config/toastConfig";
+import { formatCartPrice } from '@/utils/priceUtils';
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const CartPage = () => {
   // Item selection state
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
-  // Initialize all items as selected by default when cart changes
+  // Initialize with no items selected by default - user has full control
   useEffect(() => {
     const allItemIds = cartItems.map(item => `${item.productId}-${item.size}-${item.color}`);
     setSelectedItems(new Set(allItemIds));
@@ -55,13 +56,14 @@ const CartPage = () => {
       return sum + (item.price * item.quantity);
     }, 0);
 
-    const subtotal = `${subtotalValue.toLocaleString()}/-`;
+    const subtotal = formatCartPrice(subtotalValue);
     const shipping = "Free";
-    const total = `${subtotalValue.toLocaleString()}/-`;
+    const total = formatCartPrice(subtotalValue);
 
     return { subtotal, shipping, total };
   };
 
+  // Recalculate totals whenever selectedCartItems changes
   const { subtotal, shipping, total } = calculateTotals(selectedCartItems);
 
   const handleQuantityChange = (productId: string, size: string, color: string, newQuantity: number) => {
@@ -304,7 +306,7 @@ const CartPage = () => {
                           fontWeight: 400
                         }}
                       >
-                        Rs.{item.price}
+                        {formatCartPrice(item.price)}
                       </p>
                     </div>
                   );
@@ -336,11 +338,12 @@ const CartPage = () => {
               {/* Order Summary */}
               <div className="lg:sticky lg:top-24 lg:self-start">
                 <OrderSummary
+                  key={`order-summary-${selectedItems.size}-${selectedCartItems.length}`}
                   items={selectedCartItems.map(item => ({
                     id: item.id,
                     imageUrl: item.imageUrl,
                     title: item.name,
-                    price: `Rs.${item.price}`,
+                    price: formatCartPrice(item.price),
                     size: item.size,
                     color: item.color,
                     quantity: item.quantity

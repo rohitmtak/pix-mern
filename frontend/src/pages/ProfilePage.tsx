@@ -7,6 +7,7 @@ import { showToast, toastMessages } from "@/config/toastConfig";
 import { config } from "@/config/env";
 import { useCart } from "@/contexts/CartContext";
 import { getStateName, getCountryName } from "@/utils/addressUtils";
+import { formatOrderPrice } from '@/utils/priceUtils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface OrderItem {
@@ -690,7 +691,7 @@ const ProfilePage: React.FC = () => {
                                 <div className="text-sm text-gray-600">{new Date(order.date).toLocaleString()}</div>
                               </div>
                               <div className="text-sm mb-2">Status: <span className="font-medium">{order.status}</span></div>
-                              <div className="text-sm mb-4">Amount: <span className="font-medium">₹{order.amount}</span></div>
+                              <div className="text-sm mb-4">Amount: <span className="font-medium">{formatOrderPrice(order.amount)}</span></div>
                               <div className="space-y-2">
                                 {order.items?.map((it, idx) => (
                                   <div key={idx} className="flex items-center justify-between text-sm">

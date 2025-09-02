@@ -159,7 +159,7 @@ ${orderData.items?.map(item => `• ${item.name} (${item.size}, ${item.color}) x
 🔄 Order Status: Processing
 
 📞 Need help? Contact us at +91-XXXXXXXXXX
-🌐 Visit: www.pixluxury.com
+🌐 Visit: www.highstreetpix.com
 
 _Your order is now being processed! We'll notify you when it ships._`
 

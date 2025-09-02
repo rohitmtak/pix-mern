@@ -6,6 +6,7 @@ const NotificationSystem = () => {
   const [socket, setSocket] = useState(null)
   const [notifications, setNotifications] = useState([])
   const [isConnected, setIsConnected] = useState(false)
+  const [showPanel, setShowPanel] = useState(false)
 
   useEffect(() => {
     // Initialize socket connection
@@ -30,21 +31,21 @@ const NotificationSystem = () => {
       // Add to notifications list
       setNotifications(prev => [notification, ...prev.slice(0, 9)]) // Keep last 10
       
-      // Show toast notification
+      // Show toast notification without any icon
       toast.success(
         <div>
-          <div className="font-bold">{notification.title}</div>
-          <div className="text-sm">{notification.message}</div>
+          <div className="font-bold">{cleanNotificationContent(notification.title)}</div>
+          <div className="text-sm">{cleanNotificationContent(notification.message)}</div>
         </div>,
         {
-          position: "top-right",
+          position: "top-center",
           autoClose: 5000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
           progress: undefined,
-          icon: "🛍️"
+          icon: false
         }
       )
 
@@ -62,18 +63,18 @@ const NotificationSystem = () => {
       
       toast.info(
         <div>
-          <div className="font-bold">{notification.title}</div>
-          <div className="text-sm">{notification.message}</div>
+          <div className="font-bold">{cleanNotificationContent(notification.title)}</div>
+          <div className="text-sm">{cleanNotificationContent(notification.message)}</div>
         </div>,
         {
-          position: "top-right",
+          position: "top-center",
           autoClose: 4000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
           progress: undefined,
-          icon: "📦"
+          icon: false
         }
       )
     })
@@ -86,18 +87,18 @@ const NotificationSystem = () => {
       
       toast.warning(
         <div>
-          <div className="font-bold">{notification.title}</div>
-          <div className="text-sm">{notification.message}</div>
+          <div className="font-bold">{cleanNotificationContent(notification.title)}</div>
+          <div className="text-sm">{cleanNotificationContent(notification.message)}</div>
         </div>,
         {
-          position: "top-right",
+          position: "top-center",
           autoClose: 6000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
           progress: undefined,
-          icon: "⚠️"
+          icon: false
         }
       )
 
@@ -114,18 +115,18 @@ const NotificationSystem = () => {
       
       toast.info(
         <div>
-          <div className="font-bold">{notification.title}</div>
-          <div className="text-sm">{notification.message}</div>
+          <div className="font-bold">{cleanNotificationContent(notification.title)}</div>
+          <div className="text-sm">{cleanNotificationContent(notification.message)}</div>
         </div>,
         {
-          position: "top-right",
+          position: "top-center",
           autoClose: 8000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
           progress: undefined,
-          icon: "📊"
+          icon: false
         }
       )
     })
@@ -187,60 +188,81 @@ const NotificationSystem = () => {
     })
   }
 
+  // Clean notification content to remove duplicate icons
+  const cleanNotificationContent = (content) => {
+    if (!content) return content
+    // Remove common emoji icons that might be duplicated
+    return content
+      .replace(/[🛍️📦⚠️📊📢]/g, '') // Remove emoji icons
+      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+      .trim()
+  }
+
   return (
-    <div className="fixed top-4 right-4 z-50">
-      {/* Connection Status */}
-      <div className={`mb-2 px-3 py-1 rounded-full text-xs font-medium ${
-        isConnected 
-          ? 'bg-green-100 text-green-800' 
-          : 'bg-red-100 text-red-800'
-      }`}>
-        {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
-      </div>
-
-      {/* Notification Bell */}
-      {notifications.length > 0 && (
-        <div className="relative">
-          <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
-            {notifications.length > 9 ? '9+' : notifications.length}
+    <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between py-3">
+          {/* Connection Status */}
+          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+            isConnected 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-red-100 text-red-800'
+          }`}>
+            {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
           </div>
-        </div>
-      )}
 
-      {/* Notifications Panel (Optional - can be expanded later) */}
-      {notifications.length > 0 && (
-        <div className="bg-white rounded-lg shadow-lg border border-gray-200 max-w-sm mt-2">
-          <div className="p-3 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="font-medium text-gray-900">Recent Notifications</h3>
-            <button
-              onClick={clearNotifications}
-              className="text-xs text-gray-500 hover:text-gray-700"
-            >
-              Clear All
-            </button>
-          </div>
-          <div className="max-h-64 overflow-y-auto">
-            {notifications.slice(0, 5).map((notification, index) => (
-              <div key={index} className="p-3 border-b border-gray-100 last:border-b-0">
-                <div className="flex items-start gap-2">
-                  <span className="text-lg">{getNotificationIcon(notification.type)}</span>
-                  <div className="flex-1">
-                    <div className="font-medium text-sm text-gray-900">
-                      {notification.title}
+          {/* Notification Bell and Panel */}
+          <div className="flex items-center space-x-4">
+            {notifications.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowPanel(!showPanel)}
+                  className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
+                    {notifications.length > 9 ? '9+' : notifications.length}
+                  </div>
+                </button>
+                
+                {/* Notifications Panel - Positioned to avoid toast overlap */}
+                {showPanel && (
+                  <div className="absolute right-0 top-12 bg-white rounded-lg border border-gray-200 shadow-lg w-80 z-50">
+                    <div className="p-3 border-b border-gray-200 flex justify-between items-center">
+                      <h3 className="font-medium text-gray-900 text-sm">Notifications</h3>
+                      <button
+                        onClick={clearNotifications}
+                        className="text-xs text-gray-500 hover:text-gray-700"
+                      >
+                        Clear
+                      </button>
                     </div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      {notification.message}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      {formatTime(notification.timestamp)}
+                    <div className="max-h-64 overflow-y-auto">
+                      {notifications.slice(0, 5).map((notification, index) => (
+                        <div key={index} className="p-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
+                          <div className="flex items-start gap-2">
+                            <span className="text-sm flex-shrink-0">{getNotificationIcon(notification.type)}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-xs text-gray-900 truncate">
+                                {cleanNotificationContent(notification.title)}
+                              </div>
+                              <div className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                {cleanNotificationContent(notification.message)}
+                              </div>
+                              <div className="text-xs text-gray-400 mt-1">
+                                {formatTime(notification.timestamp)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
+                )}
               </div>
-            ))}
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

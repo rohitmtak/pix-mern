@@ -1,10 +1,21 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
 import { assets } from '../assets/assets'
+import WhatsAppManager from './WhatsAppManager'
+import NotificationTester from './NotificationTester'
 
-const Sidebar = () => {
+const Sidebar = ({ 
+  whatsappMinimized, 
+  setWhatsappMinimized, 
+  notificationMinimized, 
+  setNotificationMinimized,
+  whatsappPosition,
+  setWhatsappPosition,
+  notificationPosition,
+  setNotificationPosition
+}) => {
   return (
-    <div className='w-64 min-h-screen bg-white border-r border-gray-200'>
+    <div className='w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col'>
       <style>
         {`
           .bg-black img {
@@ -12,7 +23,9 @@ const Sidebar = () => {
           }
         `}
       </style>
-      <div className='p-6'>
+      
+      {/* Main navigation content */}
+      <div className='p-6 flex-1'>
         <div className='mb-8'>
           <h2 className='text-lg font-semibold text-gray-800 mb-1'>Navigation</h2>
           <p className='text-sm text-gray-600'>Manage your store</p>
@@ -77,6 +90,26 @@ const Sidebar = () => {
             <span className='font-medium'>Stock Management</span>
           </NavLink>
         </nav>
+        
+        {/* Minimized cards below navigation */}
+        <div className='mt-8 space-y-2'>
+          {whatsappMinimized && (
+            <WhatsAppManager 
+              isMinimized={whatsappMinimized}
+              setIsMinimized={setWhatsappMinimized}
+              position={whatsappPosition}
+              setPosition={setWhatsappPosition}
+            />
+          )}
+          {notificationMinimized && (
+            <NotificationTester 
+              isMinimized={notificationMinimized}
+              setIsMinimized={setNotificationMinimized}
+              position={notificationPosition}
+              setPosition={setNotificationPosition}
+            />
+          )}
+        </div>
       </div>
     </div>
   )

@@ -3,6 +3,11 @@ import React, { useEffect, useState } from 'react'
 import { backendUrl, currency } from '../App'
 import { toast } from 'react-toastify'
 
+// Helper function to format price with proper comma separators
+const formatPrice = (price) => {
+  return `₹${price.toLocaleString('en-IN')}`;
+};
+
 const List = ({ token }) => {
 
   const [list, setList] = useState([])
@@ -143,7 +148,7 @@ const List = ({ token }) => {
 
                   {/* Price */}
                   <div className="col-span-1">
-                    <span className="font-medium text-gray-800">{currency}{getProductPrice(item)}</span>
+                    <span className="font-medium text-gray-800">{formatPrice(getProductPrice(item))}</span>
                   </div>
 
                   {/* Variants */}

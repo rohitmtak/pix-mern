@@ -4,6 +4,7 @@ import WishlistButton from "./WishlistButton";
 import ColorVariantSelector from "./ColorVariantSelector";
 import { Link } from "react-router-dom";
 import { Product } from "@/lib/api";
+import { formatProductPrice, extractNumericPrice } from '@/utils/priceUtils';
 
 interface ProductCardProps {
   id: string;
@@ -130,18 +131,7 @@ const ProductCard = ({
                 onToggle={onWishlistToggle}
                 productData={{
                   name: title,
-                  price: (() => {
-                    // Remove all non-numeric characters except decimal points
-                    // But handle the case where Rs. might leave a leading decimal point
-                    let cleanedPrice = price.replace(/[^0-9.]/g, '');
-                    
-                    // If the cleaned price starts with a decimal point, remove it
-                    if (cleanedPrice.startsWith('.')) {
-                      cleanedPrice = cleanedPrice.substring(1);
-                    }
-                    
-                    return parseFloat(cleanedPrice) || 0;
-                  })(),
+                  price: extractNumericPrice(price),
                   imageUrl: imageUrl,
                   category: category || ''
                 }}

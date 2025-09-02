@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { backendUrl } from '../App'
 
-const WhatsAppManager = () => {
+const WhatsAppManager = ({ isMinimized, setIsMinimized, position, setPosition }) => {
   const [adminNumbers, setAdminNumbers] = useState([])
   const [newNumber, setNewNumber] = useState('')
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const cardRef = useRef(null)
   const [whatsappStatus, setWhatsappStatus] = useState({
     isReady: false,
     isConnected: false,
@@ -79,98 +82,169 @@ const WhatsAppManager = () => {
     }
   }
 
+  const handleMouseDown = (e) => {
+    if (e.target.closest('button') || e.target.closest('input')) return // Don't drag if clicking on buttons or inputs
+    
+    setIsDragging(true)
+    const rect = cardRef.current.getBoundingClientRect()
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    })
+  }
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return
+    
+    const newX = e.clientX - dragOffset.x
+    const newY = e.clientY - dragOffset.y
+    
+    // Keep within viewport bounds
+    const maxX = window.innerWidth - (cardRef.current?.offsetWidth || 200)
+    const maxY = window.innerHeight - (cardRef.current?.offsetHeight || 150)
+    
+    setPosition({
+      x: Math.max(0, Math.min(newX, maxX)),
+      y: Math.max(0, Math.min(newY, maxY))
+    })
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  React.useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isDragging, dragOffset])
+
   return (
-    <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50 max-w-sm">
-      <h3 className="font-medium text-gray-900 mb-3">📱 WhatsApp Manager</h3>
-      
-      {/* Status */}
-      <div className="mb-4">
-        <div className="flex items-center gap-2 mb-2">
-          <div className={`w-3 h-3 rounded-full ${whatsappStatus.isReady ? 'bg-green-500' : 'bg-red-500'}`}></div>
-          <span className="text-sm">
-            {whatsappStatus.isReady ? '🟢 Connected' : '🔴 Disconnected'}
-          </span>
+    <div 
+      ref={cardRef}
+      className={`bg-white rounded-lg shadow-lg border border-gray-200 w-fit select-none ${isDragging ? 'cursor-grabbing' : 'cursor-move'}`}
+      onMouseDown={handleMouseDown}
+    >
+      {isMinimized ? (
+        <div className="p-2 bg-gray-50 rounded-t-lg">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-medium text-gray-900 text-xs">📱 WhatsApp</h3>
+            <button
+              onClick={() => setIsMinimized(false)}
+              className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-white border border-gray-200 transition-colors"
+              title="Expand"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <button
-          onClick={fetchWhatsAppStatus}
-          className="text-xs text-blue-600 hover:text-blue-800"
-        >
-          Refresh Status
-        </button>
-      </div>
+      ) : (
+        <div className="p-3 w-64">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-medium text-gray-900 text-sm">📱 WhatsApp</h3>
+            <button
+              onClick={() => setIsMinimized(true)}
+              className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100 border border-gray-200 transition-colors"
+              title="Minimize"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+          </div>
+          
+          {/* Status */}
+          <div className="mb-3">
+            <div className="flex items-center gap-1 mb-1">
+              <div className={`w-2 h-2 rounded-full ${whatsappStatus.isReady ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className="text-xs">
+                {whatsappStatus.isReady ? 'Connected' : 'Disconnected'}
+              </span>
+            </div>
+            <button
+              onClick={fetchWhatsAppStatus}
+              className="text-xs text-blue-600 hover:text-blue-800"
+            >
+              Refresh
+            </button>
+          </div>
 
-      {/* Add Admin Number */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Add Admin Number
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="tel"
-            value={newNumber}
-            onChange={(e) => setNewNumber(e.target.value)}
-            placeholder="+91XXXXXXXXXX"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            onClick={addAdminNumber}
-            className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-          >
-            Add
-          </button>
-        </div>
-      </div>
-
-      {/* Admin Numbers List */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Admin Numbers ({whatsappStatus.adminNumbers?.length || 0})
-        </label>
-        <div className="space-y-2 max-h-32 overflow-y-auto">
-          {whatsappStatus.adminNumbers?.map((number, index) => (
-            <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-              <span className="text-sm text-gray-700">{number}</span>
+          {/* Add Admin Number */}
+          <div className="mb-3">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Add Number
+            </label>
+            <div className="flex gap-1">
+              <input
+                type="tel"
+                value={newNumber}
+                onChange={(e) => setNewNumber(e.target.value)}
+                placeholder="+91XXXXXXXXXX"
+                className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
               <button
-                onClick={() => removeAdminNumber(number)}
-                className="text-xs text-red-600 hover:text-red-800"
+                onClick={addAdminNumber}
+                className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
               >
-                Remove
+                Add
               </button>
             </div>
-          ))}
-          {(!whatsappStatus.adminNumbers || whatsappStatus.adminNumbers.length === 0) && (
-            <div className="text-sm text-gray-500 text-center py-2">
-              No admin numbers added
+          </div>
+
+          {/* Admin Numbers */}
+          <div className="mb-3">
+            <div className="text-xs text-gray-700 mb-1">
+              Numbers: {whatsappStatus.adminNumbers?.length || 0}
             </div>
-          )}
+            <div className="max-h-16 overflow-y-auto space-y-1">
+              {whatsappStatus.adminNumbers?.map((number, index) => (
+                <div key={index} className="flex items-center justify-between bg-gray-50 p-1 rounded text-xs">
+                  <span className="text-gray-700 truncate flex-1 mr-1">{number}</span>
+                  <button
+                    onClick={() => removeAdminNumber(number)}
+                    className="text-red-600 hover:text-red-800 text-xs"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Test Message */}
+          <div className="mb-3">
+            <button
+              onClick={testWhatsAppMessage}
+              disabled={!whatsappStatus.isReady}
+              className={`w-full px-2 py-1 rounded text-xs ${
+                whatsappStatus.isReady
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              🧪 Test Message
+            </button>
+          </div>
+
+          {/* Instructions */}
+          <div className="text-xs text-gray-600 border-t pt-2">
+            <p className="mb-1 font-medium">📋 Instructions:</p>
+            <ul className="space-y-0.5 text-xs">
+              <li>• Scan QR code in backend console</li>
+              <li>• Add admin phone numbers</li>
+              <li>• Test notifications</li>
+              <li>• Customers will receive updates</li>
+            </ul>
+          </div>
         </div>
-      </div>
-
-      {/* Test Message */}
-      <div className="mb-4">
-        <button
-          onClick={testWhatsAppMessage}
-          disabled={!whatsappStatus.isReady}
-          className={`w-full px-3 py-2 rounded-md text-sm ${
-            whatsappStatus.isReady
-              ? 'bg-green-600 text-white hover:bg-green-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          🧪 Send Test Message
-        </button>
-      </div>
-
-      {/* Instructions */}
-      <div className="text-xs text-gray-600">
-        <p className="mb-1">📋 Instructions:</p>
-        <ul className="space-y-1">
-          <li>• Scan QR code in backend console</li>
-          <li>• Add admin phone numbers</li>
-          <li>• Test notifications</li>
-          <li>• Customers will receive updates</li>
-        </ul>
-      </div>
+      )}
     </div>
   )
 }

@@ -11,6 +11,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { showToast, toastMessages } from "@/config/toastConfig";
 import { cn } from "@/lib/utils";
+import { formatProductPrice } from '@/utils/priceUtils';
 import {
   Carousel,
   CarouselContent,
@@ -326,7 +327,7 @@ const ProductDetailPage = () => {
                       color: "rgba(0,0,0,1)",
                     }}
                   >
-                    Rs.{currentColorVariant?.price || "Price not available"}
+                    {formatProductPrice(currentColorVariant?.price || 0)}
                   </p>
                   
 
