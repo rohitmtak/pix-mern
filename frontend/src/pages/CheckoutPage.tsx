@@ -576,7 +576,7 @@ const CheckoutPage = () => {
               </div>
 
               {/* Order Summary */}
-              <div className="lg:sticky lg:top-8 lg:self-start">
+              <div className="lg:sticky lg:top-24 lg:self-start">
                 <OrderSummary
                   items={selectedCartItems.map(item => ({
                     id: item.id,

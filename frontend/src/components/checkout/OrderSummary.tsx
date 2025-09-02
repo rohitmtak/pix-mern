@@ -36,7 +36,7 @@ const OrderSummary = ({
   // Cart view (simplified)
   if (variant === 'cart') {
     return (
-      <div className={cn("bg-white p-8 border border-gray-200", className)}>
+      <div className={cn("p-8 border border-gray-200 bg-[#f2f2f2]", className)}>
         {/* Cart Header */}
         <div className="text-center mb-6">
           <h2 
@@ -85,7 +85,7 @@ const OrderSummary = ({
 
   // Checkout view (original detailed design)
   return (
-    <div className={cn("bg-gray-50 p-8", className)}>
+    <div className={cn("bg-[#f2f2f2] p-8 border border-gray-200", className)}>
       <h2 
         className="text-black font-normal uppercase mb-6"
         style={{
@@ -102,7 +102,7 @@ const OrderSummary = ({
       <div className="space-y-4 mb-6">
         {items.map((item) => (
           <div key={`${item.id}-${item.size}-${item.color}`} className="flex gap-4">
-            <div className="w-16 h-16 flex-shrink-0 overflow-hidden bg-gray-200 rounded">
+            <div className="w-16 h-16 flex-shrink-0 overflow-hidden bg-gray-200">
               <img
                 src={item.imageUrl}
                 alt={item.title}

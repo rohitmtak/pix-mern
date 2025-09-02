@@ -191,7 +191,7 @@ const CartPage = () => {
               {/* Cart Items */}
               <div>
                 {/* Selection Controls */}
-                <div className="flex items-center justify-between mb-6 p-4 bg-gray-50 border border-gray-200 rounded">
+                <div className="flex items-center justify-between mb-6 p-4 bg-[#f2f2f2] border border-gray-200 rounded">
                   <div className="flex items-center gap-4">
                                          <input
                        type="checkbox"
@@ -214,7 +214,7 @@ const CartPage = () => {
                     const isSelected = selectedItems.has(itemId);
                     
                     return (
-                      <div key={`${item.id}-${item.size}-${item.color}`} className="flex justify-between p-6 bg-gray-50 border border-gray-100">
+                      <div key={`${item.id}-${item.size}-${item.color}`} className="flex justify-between p-6 bg-[#f2f2f2] border border-gray-100">
                         <div className="flex gap-6">
                           {/* Selection Checkbox */}
                             <div className="flex items-center">
@@ -227,7 +227,7 @@ const CartPage = () => {
                            </div>
                           
                           {/* Product Image */}
-                          <div className="w-32 h-32 flex-shrink-0 overflow-hidden bg-gray-200">
+                          <div className="w-24 h-32 flex-shrink-0 overflow-hidden bg-gray-200">
                             <img
                               src={item.imageUrl}
                               alt={item.name}
@@ -316,7 +316,7 @@ const CartPage = () => {
                     <Button
                       variant="outline"
                       onClick={handleClearAllItems}
-                      className="border-red-300 text-red-600 hover:bg-red-50"
+                      className="border-gray-300 hover:bg-gray-50"
                     >
                       Clear All Items
                     </Button>

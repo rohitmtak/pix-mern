@@ -712,7 +712,7 @@ const ProductDetailPage = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm border border-gray-300">
                     <thead>
-                      <tr className="border-b border-gray-300">
+                      <tr className="border-b border-gray-300 bg-[#f2f2f2]">
                         <th className="text-left py-3 px-4 font-medium border-r border-gray-300">
                           SINGLE SIZE
                         </th>
@@ -741,7 +741,7 @@ const ProductDetailPage = () => {
                     </thead>
                     <tbody>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-[#f2f2f2]">
                           BUST
                         </td>
                         <td
@@ -781,7 +781,7 @@ const ProductDetailPage = () => {
                         </td>
                       </tr>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-[#f2f2f2]">
                           WAIST
                         </td>
                         <td
@@ -821,7 +821,7 @@ const ProductDetailPage = () => {
                         </td>
                       </tr>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-[#f2f2f2]">
                           HIPS
                         </td>
                         <td
@@ -861,7 +861,7 @@ const ProductDetailPage = () => {
                         </td>
                       </tr>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 px-4 font-medium border-r border-gray-300">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-[#f2f2f2]">
                           SHOULDER
                         </td>
                         <td
@@ -901,7 +901,7 @@ const ProductDetailPage = () => {
                         </td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-4 font-medium border-r border-gray-300">
+                        <td className="py-3 px-4 font-medium border-r border-gray-300 bg-[#f2f2f2]">
                           ARM HOLE
                         </td>
                         <td
@@ -1005,7 +1005,7 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Video Content */}
-            <div className="p-6 flex-1 flex flex-col justify-center">
+            <div className="px-16 flex-1 flex flex-col justify-center">
               <div className="flex justify-center">
                 <iframe
                   src="https://www.youtube.com/embed/03b56tc7sAE?autoplay=1"

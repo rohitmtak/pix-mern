@@ -193,7 +193,7 @@ const CheckoutForm = ({
 
         {/* Show new address form if showAddressForm is true */}
         {showAddressForm && (
-          <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+          <div className="mt-4 px-4 py-6 border border-gray-200 bg-[#f2f2f2]">
             <div className="flex items-center justify-between mb-6">
               <h3 
                 className="text-black font-normal"
@@ -345,7 +345,7 @@ const CheckoutForm = ({
             </div>
             
             {/* Save Address Button */}
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-end pt-6">
               <Button
                 type="button"
                 onClick={handleSaveAddress}
@@ -409,7 +409,7 @@ const CheckoutForm = ({
               <span>UPI</span>
             </label>
             {paymentData.method === "upi" && (
-              <div className="p-4 border-t bg-gray-50">
+              <div className="p-4 border-t bg-[#f2f2f2]">
                 <p className="text-sm text-gray-700">
                   After clicking 'Complete Purchase', a pop-up will appear 
                   asking you to enter your UPI ID or scan the shown QR code to complete the purchase. 
@@ -436,7 +436,7 @@ const CheckoutForm = ({
               <span>Card</span>
             </label>
             {paymentData.method === "card" && (
-              <div className="p-4 border-t bg-gray-50">
+              <div className="p-4 border-t bg-[#f2f2f2]">
                 <p className="text-sm text-gray-700">
                   After clicking 'Complete Purchase', a pop-up will appear asking you to select your saved card or
                   complete purchase with a new credit/debit card. You will be redirected to the Order Confirmation page afterwards.
@@ -461,7 +461,7 @@ const CheckoutForm = ({
               <span>NetBanking</span>
             </label>
             {paymentData.method === "netbanking" && (
-              <div className="p-4 border-t bg-gray-50">
+              <div className="p-4 border-t bg-[#f2f2f2]">
                 <p className="text-sm text-gray-700">
                   After clicking 'Complete Purchase', a pop-up will appear 
                   asking you to select your desired bank to complete the purchase. 
@@ -518,7 +518,7 @@ const CheckoutForm = ({
 
         {/* Show billing address fields only if checkbox is unchecked */}
         {!paymentData.sameAsShipping && (
-          <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+          <div className="mt-4 px-4 py-6 border border-gray-200 bg-[#f2f2f2]">
             <h4 
               className="text-black font-normal mb-3"
               style={{

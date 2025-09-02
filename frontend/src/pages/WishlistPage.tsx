@@ -152,7 +152,7 @@ const WishlistPage = () => {
               )}
 
               {/* Products Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5">
                 {wishlistProducts.map((product) => (
                   <div key={product.id} className="relative flex flex-col gap-0">
                     {/* Remove icon overlay */}

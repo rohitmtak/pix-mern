@@ -71,12 +71,12 @@ const Header = () => {
     if (isHomePage) {
       // On home page: transparent by default, white on hover only
       if (isHeaderHovered) {
-        return 'bg-white shadow';
+        return 'bg-white border-b border-b-[1px] border-b-[#dddddd]';
       }
-      return 'bg-transparent';
+      return 'bg-transparent border-b border-b-[1px] border-b-transparent';
     } else {
       // On other pages: always white
-      return 'bg-white shadow';
+      return 'bg-white border-b border-b-[1px] border-b-[#dddddd]';
     }
   };
 

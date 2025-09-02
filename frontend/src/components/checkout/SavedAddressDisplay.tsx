@@ -63,7 +63,7 @@ const SavedAddressDisplay: React.FC<SavedAddressDisplayProps> = ({
 
         {/* Address Options */}
         {addresses.map((address, index) => (
-          <div key={address.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50 hover:border-gray-300 transition-colors">
+          <div key={address.id} className="border border-gray-200 p-4 bg-[#f2f2f2] hover:border-gray-300 transition-colors">
             <div className="flex items-start gap-3">
               <input
                 type="radio"
