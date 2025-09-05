@@ -45,7 +45,7 @@ const ProductCard = ({
   const [selectedColor, setSelectedColor] = useState<string>("");
   // State for managing current image based on selected color
   const [currentImage, setCurrentImage] = useState<string>(imageUrl);
-  
+
   // Set initial selected color when product loads
   useEffect(() => {
     if (product && product.colorVariants && product.colorVariants.length > 0) {
@@ -61,7 +61,7 @@ const ProductCard = ({
   // Handle color selection
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
-    
+
     // Update image when color changes
     if (product) {
       const selectedVariant = product.colorVariants.find(
@@ -104,59 +104,69 @@ const ProductCard = ({
       {/* Product Info */}
       <div className={cn(contentWrapperClassName)}>
         <div className={cn(
-          showWishlist ? "flex justify-between items-start" : "block",
+          showWishlist ? "flex flex-col justify-between items-start" : "block",
           compact ? 'pb-1' : 'pb-2', // Reduced bottom padding to minimize gap
           'px-1.5',
           centered && !showWishlist && 'text-center'
         )}>
           {/* Left side - Product details */}
-          <div className={cn('flex-1')}> 
+          <div className={cn(
+            'flex w-full',
+            !showWishlist && centered ? 'justify-center' : 'justify-between'
+          )}>
             {/* Title */}
-            <h3 className="text-black text-sm">
+            <h3 className="text-black text-base">
               {title}
             </h3>
-            
-            {/* Price */}
-            <p className="text-black font-normal text-sm">
-              {price}
-            </p>
+
+            {/* Right side - Wishlist button */}
+            {showWishlist && (
+              <div className="ml-auto flex-shrink-0">
+                <WishlistButton
+                  productId={id}
+                  isWishlisted={isWishlisted}
+                  onToggle={onWishlistToggle}
+                  productData={{
+                    name: title,
+                    price: extractNumericPrice(price),
+                    imageUrl: imageUrl,
+                    category: category || ''
+                  }}
+                  className="bg-white/80 backdrop-blur-sm rounded-full hover:bg-white/90"
+                />
+              </div>
+            )}
           </div>
 
-          {/* Right side - Wishlist button */}
-          {showWishlist && (
-            <div className="ml-4 flex-shrink-0">
-              <WishlistButton
-                productId={id}
-                isWishlisted={isWishlisted}
-                onToggle={onWishlistToggle}
-                productData={{
-                  name: title,
-                  price: extractNumericPrice(price),
-                  imageUrl: imageUrl,
-                  category: category || ''
-                }}
-                className="bg-white/80 backdrop-blur-sm rounded-full hover:bg-white/90"
-              />
+          <div className={cn(
+            'flex w-full',
+            !showWishlist && centered ? 'justify-center' : 'justify-between'
+          )}>
+            {/* Price */}
+            <p className="text-gray-500 font-normal text-sm">
+              {price}
+            </p>
+
+            {/* Color Variants - Positioned below product info for consistent alignment */}
+            <div className="">
+              {product && product.colorVariants && product.colorVariants.length > 1 && (
+                <div className="pb-4">
+                  <ColorVariantSelector
+                    colorVariants={product.colorVariants}
+                    selectedColor={selectedColor}
+                    onColorSelect={handleColorSelect}
+                    size="xs"
+                    showLabels={false}
+                    disabled={false} // Enable interaction on collection page
+                    className="justify-start" // Align to start instead of center
+                  />
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Color Variants - Positioned below product info for consistent alignment */}
-        <div className="">
-          {product && product.colorVariants && product.colorVariants.length > 1 && (
-            <div className="px-1.5 pb-4">
-              <ColorVariantSelector
-                colorVariants={product.colorVariants}
-                selectedColor={selectedColor}
-                onColorSelect={handleColorSelect}
-                size="sm"
-                showLabels={false}
-                disabled={false} // Enable interaction on collection page
-                className="justify-start" // Align to start instead of center
-              />
-            </div>
-          )}
-        </div>
+
       </div>
     </div>
   );

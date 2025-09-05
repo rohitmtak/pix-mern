@@ -57,7 +57,7 @@
 
     /* Font family variables */
     --font-jost: 'Jost', sans-serif;
-    --font-bodoni: 'Playfair Display', serif;
+    --font-playfair: 'Playfair Display', serif;
   }
 
   .dark {
@@ -112,6 +112,10 @@
 @layer utilities {
   .font-jost {
     font-family: var(--font-jost);
+  }
+
+  .font-playfair {
+    font-family: var(--font-playfair);
   }
 }
 

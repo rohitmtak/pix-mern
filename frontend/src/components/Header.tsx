@@ -106,7 +106,7 @@ const Header = () => {
                 onMouseEnter={() => setIsCollectionHovered(true)}
                 onMouseLeave={() => setIsCollectionHovered(false)}
               >
-                <button className="text-black font-jost text-sm uppercase tracking-wide hover:opacity-70 transition-opacity relative after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:w-32 after:h-10 after:bg-transparent after:hidden group-hover:after:block">
+                <button className="text-black font-jost text-sm uppercase tracking-wide hover:opacity-70 transition-opacity relative after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:w-full after:h-10 after:bg-transparent after:hidden group-hover:after:block">
                   Collection
                 </button>
 
@@ -267,13 +267,40 @@ const Header = () => {
                 </div>
               </div>
 
-              {/* About */}
-              <Link
-                to="/about"
-                className="text-black font-jost text-sm uppercase tracking-wide hover:opacity-70 transition-opacity"
-              >
-                About
-              </Link>
+              {/* About - with Dropdown */}
+              <div className="group">
+                <Link
+                  to="/about"
+                  className="text-black font-jost text-sm uppercase tracking-wide hover:opacity-70 transition-opacity relative after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:w-full after:h-10 after:bg-transparent after:hidden group-hover:after:block"
+                >
+                  About
+                </Link>
+
+                {/* About Dropdown - Company Description */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-screen bg-white border-t border-gray-100 shadow-2xl py-12 z-[70] opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto transform">
+                  <div className="max-w-screen-2xl mx-auto px-16">
+                    <div className="flex justify-center">
+                      <div className="max-w-2xl text-center">
+                        <h3 className="text-2xl font-medium text-black mb-6 font-jost uppercase tracking-wide">
+                          About High Street PIX
+                        </h3>
+                        <p className="text-gray-700 leading-relaxed text-lg mb-6">
+                          High Street PIX is a premium fashion brand that celebrates the artistry of traditional Indian drapes with contemporary elegance. We specialize in creating exquisite garments that blend timeless craftsmanship with modern design sensibilities.
+                        </p>
+                        <p className="text-gray-600 leading-relaxed mb-8">
+                          Our collections feature signature pieces, bridal couture, contemporary drapes, and luxury fusion lounge wear, each designed to tell a unique story and celebrate the rich heritage of Indian fashion.
+                        </p>
+                        <Link
+                          to="/about"
+                          className="inline-block bg-black text-white px-8 py-3 hover:bg-gray-800 transition-colors duration-200 font-jost uppercase tracking-wide text-sm"
+                        >
+                          Learn More
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Contact */}
               <Link

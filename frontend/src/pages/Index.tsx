@@ -44,15 +44,15 @@ const Index = () => {
           {/* Right Side with Text Overlay */}
           <div className="w-1/2 relative flex items-center justify-center">
             <div
-              className="text-9xl font-bold text-right leading-none"
-              style={{
-                backgroundImage: "url('/images/img1.webp')",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
+              className="text-9xl font-medium text-right leading-none font-playfair"
+              // style={{
+              //   backgroundImage: "url('/images/img1.webp')",
+              //   backgroundSize: "cover",
+              //   backgroundPosition: "center",
+              //   backgroundClip: "text",
+              //   WebkitBackgroundClip: "text",
+              //   WebkitTextFillColor: "transparent",
+              // }}
             >
               SIGN<br />ATURE<br />COLLEC<br />TION
             </div>
@@ -71,7 +71,7 @@ const Index = () => {
             />
             <div className="absolute bottom-16 left-0 right-0 text-center w-fit mx-auto">
               <h2
-                className="text-8xl text-white font-normal uppercase font-jost cursor-pointer hover:opacity-80 transition-opacity duration-300"
+                className="font-playfair text-8xl text-white font-normal uppercase font-jost cursor-pointer hover:opacity-80 transition-opacity duration-300"
                 style={{
                   fontSize: "120px",
                   lineHeight: "normal",
@@ -90,15 +90,15 @@ const Index = () => {
           {/* Left Text Overlay */}
           <div className="w-1/2 relative flex items-center justify-start pl-32">
             <div
-              className="text-9xl font-bold text-left leading-none"
-              style={{
-                backgroundImage: "url('/images/img9.png')",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
+              className="text-9xl font-medium text-left leading-none font-playfair"
+              // style={{
+              //   backgroundImage: "url('/images/img9.png')",
+              //   backgroundSize: "cover",
+              //   backgroundPosition: "center",
+              //   backgroundClip: "text",
+              //   WebkitBackgroundClip: "text",
+              //   WebkitTextFillColor: "transparent",
+              // }}
             >
               CON<br />TEMPO<br />RARY<br />DRAPES
             </div>
@@ -133,7 +133,7 @@ const Index = () => {
             />
             <div className="absolute bottom-16 left-0 right-0 text-center w-fit mx-auto">
               <h2
-                className="text-8xl text-white font-normal uppercase font-jost cursor-pointer hover:opacity-80 transition-opacity duration-300"
+                className="font-playfair text-8xl text-white font-normal uppercase font-jost cursor-pointer hover:opacity-80 transition-opacity duration-300"
                 style={{
                   // fontFamily:
                   //   "Helvetica, -apple-system, Roboto, Helvetica, sans-serif",
