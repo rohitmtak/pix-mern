@@ -233,7 +233,7 @@ const placeOrderRazorpay = async (req,res) => {
                 gateway: 'razorpay'
             },
             paymentStatus: 'pending',
-            status: 'placed',
+            status: 'pending',
             orderDate: new Date(),
             
             // Legacy fields for backward compatibility
@@ -408,11 +408,11 @@ const allOrders = async (req,res) => {
     try {
         
         const orders = await orderModel.find({})
-        res.json({success:true,orders})
+        res.status(200).json({success:true,orders:orders})
 
     } catch (error) {
         console.log(error)
-        res.json({success:false,message:error.message})
+        res.status(500).json({success:false,message:error.message})
     }
 
 }
@@ -424,11 +424,11 @@ const userOrders = async (req,res) => {
         const { userId } = req.user; // Get userId from auth middleware
 
         const orders = await orderModel.find({ userId })
-        res.json({success:true,orders})
+        res.status(200).json({success:true,orders:orders})
 
     } catch (error) {
         console.log(error)
-        res.json({success:false,message:error.message})
+        res.status(500).json({success:false,message:error.message})
     }
 }
 
@@ -436,22 +436,32 @@ const userOrders = async (req,res) => {
 const updateStatus = async (req,res) => {
     try {
         
-        const { orderId, status } = req.body
+        // Support both old (req.body.orderId) and new (req.params.id) patterns
+        const id = req.params.id || req.body.orderId;
+        const { status } = req.body;
+
+        if (!id) {
+            return res.status(400).json({ success: false, message: "Order ID is required" });
+        }
 
         // Get the current order to check old status
-        const currentOrder = await orderModel.findById(orderId)
-        const oldStatus = currentOrder ? currentOrder.status : 'unknown'
+        const currentOrder = await orderModel.findById(id);
+        if (!currentOrder) {
+            return res.status(404).json({success:false,message:'Order not found'});
+        }
+        
+        const oldStatus = currentOrder.status;
 
-        await orderModel.findByIdAndUpdate(orderId, { status })
+        await orderModel.findByIdAndUpdate(id, { status })
         
         // Send real-time notification for status update
-        await NotificationService.sendOrderStatusUpdate(orderId, oldStatus, status)
+        await NotificationService.sendOrderStatusUpdate(id, oldStatus, status)
         
-        res.json({success:true,message:'Status Updated'})
+        res.status(200).json({success:true,message:'Status Updated'})
 
     } catch (error) {
         console.log(error)
-        res.json({success:false,message:error.message})
+        res.status(500).json({success:false,message:error.message})
     }
 }
 

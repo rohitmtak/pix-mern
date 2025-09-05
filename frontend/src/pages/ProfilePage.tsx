@@ -78,8 +78,12 @@ const ProfilePage: React.FC = () => {
           {},
           { headers: { token } }
         );
+        
         if (res.data?.success && Array.isArray(res.data?.orders)) {
           setOrders(res.data.orders);
+        } else if (res.data?.success && Array.isArray(res.data?.data)) {
+          // Handle both 'orders' and 'data' response formats for backward compatibility
+          setOrders(res.data.data);
         } else if (Array.isArray(res.data)) {
           // In case API returns array directly
           setOrders(res.data as OrderItem[]);

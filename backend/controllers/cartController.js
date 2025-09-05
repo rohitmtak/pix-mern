@@ -98,7 +98,31 @@ export const addToCart = async (req, res) => {
 export const updateCartItem = async (req, res) => {
     try {
         const { userId } = req.user;
-        const { productId, size, color, quantity } = req.body;
+        
+        // Support both old (req.body) and new (req.params.itemId) patterns
+        let productId, size, color;
+        
+        if (req.params.itemId) {
+            // New pattern: itemId from params
+            const [pid, s, c] = req.params.itemId.split('-');
+            productId = pid;
+            size = s;
+            color = c;
+        } else {
+            // Old pattern: from request body
+            productId = req.body.productId;
+            size = req.body.size;
+            color = req.body.color;
+        }
+        
+        const { quantity } = req.body;
+        
+        if (!productId || !size || !color) {
+            return res.status(400).json({
+                success: false,
+                message: 'Product ID, size, and color are required'
+            });
+        }
         
         const cart = await cartModel.findOne({ userId });
         if (!cart) {
@@ -157,7 +181,29 @@ export const updateCartItem = async (req, res) => {
 export const removeFromCart = async (req, res) => {
     try {
         const { userId } = req.user;
-        const { productId, size, color } = req.body;
+        
+        // Support both old (req.body) and new (req.params.itemId) patterns
+        let productId, size, color;
+        
+        if (req.params.itemId) {
+            // New pattern: itemId from params
+            const [pid, s, c] = req.params.itemId.split('-');
+            productId = pid;
+            size = s;
+            color = c;
+        } else {
+            // Old pattern: from request body
+            productId = req.body.productId;
+            size = req.body.size;
+            color = req.body.color;
+        }
+        
+        if (!productId || !size || !color) {
+            return res.status(400).json({
+                success: false,
+                message: 'Product ID, size, and color are required'
+            });
+        }
         
         const cart = await cartModel.findOne({ userId });
         if (!cart) {
@@ -174,7 +220,7 @@ export const removeFromCart = async (req, res) => {
         );
         
         if (itemIndex === -1) {
-            return res.status(200).json({
+            return res.status(404).json({
                 success: false,
                 message: 'Item not found in cart'
             });

@@ -6,6 +6,9 @@ import { backendUrl, currency } from '../App'
 import { toast } from 'react-toastify'
 import { assets } from '../assets/assets'
 
+// Helper function for conditional classes
+const cn = (...classes) => classes.filter(Boolean).join(' ');
+
 // Helper function to format price with proper comma separators
 const formatPrice = (price) => {
   return `₹${price.toLocaleString('en-IN')}`;
@@ -25,36 +28,94 @@ const Orders = ({ token }) => {
     shippingNotes: ''
   })
 
-  const statusOptions = [
-    { value: "Order Placed", label: "📋 Order Placed", color: "bg-blue-100 text-blue-800" },
-    { value: "Packing", label: "📦 Packing", color: "bg-yellow-100 text-yellow-800" },
-    { value: "Shipped", label: "🚚 Shipped", color: "bg-purple-100 text-purple-800" },
-    { value: "Out for delivery", label: "🚛 Out for delivery", color: "bg-orange-100 text-orange-800" },
-    { value: "Delivered", label: "✅ Delivered", color: "bg-green-100 text-green-800" }
-  ]
+  const getRelevantStatusOptions = (order) => {
+    const { status, paymentStatus, payment } = order;
+    
+    let options = [];
+    
+    // If payment is pending, only show payment-related options
+    if (paymentStatus === 'pending' || !payment) {
+      options = [
+        { value: "pending", label: "⏳ Payment Pending", color: "bg-orange-100 text-orange-800" },
+        { value: "cancelled", label: "❌ Cancel Order", color: "bg-red-100 text-red-800" }
+      ];
+    }
+    // If payment is confirmed, show progression options
+    else if (status === 'confirmed') {
+      options = [
+        { value: "confirmed", label: "✅ Order Confirmed", color: "bg-green-100 text-green-800" },
+        { value: "shipped", label: "🚚 Ship Order", color: "bg-purple-100 text-purple-800" },
+        { value: "cancelled", label: "❌ Cancel Order", color: "bg-red-100 text-red-800" }
+      ];
+    }
+    // If order is shipped, show delivery options
+    else if (status === 'shipped') {
+      options = [
+        { value: "shipped", label: "🚚 Shipped", color: "bg-purple-100 text-purple-800" },
+        { value: "delivered", label: "✅ Mark Delivered", color: "bg-green-100 text-green-800" },
+        { value: "cancelled", label: "❌ Cancel Order", color: "bg-red-100 text-red-800" }
+      ];
+    }
+    // If order is delivered, show completion options
+    else if (status === 'delivered') {
+      options = [
+        { value: "delivered", label: "✅ Delivered", color: "bg-green-100 text-green-800" }
+      ];
+    }
+    // If order is cancelled, show limited options
+    else if (status === 'cancelled') {
+      options = [
+        { value: "cancelled", label: "❌ Cancelled", color: "bg-red-100 text-red-800" }
+      ];
+    }
+    // Default fallback
+    else {
+      options = [
+        { value: "confirmed", label: "✅ Order Confirmed", color: "bg-green-100 text-green-800" },
+        { value: "cancelled", label: "❌ Cancel Order", color: "bg-red-100 text-red-800" }
+      ];
+    }
+    
+    // Filter out the current status to prevent same-status updates
+    return options.filter(option => option.value !== status);
+  }
 
   const fetchAllOrders = async () => {
     if (!token) {
-      return null;
+      console.log('No token available')
+      setOrders([])
+      setLoading(false)
+      return;
     }
 
     try {
       setLoading(true);
       const response = await axios.post(backendUrl + '/api/order/list', {}, { headers: { token } })
       if (response.data.success) {
-        setOrders(response.data.orders.reverse())
+        // Handle both 'orders' and 'data' response formats for backward compatibility
+        const ordersData = response.data.orders || response.data.data || []
+        setOrders(ordersData.reverse())
       } else {
         toast.error(response.data.message)
       }
 
     } catch (error) {
-      toast.error(error.message)
+      console.error('Error fetching orders:', error)
+      toast.error('Failed to fetch orders')
+      setOrders([]) // Set empty array on error
     } finally {
       setLoading(false);
     }
   }
 
   const statusHandler = async ( orderId, newStatus ) => {
+    // Find the current order to check if status is actually changing
+    const currentOrder = orders.find(o => o._id === orderId)
+    if (currentOrder && currentOrder.status === newStatus) {
+      console.log('Status unchanged, skipping update')
+      return
+    }
+    
     try {
       const response = await axios.post(backendUrl + '/api/order/status' , {orderId, status: newStatus}, { headers: {token}})
       if (response.data.success) {
@@ -68,18 +129,25 @@ const Orders = ({ token }) => {
     }
   }
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status, paymentStatus, payment) => {
+    // If payment is pending, show orange color for payment pending status
+    if (paymentStatus === 'pending' || !payment) {
+      return 'bg-orange-100 text-orange-800'
+    }
+    
     switch (status) {
-      case 'Order Placed':
-        return 'bg-blue-100 text-blue-800'
-      case 'Packing':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'Shipped':
-        return 'bg-purple-100 text-purple-800'
-      case 'Out for delivery':
+      case 'pending':
         return 'bg-orange-100 text-orange-800'
-      case 'Delivered':
+      case 'placed':
+        return 'bg-blue-100 text-blue-800'
+      case 'confirmed':
         return 'bg-green-100 text-green-800'
+      case 'shipped':
+        return 'bg-purple-100 text-purple-800'
+      case 'delivered':
+        return 'bg-green-100 text-green-800'
+      case 'cancelled':
+        return 'bg-red-100 text-red-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -94,7 +162,7 @@ const Orders = ({ token }) => {
   }
 
   const handleStatusChange = (orderId, newStatus) => {
-    if (newStatus === 'Shipped') {
+    if (newStatus === 'shipped') {
       // Find the order details
       const order = orders.find(o => o._id === orderId)
       setSelectedOrder(order)
@@ -132,7 +200,7 @@ const Orders = ({ token }) => {
       })
       
       // Update order status with shipping info
-      await statusHandler(selectedOrder._id, 'Shipped')
+      await statusHandler(selectedOrder._id, 'shipped')
       
       // Send shipping notification via WhatsApp
       try {
@@ -247,9 +315,12 @@ const Orders = ({ token }) => {
                       >
                         <span className={cn(
                           "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                          getStatusColor(order.status)
+                           getStatusColor(order.status, order.paymentStatus, order.payment)
                         )}>
-                          {statusOptions.find(option => option.value === order.status)?.label || order.status}
+                           {order.paymentStatus === 'pending' || !order.payment ? 
+                             '⏳ Payment Pending' : 
+                             getRelevantStatusOptions(order).find(option => option.value === order.status)?.label || order.status
+                           }
                         </span>
                         <svg className={`w-4 h-4 text-gray-400 transition-transform ${openStatusDropdown === order._id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -258,7 +329,7 @@ const Orders = ({ token }) => {
                       
                       {openStatusDropdown === order._id && (
                         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
-                          {statusOptions.map((option, optionIndex) => (
+                           {getRelevantStatusOptions(order).map((option, optionIndex) => (
                             <div
                               key={optionIndex}
                               onClick={() => handleStatusChange(order._id, option.value)}
@@ -509,8 +580,5 @@ const Orders = ({ token }) => {
     </div>
   )
 }
-
-// Helper function for conditional classes
-const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 export default Orders

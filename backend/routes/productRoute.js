@@ -1,6 +1,6 @@
 import express from 'express'
 import multer from 'multer'
-import { listProducts, addProduct, removeProduct, singleProduct, getBestsellerProducts, searchProducts, getProductsByCategory, getProductsBySubCategory, updateProductStock, checkStockAvailability, getLowStockProducts } from '../controllers/productController.js'
+import { listProducts, addProduct, removeProduct, singleProduct, getBestsellerProducts, searchProducts, getProductsByCategory, getProductsBySubCategory, updateProductStock, updateProduct, checkStockAvailability, getLowStockProducts } from '../controllers/productController.js'
 import upload from '../middleware/multer.js';
 import adminAuth from '../middleware/adminAuth.js';
 import { getAllCategories, getAllSubcategories } from '../constants/categories.js';
@@ -17,17 +17,21 @@ productRouter.get('/health', (req, res) => {
     res.json({ status: 'ok', message: 'Product API is running' });
 });
 
-// Get products with search and filtering (frontend expects this)
+// IMPORTANT: Specific routes must come BEFORE parameterized routes to avoid conflicts
+productRouter.get('/list', listProducts)
 productRouter.get('/search', searchProducts);
-
-// Get bestseller products (frontend expects this)
 productRouter.get('/bestsellers', getBestsellerProducts);
+productRouter.get('/categories', (req, res) => {
+    res.json({ success: true, data: getAllCategories() });
+});
+productRouter.get('/subcategories', (req, res) => {
+    res.json({ success: true, data: getAllSubcategories() });
+});
 
-// Get products by category (frontend expects this)
-productRouter.get('/category/:category', getProductsByCategory);
-
-// Get products by subcategory (frontend expects this)
-productRouter.get('/subcategory/:subCategory', getProductsBySubCategory);
+// Stock management endpoints
+productRouter.post('/stock/update', adminAuth, updateProductStock);
+productRouter.post('/stock/check', checkStockAvailability);
+productRouter.get('/stock/low', getLowStockProducts);
 
 // Error handling middleware for multer
 const handleMulterError = (error, req, res, next) => {
@@ -55,19 +59,14 @@ const handleMulterError = (error, req, res, next) => {
 // Use upload.any() to handle dynamic image keys for color variants
 // The controller will validate and process the images
 productRouter.post('/add', adminAuth, upload.any(), handleMulterError, addProduct);
+productRouter.put('/update/:id', adminAuth, upload.any(), handleMulterError, updateProduct);
+
+// Legacy routes for backward compatibility (these work fine)
 productRouter.post('/remove', adminAuth, removeProduct);
 productRouter.post('/single', singleProduct);
-productRouter.get('/list', listProducts)
-productRouter.get('/categories', (req, res) => {
-    res.json({ success: true, data: getAllCategories() });
-});
-productRouter.get('/subcategories', (req, res) => {
-    res.json({ success: true, data: getAllSubcategories() });
-});
 
-// Stock management endpoints
-productRouter.post('/stock/update', adminAuth, updateProductStock);
-productRouter.post('/stock/check', checkStockAvailability);
-productRouter.get('/stock/low', getLowStockProducts);
+// Category routes - these must come AFTER the specific routes to avoid conflicts
+productRouter.get('/category/:category', getProductsByCategory);
+productRouter.get('/subcategory/:subCategory', getProductsBySubCategory);
 
 export default productRouter

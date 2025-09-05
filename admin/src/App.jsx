@@ -19,8 +19,8 @@ export const currency = '₹'
 const App = () => {
 
   const [token, setToken] = useState(localStorage.getItem('token')?localStorage.getItem('token'):'');
-  const [whatsappMinimized, setWhatsappMinimized] = useState(false)
-  const [notificationMinimized, setNotificationMinimized] = useState(false)
+  const [whatsappMinimized, setWhatsappMinimized] = useState(true)
+  const [notificationMinimized, setNotificationMinimized] = useState(true)
   
   // Draggable positions
   const [whatsappPosition, setWhatsappPosition] = useState({ x: 20, y: 80 })

@@ -143,7 +143,7 @@ const addProduct = async (req, res) => {
 
         console.log("Product saved successfully:", product._id);
 
-        res.json({ success: true, message: "Product Added" })
+        res.status(201).json({ success: true, message: "Product Added", data: product })
 
     } catch (error) {
         console.log("=== ERROR IN ADD PRODUCT ===");
@@ -158,38 +158,57 @@ const listProducts = async (req, res) => {
     try {
         
         const products = await productModel.find({});
-        res.json({success:true,data:products})
+        res.status(200).json({success:true,data:products})
 
     } catch (error) {
         console.log(error)
-        res.json({ success: false, message: error.message })
+        res.status(500).json({ success: false, message: error.message })
     }
 }
 
 // function for removing product
 const removeProduct = async (req, res) => {
     try {
+        // Support both old (req.body.id) and new (req.params.id) patterns
+        const id = req.params.id || req.body.id;
         
-        await productModel.findByIdAndDelete(req.body.id)
-        res.json({success:true,message:"Product Removed"})
+        if (!id) {
+            return res.status(400).json({ success: false, message: "Product ID is required" });
+        }
+        
+        const product = await productModel.findByIdAndDelete(id);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+        
+        res.status(200).json({success:true,message:"Product Removed"})
 
     } catch (error) {
         console.log(error)
-        res.json({ success: false, message: error.message })
+        res.status(500).json({ success: false, message: error.message })
     }
 }
 
 // function for single product info
 const singleProduct = async (req, res) => {
     try {
+        // Support both old (req.body.productId) and new (req.params.id) patterns
+        const id = req.params.id || req.body.productId;
         
-        const { productId } = req.body
-        const product = await productModel.findById(productId)
-        res.json({success:true,data:product})
+        if (!id) {
+            return res.status(400).json({ success: false, message: "Product ID is required" });
+        }
+        
+        const product = await productModel.findById(id);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+        
+        res.status(200).json({success:true,data:product})
 
     } catch (error) {
         console.log(error)
-        res.json({ success: false, message: error.message })
+        res.status(500).json({ success: false, message: error.message })
     }
 }
 
@@ -197,10 +216,10 @@ const singleProduct = async (req, res) => {
 const getBestsellerProducts = async (req, res) => {
     try {
         const products = await productModel.find({ bestseller: true });
-        res.json({ success: true, data: products });
+        res.status(200).json({ success: true, data: products });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 }
 
@@ -237,11 +256,11 @@ const searchProducts = async (req, res) => {
         }
         
         const products = await productModel.find(searchCriteria);
-        res.json({ success: true, data: products });
+        res.status(200).json({ success: true, data: products });
         
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 }
 
@@ -250,10 +269,10 @@ const getProductsByCategory = async (req, res) => {
     try {
         const { category } = req.params;
         const products = await productModel.find({ category });
-        res.json({ success: true, data: products });
+        res.status(200).json({ success: true, data: products });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 }
 
@@ -262,10 +281,10 @@ const getProductsBySubCategory = async (req, res) => {
     try {
         const { subCategory } = req.params;
         const products = await productModel.find({ subCategory });
-        res.json({ success: true, data: products });
+        res.status(200).json({ success: true, data: products });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 }
 
@@ -293,7 +312,7 @@ const updateProductStock = async (req, res) => {
         product.colorVariants[colorVariantIndex].stock = newStock;
         await product.save();
 
-        res.json({ 
+        res.status(200).json({ 
             success: true, 
             message: "Stock updated successfully",
             updatedStock: newStock
@@ -336,7 +355,7 @@ const checkStockAvailability = async (req, res) => {
         const currentStock = colorVariant.stock;
         const isStockSufficient = currentStock >= quantity;
 
-        res.json({
+        res.status(200).json({
             success: true,
             data: {
                 available: isSizeAvailable && isStockSufficient,
@@ -378,7 +397,7 @@ const getLowStockProducts = async (req, res) => {
             }))
         }));
 
-        res.json({
+        res.status(200).json({
             success: true,
             data: lowStockProducts,
             threshold: parseInt(threshold)
@@ -393,6 +412,177 @@ const getLowStockProducts = async (req, res) => {
     }
 };
 
+// function for updating product
+const updateProduct = async (req, res) => {
+    try {
+        console.log("=== UPDATE PRODUCT REQUEST ===");
+        console.log("Request body:", req.body);
+        console.log("Request files:", req.files);
+        console.log("Product ID:", req.params.id);
+
+        const { name, description, category, subCategory, bestseller, colorVariants } = req.body
+        const productId = req.params.id;
+
+        // Check if product exists
+        const existingProduct = await productModel.findById(productId);
+        if (!existingProduct) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+        // Validate category and subcategory
+        if (!isValidCategory(category)) {
+            throw new Error(`Invalid category. Must be one of: ${Object.values(PRODUCT_CATEGORIES).join(', ')}`);
+        }
+        
+        if (!isValidSubcategory(subCategory)) {
+            throw new Error(`Invalid subcategory. Must be one of: ${Object.values(PRODUCT_SUBCATEGORIES).join(', ')}`);
+        }
+
+        if (!colorVariants) {
+            throw new Error("colorVariants is required");
+        }
+
+        // Parse color variants from request body
+        let parsedColorVariants;
+        try {
+            parsedColorVariants = JSON.parse(colorVariants);
+            console.log("Parsed colorVariants:", parsedColorVariants);
+        } catch (parseError) {
+            throw new Error(`Failed to parse colorVariants: ${parseError.message}`);
+        }
+
+        if (!Array.isArray(parsedColorVariants) || parsedColorVariants.length === 0) {
+            throw new Error("colorVariants must be a non-empty array");
+        }
+
+        // Process variants - preserve existing images/videos if no new files uploaded
+        const processedVariants = await Promise.all(
+            parsedColorVariants.map(async (variant, index) => {
+                console.log(`Processing variant ${index + 1}:`, variant);
+                
+                // If no new files are uploaded, preserve existing images and video
+                if (!req.files || req.files.length === 0) {
+                    return {
+                        color: variant.color,
+                        price: Number(variant.price),
+                        stock: Number(variant.stock) || 0,
+                        sizes: variant.sizes || [],
+                        // Preserve existing images and video from the database
+                        images: variant.images || [],
+                        video: variant.video || ""
+                    };
+                }
+
+                const variantImages = [];
+                let variantVideo = "";
+                
+                // Find images for this variant from the files array
+                const variantFiles = req.files.filter(file => 
+                    file.fieldname.startsWith(`image_${variant.color}_`)
+                );
+                
+                // Find video for this variant
+                const variantVideoFile = req.files.find(file => 
+                    file.fieldname === `video_${variant.color}`
+                );
+                
+                console.log(`Found ${variantFiles.length} files for variant ${variant.color}:`, variantFiles.map(f => f.fieldname));
+                console.log(`Video for variant ${variant.color}:`, variantVideoFile ? variantVideoFile.fieldname : 'none');
+
+                // Process video for this variant if it exists
+                if (variantVideoFile) {
+                    try {
+                        console.log(`Processing video for variant ${variant.color}...`);
+                        const videoResult = await cloudinary.uploader.upload(
+                            variantVideoFile.path,
+                            { 
+                                resource_type: 'video',
+                                folder: 'product-videos',
+                                allowed_formats: ['mp4', 'webm', 'mov', 'avi', 'mkv']
+                            }
+                        );
+                        variantVideo = videoResult.secure_url;
+                        console.log(`Video uploaded for ${variant.color}: ${variantVideo}`);
+
+                        // Clean up local video file after successful upload
+                        fs.unlink(variantVideoFile.path, (err) => {
+                            if (err) console.error('Error deleting local video file:', err);
+                        });
+
+                    } catch (videoError) {
+                        console.error(`Error uploading video for ${variant.color}:`, videoError);
+                        throw new Error(`Failed to upload video for ${variant.color}: ${videoError.message}`);
+                    }
+                }
+
+                // Process each image file for this variant
+                for (const file of variantFiles) {
+                    try {
+                        console.log(`Processing file: ${file.fieldname}`);
+                        const result = await cloudinary.uploader.upload(
+                            file.path, 
+                            { resource_type: 'image' }
+                        );
+                        variantImages.push(result.secure_url);
+                        console.log(`Uploaded image for ${variant.color}: ${result.secure_url}`);
+
+                        // Clean up local file after successful upload
+                        fs.unlink(file.path, (err) => {
+                            if (err) console.error('Error deleting local file:', err);
+                        });
+
+                    } catch (uploadError) {
+                        console.error(`Error uploading image for ${variant.color}:`, uploadError);
+                        throw new Error(`Failed to upload image for ${variant.color}: ${uploadError.message}`);
+                    }
+                }
+
+                // Return processed variant with images and video
+                return {
+                    color: variant.color,
+                    price: Number(variant.price),
+                    stock: Number(variant.stock) || 0,
+                    sizes: variant.sizes || [],
+                    images: variantImages.length > 0 ? variantImages : (variant.images || []),
+                    video: variantVideo || (variant.video || "")
+                };
+            })
+        );
+
+        // Update the product
+        const updatedProduct = await productModel.findByIdAndUpdate(
+            productId,
+            {
+                name,
+                description,
+                category,
+                subCategory,
+                bestseller: bestseller === 'true' || bestseller === true,
+                colorVariants: processedVariants
+            },
+            { new: true }
+        );
+
+        console.log("Product updated successfully:", updatedProduct._id);
+
+        res.status(200).json({
+            success: true,
+            message: "Product updated successfully",
+            data: updatedProduct
+        });
+
+    } catch (error) {
+        console.log("Update product error:", error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 export { 
     listProducts, 
     addProduct, 
@@ -403,6 +593,7 @@ export {
     getProductsByCategory, 
     getProductsBySubCategory,
     updateProductStock,
+    updateProduct,
     checkStockAvailability,
     getLowStockProducts
 }
