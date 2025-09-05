@@ -10,8 +10,7 @@ class WhatsAppService {
     this.isReady = false
     this.adminNumbers = [] // Admin WhatsApp numbers
     
-    // Only initialize WhatsApp in non-production environments
-    // Railway/production environments can't handle interactive QR code authentication
+    // Only initialize WhatsApp in development environment
     if (process.env.NODE_ENV !== 'production') {
       this.initializeClient()
     } else {
@@ -244,7 +243,7 @@ _Great work today!_`
   }
 }
 
-// Create singleton instance
+// Create singleton instance 
 const whatsappService = new WhatsAppService()
 
 export default whatsappService

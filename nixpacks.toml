@@ -1,0 +1,23 @@
+# Railway Backend Service Configuration
+# This file tells Railway how to build and deploy your backend
+
+# Build configuration
+NIXPACKS_BUILD_COMMAND="cd backend && npm install"
+
+# Start command
+NIXPACKS_START_COMMAND="cd backend && npm start"
+
+# Set production environment
+NODE_ENV=production
+
+# Environment variables (set these in Railway dashboard)
+# MONGODB_URI=mongodb://localhost:27017/pix-mern
+# JWT_SECRET=your-jwt-secret
+# CLOUDINARY_CLOUD_NAME=your-cloudinary-name
+# CLOUDINARY_API_KEY=your-cloudinary-key
+# CLOUDINARY_API_SECRET=your-cloudinary-secret
+# RAZORPAY_KEY_ID=your-razorpay-key
+# RAZORPAY_KEY_SECRET=your-razorpay-secret
+# EMAIL_USER=your-email
+# EMAIL_PASS=your-email-password
+# WHATSAPP_SESSION_PATH=/tmp/whatsapp-session
