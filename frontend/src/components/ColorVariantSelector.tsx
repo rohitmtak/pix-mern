@@ -7,7 +7,7 @@ interface ColorVariantSelectorProps {
   selectedColor?: string;
   onColorSelect?: (color: string) => void;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xs';
   showLabels?: boolean;
   disabled?: boolean;
 }
@@ -44,6 +44,8 @@ const ColorVariantSelector: React.FC<ColorVariantSelectorProps> = ({
 
   const getSizeClasses = () => {
     switch (size) {
+      case 'xs':
+        return 'w-4 h-4';
       case 'sm':
         return 'w-5 h-5';
       case 'lg':

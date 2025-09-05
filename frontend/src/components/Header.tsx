@@ -106,7 +106,7 @@ const Header = () => {
                 onMouseEnter={() => setIsCollectionHovered(true)}
                 onMouseLeave={() => setIsCollectionHovered(false)}
               >
-                <button className="text-black font-jost text-sm uppercase tracking-wide hover:opacity-70 transition-opacity relative after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:w-32 after:h-10 after:bg-transparent after:hidden group-hover:after:block">
+                <button className="text-black font-jost text-sm uppercase tracking-wide hover:opacity-70 transition-opacity relative after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:w-full after:h-10 after:bg-transparent after:hidden group-hover:after:block">
                   Collection
                 </button>
 
@@ -267,13 +267,91 @@ const Header = () => {
                 </div>
               </div>
 
-              {/* About */}
-              <Link
-                to="/about"
-                className="text-black font-jost text-sm uppercase tracking-wide hover:opacity-70 transition-opacity"
-              >
-                About
-              </Link>
+              {/* About - with Dropdown */}
+              <div className="group">
+                <Link
+                  to="/about"
+                  className="text-black font-jost text-sm uppercase tracking-wide hover:opacity-70 transition-opacity relative after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:w-full after:h-10 after:bg-transparent after:hidden group-hover:after:block"
+                >
+                  About
+                </Link>
+
+                {/* About Dropdown - Company Description */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-screen bg-white border-t border-gray-100 shadow-2xl py-12 z-[70] opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto transform">
+                  <div className="max-w-screen-2xl mx-auto px-16">
+                    <div className="flex">
+                      {/* Left Side - Company Description */}
+                      <div className="w-2/3 pr-16">
+                        <div className="space-y-6">
+                          {/* Title */}
+                          <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-0">
+                            <h3 className="text-2xl font-medium text-black mb-6 font-jost uppercase tracking-wide">
+                              About High Street PIX
+                            </h3>
+                          </div>
+
+                          {/* First Paragraph */}
+                          <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-100">
+                            <p className="text-gray-700 leading-relaxed text-lg mb-6">
+                              High Street PIX is a premium fashion brand that celebrates the artistry of traditional Indian drapes with contemporary elegance. We specialize in creating exquisite garments that blend timeless craftsmanship with modern design sensibilities.
+                            </p>
+                          </div>
+
+                          {/* Second Paragraph */}
+                          <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-200">
+                            <p className="text-gray-600 leading-relaxed mb-8">
+                              Our collections feature signature pieces, bridal couture, contemporary drapes, and luxury fusion lounge wear, each designed to tell a unique story and celebrate the rich heritage of Indian fashion.
+                            </p>
+                          </div>
+
+                          {/* Learn More Button */}
+                          <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-300">
+                            <Link
+                              to="/about"
+                              className="inline-block bg-black text-white px-8 py-3 hover:bg-gray-800 transition-colors duration-200 font-jost uppercase tracking-wide text-sm"
+                            >
+                              Learn More
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Side - Founder and Shop Images */}
+                      <div className="w-1/3">
+                        <div className="grid grid-cols-2 gap-6">
+                          {/* Founder Image */}
+                          <div className="group/item">
+                            <div className="aspect-[4/5] overflow-hidden">
+                              <img 
+                                src="/images/founder.jpg" 
+                                alt="Founder"
+                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                onError={(e) => {
+                                  e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='240' viewBox='0 0 192 240'%3E%3Crect width='192' height='240' fill='%23f3f4f6'/%3E%3Ctext x='96' y='120' text-anchor='middle' dy='.3em' font-family='Arial' font-size='14' fill='%236b7280'%3EFounder%3C/text%3E%3C/svg%3E";
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Shop Image */}
+                          <div className="group/item">
+                            <div className="aspect-[4/5] overflow-hidden">
+                              <img 
+                                src="/images/shop.jpg" 
+                                alt="Store"
+                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                onError={(e) => {
+                                  e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='240' viewBox='0 0 192 240'%3E%3Crect width='192' height='240' fill='%23f3f4f6'/%3E%3Ctext x='96' y='120' text-anchor='middle' dy='.3em' font-family='Arial' font-size='14' fill='%236b7280'%3EStore%3C/text%3E%3C/svg%3E";
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Contact */}
               <Link

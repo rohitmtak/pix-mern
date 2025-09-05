@@ -292,8 +292,8 @@ const ProductDetailPage = () => {
                       </CarouselContent>
                       {currentMedia.length > 1 && (
                         <>
-                          <CarouselPrevious className="left-4 right-auto top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 backdrop-blur text-gray-900 border border-gray-200 shadow-md hover:bg-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto focus:outline-none" />
-                          <CarouselNext className="right-4 left-auto top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 backdrop-blur text-gray-900 border border-gray-200 shadow-md hover:bg-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto focus:outline-none" />
+                          <CarouselPrevious className="left-4 right-auto top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-transparent text-gray-900 border-0 hover:bg-transparent opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto focus:outline-none" />
+                          <CarouselNext className="right-4 left-auto top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-transparent text-gray-900 border-0 hover:bg-transparent opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto focus:outline-none" />
                         </>
                       )}
                     </Carousel>

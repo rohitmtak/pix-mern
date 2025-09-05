@@ -2,11 +2,15 @@ const Footer = () => {
   // Data structure for navigation links
   const navigationData = [
     {
+      title: "EXPLORE",
+      links: ["Signature Collection", "Bridal Couture", "Contemporary Drapes", "Luxury Fusion Lounge"]
+    },
+    {
       title: "ACCOUNT",
       links: ["My Account"]
     },
     {
-      title: "BRAND", 
+      title: "BRAND",
       links: ["About", "Press", "Careers"]
     },
     {
@@ -22,8 +26,8 @@ const Footer = () => {
       path: "M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
     },
     {
-      name: "Instagram", 
-      path: "M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.746-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001 12.017.001z"
+      name: "Instagram",
+      path: "M3 12C3 8.40486 3 6.60729 3.85669 5.31255C4.23925 4.73439 4.73439 4.23925 5.31255 3.85669C6.60729 3 8.40486 3 12 3C15.5951 3 17.3927 3 18.6874 3.85669C19.2656 4.23925 19.7608 4.73439 20.1433 5.31255C21 6.60729 21 8.40486 21 12C21 15.5951 21 17.3927 20.1433 18.6874C19.7608 19.2656 19.2656 19.7608 18.6874 20.1433C17.3927 21 15.5951 21 12 21C8.40486 21 6.60729 21 5.31255 20.1433C4.73439 19.7608 4.23925 19.2656 3.85669 18.6874C3 17.3927 3 15.5951 3 12ZM11.9998 15.0832C13.7025 15.0832 15.0828 13.7029 15.0828 12.0002C15.0828 10.2975 13.7025 8.91722 11.9998 8.91722C10.2971 8.91722 8.91684 10.2975 8.91684 12.0002C8.91684 13.7029 10.2971 15.0832 11.9998 15.0832ZM16.6593 12.0002C16.6593 14.5735 14.5732 16.6596 11.9998 16.6596C9.42652 16.6596 7.34043 14.5735 7.34043 12.0002C7.34043 9.42691 9.42652 7.34082 11.9998 7.34082C14.5732 7.34082 16.6593 9.42691 16.6593 12.0002ZM16.8433 8.20155C17.4479 8.20155 17.9381 7.71138 17.9381 7.10673C17.9381 6.50207 17.4479 6.0119 16.8433 6.0119C16.2386 6.0119 15.7485 6.50207 15.7485 7.10673C15.7485 7.71138 16.2386 8.20155 16.8433 8.20155Z"
     },
     {
       name: "YouTube",
@@ -45,18 +49,18 @@ const Footer = () => {
 
   // Reusable components
   const NavigationColumn = ({ title, links }) => (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="relative">
-        <h3 className="text-xl font-normal uppercase mb-2">
+        <h3 className="text-base font-normal uppercase">
           {title}
         </h3>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {links.map((link, index) => (
-          <a 
+          <a
             key={index}
-            href="#" 
-            className="block text-base font-normal hover:text-gray-300 transition-colors"
+            href="#"
+            className="block text-sm font-normal text-gray-400 hover:text-white transition-colors"
           >
             {link}
           </a>
@@ -74,76 +78,80 @@ const Footer = () => {
   );
 
   const ContactItem = ({ icon, text }) => (
-    <div className="flex items-center space-x-2">
-      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+    <div className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
         <path d={icon} />
       </svg>
-      <span className="text-base font-normal">{text}</span>
+      <span className="text-sm font-normal">{text}</span>
     </div>
   );
 
   return (
-    <footer className="w-full py-16 px-16 font-jost"
+    <footer className="w-full pt-16 pb-12 px-16 font-jost"
       style={{
         backgroundColor: 'rgba(13,13,13,1)'
       }}
     >
       <div className="max-w-screen-2xl mx-auto text-white">
         {/* Top Section */}
-        <div className="grid grid-cols-5 gap-16 mb-12">
-          {/* Logo Section */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <img 
-                src="/images/pix-golden-logo.png" 
-                alt="Pix Logo" 
-                className="h-16 w-auto"
-              />
-            </div>
-            
-            {/* Social Icons */}
-            <div className="flex space-x-4">
-              {socialIcons.map((social, index) => (
-                <SocialIcon key={index} path={social.path} name={social.name} />
-              ))}
+        <div className="flex justify-between gap-16 mb-12">
+          {/* Logo S24tion */}
+          <div className="flex flex-col">
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <img
+                  src="/images/pix-golden-logo.png"
+                  alt="Pix Logo"
+                  className="h-24 w-auto"
+                />
+              </div>
+
+              {/* Social Icons */}
+              <div className="flex space-x-4">
+                {socialIcons.map((social, index) => (
+                  <SocialIcon key={index} path={social.path} name={social.name} />
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Navigation Columns */}
-          {navigationData.map((section, index) => (
-            <NavigationColumn 
-              key={index}
-              title={section.title} 
-              links={section.links} 
-            />
-          ))}
+          <div className="flex justify-between gap-32">
+            {/* Navigation Columns */}
+            {navigationData.map((section, index) => (
+              <NavigationColumn
+                key={index}
+                title={section.title}
+                links={section.links}
+              />
+            ))}
 
-          {/* Contact Details Section */}
-          <div className="space-y-6">
-            <div className="relative">
-              <h3 className="text-xl font-normal uppercase mb-2">
-                CONTACT
-              </h3>
-            </div>
-            <div className="space-y-4">
-              {contactInfo.map((contact, index) => (
-                <ContactItem 
-                  key={index}
-                  icon={contact.icon} 
-                  text={contact.text} 
-                />
-              ))}
+            {/* Contact Details Section */}
+            <div className="space-y-5">
+              <div className="relative">
+                <h3 className="text-base font-normal uppercase">
+                  CONTACT
+                </h3>
+              </div>
+              <div className="space-y-3">
+                {contactInfo.map((contact, index) => (
+                  <ContactItem
+                    key={index}
+                    icon={contact.icon}
+                    text={contact.text}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-gray-600 pt-8">
-          <div className="flex justify-between items-center">
+        <div className="border-t border-gray-600 pt-6">
+          <div className="flex justify-end items-center">
             {/* Branding */}
-            <div className="text-white font-bold text-xl">
+            {/* <div className="text-white font-bold text-xl">
               Pix
-            </div>
+            </div> */}
 
             {/* Legal Information */}
             <div className="flex space-x-6 text-sm text-gray-300">
