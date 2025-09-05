@@ -9,7 +9,14 @@ class WhatsAppService {
     this.client = null
     this.isReady = false
     this.adminNumbers = [] // Admin WhatsApp numbers
-    this.initializeClient()
+    
+    // Only initialize WhatsApp in non-production environments
+    // Railway/production environments can't handle interactive QR code authentication
+    if (process.env.NODE_ENV !== 'production') {
+      this.initializeClient()
+    } else {
+      console.log('⚠️ WhatsApp service disabled in production environment')
+    }
   }
 
   initializeClient() {

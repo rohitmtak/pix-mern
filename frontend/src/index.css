@@ -210,3 +210,23 @@
   background-color: rgba(0, 0, 0, 0.1);
   border-radius: 4px;
 }
+
+/* Video hover controls - hide controls by default, show on hover */
+.video-hover-controls::-webkit-media-controls-panel {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-hover-controls:hover::-webkit-media-controls-panel {
+  opacity: 1;
+}
+
+/* For Firefox */
+.video-hover-controls::-moz-media-controls {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-hover-controls:hover::-moz-media-controls {
+  opacity: 1;
+}

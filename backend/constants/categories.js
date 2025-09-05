@@ -7,9 +7,7 @@ export const PRODUCT_CATEGORIES = {
 };
 
 export const PRODUCT_SUBCATEGORIES = {
-  BRIDAL: "Bridal",
-  LEHENGA: "Lehenga",
-  SAREE: "Saree",
+  // No subcategories defined yet - keeping functionality optional
 };
 
 // Validation function to check if a category is valid
@@ -19,6 +17,10 @@ export const isValidCategory = (category) => {
 
 // Validation function to check if a subcategory is valid
 export const isValidSubcategory = (subcategory) => {
+  // Allow empty string since subcategory is optional
+  if (!subcategory || subcategory.trim() === '') {
+    return true;
+  }
   return Object.values(PRODUCT_SUBCATEGORIES).includes(subcategory);
 };
 

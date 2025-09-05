@@ -17,13 +17,22 @@ const List = ({ token }) => {
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
-    category: "Signature Collection",
+    category: "",
     subCategory: "",
     bestseller: false,
     colorVariants: []
   })
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
+  const [showEditColorDropdowns, setShowEditColorDropdowns] = useState({});
+  
+  // Predefined color options for fashion items
+  const colorOptions = [
+    "Black", "White", "Red", "Blue", "Green", "Yellow", "Pink", "Purple", 
+    "Orange", "Brown", "Grey", "Navy", "Maroon", "Cream", "Gold", "Silver",
+    "Beige", "Khaki", "Turquoise", "Magenta", "Coral", "Lavender", "Mint",
+    "Burgundy", "Teal", "Ivory", "Charcoal", "Rose Gold", "Copper", "Bronze"
+  ];
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showSubCategoryDropdown, setShowSubCategoryDropdown] = useState(false);
 
@@ -67,7 +76,7 @@ const List = ({ token }) => {
     setEditForm({
       name: product.name || "",
       description: product.description || "",
-      category: product.category || "Signature Collection",
+      category: product.category || "",
       subCategory: product.subCategory || "",
       bestseller: product.bestseller || false,
       colorVariants: product.colorVariants ? product.colorVariants.map(variant => ({
@@ -186,7 +195,7 @@ const List = ({ token }) => {
       console.error('Error fetching categories:', error);
       // Set default categories if API fails
       setCategories(['Signature Collection', 'Bridal Couture', 'Contemporary Drapes', 'Luxury Fusion Lounge']);
-      setSubCategories(['Bridal', 'Lehenga', 'Saree', 'Anarkali']);
+      setSubCategories([]); // No subcategories defined yet
     }
   };
 
@@ -420,7 +429,7 @@ const List = ({ token }) => {
                         type="text"
                         value={editForm.name}
                         onChange={(e) => updateEditForm('name', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all"
+                        className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all bg-white"
                         placeholder="Enter product name"
                       />
                     </div>
@@ -429,9 +438,9 @@ const List = ({ token }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                       <div 
                         onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                        className='w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all cursor-pointer bg-white flex justify-between items-center'
+                        className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all cursor-pointer bg-white flex justify-between items-center'
                       >
-                        <span className={editForm.category ? 'text-gray-900' : 'text-gray-500'}>{editForm.category || 'Select category'}</span>
+                        <span className={editForm.category ? 'text-gray-900' : 'text-gray-400'}>{editForm.category || 'Select category'}</span>
                         <svg className={`w-5 h-5 text-gray-400 transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
@@ -459,9 +468,9 @@ const List = ({ token }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Sub Category (Optional)</label>
                       <div 
                         onClick={() => setShowSubCategoryDropdown(!showSubCategoryDropdown)}
-                        className='w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all cursor-pointer bg-white flex justify-between items-center'
+                        className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all cursor-pointer bg-white flex justify-between items-center'
                       >
-                        <span className={editForm.subCategory ? 'text-gray-900' : 'text-gray-500'}>{editForm.subCategory || 'Select sub category (optional)'}</span>
+                        <span className={editForm.subCategory ? 'text-gray-900' : 'text-gray-400'}>{editForm.subCategory || 'Select sub category (optional)'}</span>
                         <svg className={`w-5 h-5 text-gray-400 transition-transform ${showSubCategoryDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
@@ -548,15 +557,34 @@ const List = ({ token }) => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          <div>
+                          <div className="relative dropdown-container">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Color Name *</label>
-                                                          <input
-                                type="text"
-                                value={variant.color}
-                                onChange={(e) => updateEditColorVariant(index, 'color', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all"
-                                placeholder="e.g., Black, Red, Blue"
-                              />
+                            <div 
+                              onClick={() => setShowEditColorDropdowns(prev => ({...prev, [index]: !prev[index]}))}
+                              className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all cursor-pointer bg-white flex justify-between items-center'
+                            >
+                              <span className={variant.color ? 'text-gray-900' : 'text-gray-400'}>{variant.color || 'Select color'}</span>
+                              <svg className={`w-5 h-5 text-gray-400 transition-transform ${showEditColorDropdowns[index] ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </div>
+                            
+                            {showEditColorDropdowns[index] && (
+                              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                {colorOptions.map((color, colorIndex) => (
+                                  <div
+                                    key={colorIndex}
+                                    onClick={() => {
+                                      updateEditColorVariant(index, 'color', color);
+                                      setShowEditColorDropdowns(prev => ({...prev, [index]: false}));
+                                    }}
+                                    className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                  >
+                                    {color}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
 
                           <div>
@@ -565,8 +593,8 @@ const List = ({ token }) => {
                                 type="number"
                                 value={variant.price}
                                 onChange={(e) => updateEditColorVariant(index, 'price', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all"
-                                placeholder="2500"
+                                className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all bg-white"
+                                placeholder="Enter price in ₹"
                               />
                           </div>
 
@@ -576,8 +604,8 @@ const List = ({ token }) => {
                                 type="number"
                                 value={variant.stock}
                                 onChange={(e) => updateEditColorVariant(index, 'stock', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all"
-                                placeholder="100"
+                                className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all bg-white"
+                                placeholder="Enter stock quantity"
                               />
                           </div>
 

@@ -87,6 +87,8 @@ nul
 # Deployment and test scripts (contain sensitive information)
 deploy.sh
 run-tests.sh
+setup-railway.sh
+nixpacks.toml
 
 # WhatsApp Web.js cache and session files
 .wwebjs_auth/

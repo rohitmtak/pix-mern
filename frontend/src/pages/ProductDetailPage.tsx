@@ -204,8 +204,8 @@ const ProductDetailPage = () => {
   const sizes = getAvailableSizes();
   const colors = getAvailableColors();
 
-  // Get images for the selected color variant
-  const getImagesForColor = (color: string) => {
+  // Get images and videos for the selected color variant
+  const getMediaForColor = (color: string) => {
     if (
       !product ||
       !product.colorVariants ||
@@ -219,16 +219,25 @@ const ProductDetailPage = () => {
       (variant) => variant.color.toLowerCase() === color.toLowerCase()
     );
 
-    // If color variant has images, use those
-    if (colorVariant && colorVariant.images && colorVariant.images.length > 0) {
-      return colorVariant.images;
+    if (!colorVariant) return [];
+
+    const media = [];
+    
+    // Add images
+    if (colorVariant.images && colorVariant.images.length > 0) {
+      media.push(...colorVariant.images.map(img => ({ type: 'image', url: img })));
+    }
+    
+    // Add video if it exists
+    if (colorVariant.video && colorVariant.video.trim() !== '') {
+      media.push({ type: 'video', url: colorVariant.video });
     }
 
-    return [];
+    return media;
   };
 
-  // Get current images based on selected color
-  const currentImages = product ? getImagesForColor(selectedColor) : [];
+  // Get current media (images and videos) based on selected color
+  const currentMedia = product ? getMediaForColor(selectedColor) : [];
 
   return (
     <div className="min-h-screen bg-white">
@@ -241,9 +250,9 @@ const ProductDetailPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
             {/* Product Gallery */}
             <div className="space-y-8">
-              {/* Main Image - Carousel */}
+              {/* Main Media - Carousel */}
               <div className="relative overflow-hidden bg-transparent group">
-                {currentImages.length > 0 ? (
+                {currentMedia.length > 0 ? (
                   <>
                     <Carousel
                       setApi={setGalleryApi}
@@ -255,17 +264,33 @@ const ProductDetailPage = () => {
                       className=""
                     >
                       <CarouselContent className="ml-0">
-                        {currentImages.map((image, index) => (
+                        {currentMedia.map((media, index) => (
                           <CarouselItem key={index} className="pl-0">
-                            <img
-                              src={image}
+                            {media.type === 'video' ? (
+                              <div className="relative">
+                                <video
+                                  src={media.url}
+                                  controls
+                                  muted
+                                  loop
+                                  className="w-full h-auto video-hover-controls"
+                                  onContextMenu={(e) => e.preventDefault()}
+                                  controlsList="nodownload nofullscreen noremoteplayback"
+                                >
+                                  Your browser does not support the video tag.
+                                </video>
+                              </div>
+                            ) : (
+                              <img
+                                src={media.url}
                               alt={`${product.name} - ${selectedColor} view ${index + 1}`}
                               className="w-full h-auto"
                             />
+                            )}
                           </CarouselItem>
                         ))}
                       </CarouselContent>
-                      {currentImages.length > 1 && (
+                      {currentMedia.length > 1 && (
                         <>
                           <CarouselPrevious className="left-4 right-auto top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 backdrop-blur text-gray-900 border border-gray-200 shadow-md hover:bg-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto focus:outline-none" />
                           <CarouselNext className="right-4 left-auto top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 backdrop-blur text-gray-900 border border-gray-200 shadow-md hover:bg-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto focus:outline-none" />
@@ -276,7 +301,7 @@ const ProductDetailPage = () => {
                   </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400">
-                    No image available
+                    No media available
                   </div>
                 )}
               </div>
@@ -305,7 +330,7 @@ const ProductDetailPage = () => {
                     productData={{
                       name: product.name,
                       price: currentColorVariant?.price || 0,
-                      imageUrl: currentImages[0] || "",
+                      imageUrl: currentMedia.find(m => m.type === 'image')?.url || "",
                       category: product.category,
                     }}
                     className="bg-white/80 backdrop-blur-sm p-1 rounded-full hover:bg-white/90 shrink-0 [&>svg]:w-6 [&>svg]:h-6"
@@ -481,7 +506,7 @@ const ProductDetailPage = () => {
                          size: selectedSize,
                          color: selectedColor,
                          quantity: quantity,
-                         imageUrl: currentImages[0] || "",
+                         imageUrl: currentMedia.find(m => m.type === 'image')?.url || "",
                        });
 
                        // Show success feedback

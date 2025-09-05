@@ -3,17 +3,30 @@ import {assets} from '../assets/assets'
 import axios from 'axios'
 import { backendUrl } from '../App'
 import { toast } from 'react-toastify'
+import { uploadVideoToCloudinary } from '../utils/cloudinaryUpload'
 
 const Add = ({token}) => {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Signature Collection");
+  const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
+  const [showColorDropdowns, setShowColorDropdowns] = useState({}); // Color dropdown state
   const [bestseller, setBestseller] = useState(false);
+  
+  // Predefined color options for fashion items
+  const colorOptions = [
+    "Black", "White", "Red", "Blue", "Green", "Yellow", "Pink", "Purple", 
+    "Orange", "Brown", "Grey", "Navy", "Maroon", "Cream", "Gold", "Silver",
+    "Beige", "Khaki", "Turquoise", "Magenta", "Coral", "Lavender", "Mint",
+    "Burgundy", "Teal", "Ivory", "Charcoal", "Rose Gold", "Copper", "Bronze"
+  ];
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [cloudinaryUploading, setCloudinaryUploading] = useState(false);
+  const [cloudinaryProgress, setCloudinaryProgress] = useState(0);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showSubCategoryDropdown, setShowSubCategoryDropdown] = useState(false);
   const [colorVariants, setColorVariants] = useState([
@@ -77,9 +90,21 @@ const Add = ({token}) => {
     return URL.createObjectURL(file);
   };
 
-  const getVideoPreview = (file) => {
-    if (!file) return null;
-    return URL.createObjectURL(file);
+  const getVideoPreview = (videoObj) => {
+    if (!videoObj) return null;
+    // If it's a direct Cloudinary URL, return it
+    if (videoObj.cloudinaryUrl) {
+      return videoObj.cloudinaryUrl;
+    }
+    // If it's a file object, create object URL
+    if (videoObj.file) {
+      return URL.createObjectURL(videoObj.file);
+    }
+    // Fallback for old structure
+    if (videoObj instanceof File) {
+      return URL.createObjectURL(videoObj);
+    }
+    return null;
   };
 
   const updateColorVariantSizes = (variantIndex, size) => {
@@ -93,13 +118,73 @@ const Add = ({token}) => {
     ));
   };
 
-  const updateColorVariantVideo = (variantIndex, videoFile) => {
+
+  const updateColorVariantVideo = async (variantIndex, videoFile) => {
+    if (!videoFile) {
+      setColorVariants(prev => prev.map((variant, i) => 
+        i === variantIndex ? {
+          ...variant,
+          video: null
+        } : variant
+      ));
+      return;
+    }
+
+    // Validate file size (max 100MB)
+    if (videoFile.size > 100 * 1024 * 1024) {
+      toast.error("Video file is too large. Please use a file smaller than 100MB.");
+      return;
+    }
+    
+    // Show info about file size
+    const fileSize = Math.round(videoFile.size / (1024 * 1024));
+    if (fileSize > 20) {
+      toast.warning(`Large video file (${fileSize}MB) - Direct upload to Cloudinary may take 1-2 minutes.`);
+    } else {
+      toast.info(`Video file (${fileSize}MB) - Uploading directly to Cloudinary...`);
+    }
+
+    try {
+      setCloudinaryUploading(true);
+      setCloudinaryProgress(0);
+      
+      // Upload video directly to Cloudinary
+      const result = await uploadVideoToCloudinary(videoFile, 'product-videos', setCloudinaryProgress);
+      
+      if (result.success) {
+        // Store both the file and the Cloudinary URL
+        setColorVariants(prev => prev.map((variant, i) => 
+          i === variantIndex ? {
+            ...variant,
+            video: {
+              file: videoFile, // Keep original file for reference
+              cloudinaryUrl: result.url, // Store Cloudinary URL
+              publicId: result.publicId,
+              duration: result.duration,
+              size: result.size
+            }
+          } : variant
+        ));
+        
+        toast.success(`✅ Video uploaded to Cloudinary successfully! (${fileSize}MB)`);
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Cloudinary upload error:', error);
+      toast.error(`❌ Video upload failed: ${error.message}`);
+      
+      // Reset the video field on error
     setColorVariants(prev => prev.map((variant, i) => 
       i === variantIndex ? {
         ...variant,
-        video: videoFile
+          video: null
       } : variant
     ));
+    } finally {
+      setCloudinaryUploading(false);
+      setCloudinaryProgress(0);
+    }
   };
 
   // Fetch categories and subcategories from backend
@@ -121,7 +206,7 @@ const Add = ({token}) => {
       console.error('Error fetching categories:', error);
       // Set default categories if API fails
       setCategories(['Signature Collection', 'Bridal Couture', 'Contemporary Drapes', 'Luxury Fusion Lounge']);
-      setSubCategories(['Bridal', 'Lehenga', 'Saree', 'Anarkali']);
+      setSubCategories([]); // No subcategories defined yet
     }
   };
 
@@ -136,6 +221,7 @@ const Add = ({token}) => {
       if (!event.target.closest('.dropdown-container')) {
         setShowCategoryDropdown(false);
         setShowSubCategoryDropdown(false);
+        setShowColorDropdowns({});
       }
     };
 
@@ -156,7 +242,14 @@ const Add = ({token}) => {
       });
       // Add video URLs to cleanup
       if (variant.video && typeof variant.video === 'object') {
+        // Only create object URL if it's a file, not a Cloudinary URL
+        if (variant.video.file) {
+          urls.push(URL.createObjectURL(variant.video.file));
+        }
+        // If it's an old structure with direct file, handle it
+        else if (variant.video instanceof File) {
         urls.push(URL.createObjectURL(variant.video));
+        }
       }
     });
 
@@ -170,6 +263,20 @@ const Add = ({token}) => {
     setLoading(true);
 
     try {
+      // Validate required fields
+      if (!name.trim()) {
+        toast.error("Product name is required");
+        return;
+      }
+      if (!description.trim()) {
+        toast.error("Product description is required");
+        return;
+      }
+      if (!category.trim()) {
+        toast.error("Please select a category");
+        return;
+      }
+
       // Validate color variants
       if (colorVariants.length === 0) {
         toast.error("At least one color variant is required");
@@ -206,17 +313,45 @@ const Add = ({token}) => {
         
         // Append video for this variant if it exists
         if (variant.video) {
+          // If video is already uploaded to Cloudinary, send the URL
+          if (variant.video.cloudinaryUrl) {
+            formData.append(`video_${variant.color}`, variant.video.cloudinaryUrl)
+          } else {
+            // Fallback: send the file (shouldn't happen with new flow)
           formData.append(`video_${variant.color}`, variant.video)
+          }
         }
       });
 
-      const response = await axios.post(backendUrl + "/api/product/add", formData, {headers: {token}})
+      const response = await axios.post(backendUrl + "/api/product/add", formData, {
+        headers: {
+          token,
+          'Content-Type': 'multipart/form-data'
+        },
+        timeout: 600000, // 10 minutes timeout for large video uploads
+        // Add upload optimization
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percentCompleted);
+          
+          // Show progress for large files
+          if (progressEvent.total > 10 * 1024 * 1024) { // Files larger than 10MB
+            const uploadedMB = Math.round(progressEvent.loaded / (1024 * 1024));
+            const totalMB = Math.round(progressEvent.total / (1024 * 1024));
+            console.log(`Upload progress: ${uploadedMB}MB / ${totalMB}MB (${percentCompleted}%)`);
+          }
+        }
+      })
 
       if (response.data.success) {
         toast.success(response.data.message)
         setName('')
         setDescription('')
+        setCategory('')
         setSubCategory('')
+        setUploadProgress(0)
         setColorVariants([{
           color: "",
           price: "",
@@ -237,9 +372,18 @@ const Add = ({token}) => {
 
     } catch (error) {
       console.log(error);
-      toast.error(error.message)
+      if (error.code === 'ECONNABORTED') {
+        toast.error("Upload timeout. Large video files may take several minutes to upload. Please wait or try with a smaller file.");
+      } else if (error.response?.status === 413) {
+        toast.error("File too large. Please use a video file smaller than 100MB.");
+      } else if (error.response?.status === 500) {
+        toast.error("Server error during upload. Please try again.");
+      } else {
+        toast.error(error.message || "Upload failed. Please check your internet connection and try again.");
+      }
     } finally {
       setLoading(false);
+      setUploadProgress(0);
     }
   }
 
@@ -261,7 +405,7 @@ const Add = ({token}) => {
               <input 
                 onChange={(e)=>setName(e.target.value)} 
                 value={name} 
-                className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all' 
+                className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all bg-white' 
                 type="text" 
                 placeholder='Enter product name' 
                 required
@@ -275,7 +419,7 @@ const Add = ({token}) => {
                  onClick={() => !loading && setShowCategoryDropdown(!showCategoryDropdown)}
                  className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all cursor-pointer bg-white flex justify-between items-center'
                >
-                 <span className={category ? 'text-gray-900' : 'text-gray-500'}>{category || 'Select category'}</span>
+                 <span className={category ? 'text-gray-900' : 'text-gray-400'}>{category || 'Select category'}</span>
                  <svg className={`w-5 h-5 text-gray-400 transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                  </svg>
@@ -305,7 +449,7 @@ const Add = ({token}) => {
                  onClick={() => !loading && setShowSubCategoryDropdown(!showSubCategoryDropdown)}
                  className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all cursor-pointer bg-white flex justify-between items-center'
                >
-                 <span className={subCategory ? 'text-gray-900' : 'text-gray-500'}>{subCategory || 'Select sub category (optional)'}</span>
+                 <span className={subCategory ? 'text-gray-900' : 'text-gray-400'}>{subCategory || 'Select sub category (optional)'}</span>
                  <svg className={`w-5 h-5 text-gray-400 transition-transform ${showSubCategoryDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                  </svg>
@@ -358,7 +502,7 @@ const Add = ({token}) => {
             <textarea 
               onChange={(e)=>setDescription(e.target.value)} 
               value={description} 
-              className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all min-h-[120px]' 
+              className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all min-h-[120px] bg-white' 
               placeholder='Write detailed product description here...' 
               required
               disabled={loading}
@@ -398,17 +542,34 @@ const Add = ({token}) => {
                 </div>
 
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
-                  <div>
+                  <div className="relative dropdown-container">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Color Name *</label>
-                    <input 
-                      onChange={(e) => updateColorVariant(variantIndex, 'color', e.target.value)} 
-                      value={variant.color} 
-                      className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all' 
-                      type="text" 
-                      placeholder='e.g., Black, Red, Blue' 
-                      required
-                      disabled={loading}
-                    />
+                    <div 
+                      onClick={() => !loading && setShowColorDropdowns(prev => ({...prev, [variantIndex]: !prev[variantIndex]}))}
+                      className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all cursor-pointer bg-white flex justify-between items-center'
+                    >
+                      <span className={variant.color ? 'text-gray-900' : 'text-gray-400'}>{variant.color || 'Select color'}</span>
+                      <svg className={`w-5 h-5 text-gray-400 transition-transform ${showColorDropdowns[variantIndex] ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                    
+                    {showColorDropdowns[variantIndex] && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {colorOptions.map((color, index) => (
+                          <div
+                            key={index}
+                            onClick={() => {
+                              updateColorVariant(variantIndex, 'color', color);
+                              setShowColorDropdowns(prev => ({...prev, [variantIndex]: false}));
+                            }}
+                            className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                          >
+                            {color}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div>
@@ -416,9 +577,9 @@ const Add = ({token}) => {
                     <input 
                       onChange={(e) => updateColorVariant(variantIndex, 'price', e.target.value)} 
                       value={variant.price} 
-                      className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all' 
+                      className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all bg-white' 
                       type="number" 
-                      placeholder='2500' 
+                      placeholder='Enter price in ₹' 
                       required
                       disabled={loading}
                     />
@@ -429,9 +590,9 @@ const Add = ({token}) => {
                     <input 
                       onChange={(e) => updateColorVariant(variantIndex, 'stock', e.target.value)} 
                       value={variant.stock} 
-                      className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all' 
+                      className='w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-lg transition-all bg-white' 
                       type="number" 
-                      placeholder='100' 
+                      placeholder='Enter stock quantity' 
                       disabled={loading}
                     />
                   </div>
@@ -492,18 +653,32 @@ const Add = ({token}) => {
 
                                  {/* Video Upload */}
                  <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-2">Product Video (Optional)</label>
+                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                     Product Video (Optional)
+                   </label>
                    <div className='flex items-center gap-3'>
                      <label htmlFor={`video_${variantIndex}`} className='cursor-pointer'>
-                       <div className='w-20 h-20 border border-gray-300 rounded flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors overflow-hidden relative'>
+                       <div className={`w-20 h-20 border border-gray-300 rounded flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors overflow-hidden relative`}>
                          {variant.video ? (
                            <video 
                              src={getVideoPreview(variant.video)} 
                              className="w-full h-full object-cover"
                              muted
                              loop
-                             onMouseEnter={(e) => e.target.play()}
-                             onMouseLeave={(e) => e.target.pause()}
+                             onMouseEnter={(e) => {
+                               try {
+                                 e.target.play().catch(err => console.log('Video play error:', err));
+                               } catch (err) {
+                                 console.log('Video play error:', err);
+                               }
+                             }}
+                             onMouseLeave={(e) => {
+                               try {
+                                 e.target.pause();
+                               } catch (err) {
+                                 console.log('Video pause error:', err);
+                               }
+                             }}
                            />
                          ) : (
                            <div className="text-gray-400 text-xs">🎥</div>
@@ -520,7 +695,24 @@ const Add = ({token}) => {
                      />
                      {variant.video && (
                        <div className="text-xs text-gray-600">
-                         {variant.video.name}
+                         {variant.video.cloudinaryUrl ? (
+                           <div className="flex items-center gap-2">
+                             <span className="text-green-600">✅</span>
+                             <span>{variant.video.file?.name || 'Video uploaded'}</span>
+                             <span className="text-green-600">(Cloudinary)</span>
+                           </div>
+                         ) : (
+                           <div className="flex items-center gap-2">
+                             <span className="text-blue-600">⏳</span>
+                             <span>{variant.video.file?.name || 'Video uploading...'}</span>
+                             <span className="text-blue-600">(Uploading to Cloudinary)</span>
+                           </div>
+                         )}
+                       </div>
+                     )}
+                     {cloudinaryUploading && (
+                       <div className="text-xs text-blue-600 mt-1">
+                         Uploading to Cloudinary... {cloudinaryProgress}%
                        </div>
                      )}
                      {variant.video && (
@@ -548,7 +740,12 @@ const Add = ({token}) => {
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            {loading ? "Adding Product..." : "Add Product"}
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Uploading... {uploadProgress}%</span>
+              </div>
+            ) : "Add Product"}
           </button>
         </div>
       </form>

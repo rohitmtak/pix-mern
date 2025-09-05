@@ -13,7 +13,7 @@ const productSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String, required: true },
     category: { type: String, required: true },
-    subCategory: { type: String, required: true },
+    subCategory: { type: String, default: "" },
     colorVariants: [colorVariantSchema],
     bestseller: { type: Boolean },
     date: { type: Date, required: true }

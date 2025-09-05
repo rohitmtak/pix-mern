@@ -18,8 +18,9 @@ const addProduct = async (req, res) => {
             throw new Error(`Invalid category. Must be one of: ${Object.values(PRODUCT_CATEGORIES).join(', ')}`);
         }
         
-        if (!isValidSubcategory(subCategory)) {
-            throw new Error(`Invalid subcategory. Must be one of: ${Object.values(PRODUCT_SUBCATEGORIES).join(', ')}`);
+        // Only validate subcategory if it's not empty
+        if (subCategory && subCategory.trim() !== "" && !isValidSubcategory(subCategory)) {
+            throw new Error(`Invalid subcategory. Must be empty or one of: ${Object.values(PRODUCT_SUBCATEGORIES).length > 0 ? Object.values(PRODUCT_SUBCATEGORIES).join(', ') : 'No subcategories defined'}`);
         }
 
         if (!colorVariants) {
@@ -61,28 +62,66 @@ const addProduct = async (req, res) => {
                 console.log(`Video for variant ${variant.color}:`, variantVideoFile ? variantVideoFile.fieldname : 'none');
 
                 // Process video for this variant if it exists
-                if (variantVideoFile) {
+                // Check for direct Cloudinary upload first (in variant.video.cloudinaryUrl)
+                console.log(`Checking video for variant ${variant.color}:`, variant.video);
+                if (variant.video && variant.video.cloudinaryUrl) {
                     try {
-                        console.log(`Processing video for variant ${variant.color}...`);
-                        const videoResult = await cloudinary.uploader.upload(
-                            variantVideoFile.path,
-                            { 
-                                resource_type: 'video',
-                                folder: 'product-videos',
-                                allowed_formats: ['mp4', 'webm', 'mov', 'avi', 'mkv']
-                            }
-                        );
-                        variantVideo = videoResult.secure_url;
-                        console.log(`Video uploaded for ${variant.color}: ${variantVideo}`);
+                        console.log(`Using direct Cloudinary URL for ${variant.color}: ${variant.video.cloudinaryUrl}`);
+                        variantVideo = variant.video.cloudinaryUrl;
+                    } catch (error) {
+                        console.error(`Error processing direct Cloudinary video for ${variant.color}:`, error);
+                        throw new Error(`Failed to process video for ${variant.color}: ${error.message}`);
+                    }
+                } else if (variantVideoFile) {
+                    try {
+                        console.log(`Processing video file for variant ${variant.color}...`);
+                        
+                        // Check if it's a Cloudinary URL (direct upload) or a file
+                        if (typeof variantVideoFile === 'string' && variantVideoFile.startsWith('http')) {
+                            // It's already a Cloudinary URL from direct upload
+                            variantVideo = variantVideoFile;
+                            console.log(`Using direct Cloudinary URL for ${variant.color}: ${variantVideo}`);
+                        } else {
+                            // It's a file, upload to Cloudinary (fallback for old flow)
+                            const videoResult = await cloudinary.uploader.upload(
+                                variantVideoFile.path,
+                                { 
+                                    resource_type: 'video',
+                                    folder: 'product-videos',
+                                    allowed_formats: ['mp4', 'webm', 'mov', 'avi', 'mkv'],
+                                    quality: 'auto:best', // Use best quality instead of good
+                                    fetch_format: 'auto',
+                                    // Optimize bitrate for faster processing
+                                    bit_rate: variantVideoFile.size > 20 * 1024 * 1024 ? '3000k' : '2000k', // Higher bitrate for better quality
+                                    // Remove unnecessary transformations for faster upload
+                                    video_codec: 'auto',
+                                    audio_codec: 'aac',
+                                    // Simplified transformation
+                                    crop: 'scale',
+                                    // Add upload optimization
+                                    eager: 'w_auto,h_auto,q_auto,f_auto', // Generate optimized versions
+                                    timeout: 300000
+                                }
+                            );
+                            variantVideo = videoResult.secure_url;
+                            console.log(`Video uploaded for ${variant.color}: ${variantVideo}`);
 
-                        // Clean up local video file after successful upload
-                        fs.unlink(variantVideoFile.path, (err) => {
-                            if (err) console.error('Error deleting local video file:', err);
-                        });
+                            // Clean up local video file after successful upload
+                            fs.unlink(variantVideoFile.path, (err) => {
+                                if (err) console.error('Error deleting local video file:', err);
+                            });
+                        }
 
                     } catch (videoError) {
-                        console.error(`Error uploading video for ${variant.color}:`, videoError);
-                        throw new Error(`Failed to upload video for ${variant.color}: ${videoError.message}`);
+                        console.error(`Error processing video for ${variant.color}:`, videoError);
+                        // Provide more specific error messages
+                        if (videoError.message.includes('codec')) {
+                            throw new Error(`Video codec not supported for ${variant.color}. Please try a different video format.`);
+                        } else if (videoError.message.includes('format')) {
+                            throw new Error(`Video format not supported for ${variant.color}. Please use MP4, WebM, or MOV format.`);
+                        } else {
+                            throw new Error(`Failed to process video for ${variant.color}: ${videoError.message}`);
+                        }
                     }
                     
                 }
@@ -130,7 +169,7 @@ const addProduct = async (req, res) => {
             name,
             description,
             category,
-            subCategory,
+            subCategory: subCategory || "",
             bestseller: bestseller === "true" ? true : false,
             colorVariants: processedVariants,
             date: Date.now()
@@ -437,8 +476,9 @@ const updateProduct = async (req, res) => {
             throw new Error(`Invalid category. Must be one of: ${Object.values(PRODUCT_CATEGORIES).join(', ')}`);
         }
         
-        if (!isValidSubcategory(subCategory)) {
-            throw new Error(`Invalid subcategory. Must be one of: ${Object.values(PRODUCT_SUBCATEGORIES).join(', ')}`);
+        // Only validate subcategory if it's not empty
+        if (subCategory && subCategory.trim() !== "" && !isValidSubcategory(subCategory)) {
+            throw new Error(`Invalid subcategory. Must be empty or one of: ${Object.values(PRODUCT_SUBCATEGORIES).length > 0 ? Object.values(PRODUCT_SUBCATEGORIES).join(', ') : 'No subcategories defined'}`);
         }
 
         if (!colorVariants) {
@@ -501,7 +541,19 @@ const updateProduct = async (req, res) => {
                             { 
                                 resource_type: 'video',
                                 folder: 'product-videos',
-                                allowed_formats: ['mp4', 'webm', 'mov', 'avi', 'mkv']
+                                allowed_formats: ['mp4', 'webm', 'mov', 'avi', 'mkv'],
+                                quality: 'auto:best', // Use best quality instead of good
+                                fetch_format: 'auto',
+                                // Optimize bitrate for faster processing
+                                bit_rate: variantVideoFile.size > 20 * 1024 * 1024 ? '3000k' : '2000k', // Higher bitrate for better quality
+                                // Remove unnecessary transformations for faster upload
+                                video_codec: 'auto',
+                                audio_codec: 'aac',
+                                // Simplified transformation
+                                crop: 'scale',
+                                // Add upload optimization
+                                eager: 'w_auto,h_auto,q_auto,f_auto', // Generate optimized versions
+                                timeout: 300000
                             }
                         );
                         variantVideo = videoResult.secure_url;
@@ -514,7 +566,14 @@ const updateProduct = async (req, res) => {
 
                     } catch (videoError) {
                         console.error(`Error uploading video for ${variant.color}:`, videoError);
-                        throw new Error(`Failed to upload video for ${variant.color}: ${videoError.message}`);
+                        // Provide more specific error messages
+                        if (videoError.message.includes('codec')) {
+                            throw new Error(`Video codec not supported for ${variant.color}. Please try a different video format.`);
+                        } else if (videoError.message.includes('format')) {
+                            throw new Error(`Video format not supported for ${variant.color}. Please use MP4, WebM, or MOV format.`);
+                        } else {
+                            throw new Error(`Failed to upload video for ${variant.color}: ${videoError.message}`);
+                        }
                     }
                 }
 
@@ -559,7 +618,7 @@ const updateProduct = async (req, res) => {
                 name,
                 description,
                 category,
-                subCategory,
+                subCategory: subCategory || "",
                 bestseller: bestseller === 'true' || bestseller === true,
                 colorVariants: processedVariants
             },
