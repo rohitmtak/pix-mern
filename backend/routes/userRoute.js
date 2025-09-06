@@ -14,7 +14,8 @@ import {
   removeWishlist,
   forgotPassword,
   resetPassword,
-  verifyResetToken
+  verifyResetToken,
+  refreshToken
 } from '../controllers/userController.js';
 import authUser from '../middleware/auth.js'
 
@@ -23,6 +24,7 @@ const userRouter = express.Router();
 userRouter.post('/register',registerUser)
 userRouter.post('/login',loginUser)
 userRouter.post('/admin',adminLogin)
+userRouter.post('/refresh-token', refreshToken)
 
 // Password reset routes
 userRouter.post('/forgot-password', forgotPassword)

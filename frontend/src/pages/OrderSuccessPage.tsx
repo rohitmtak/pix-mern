@@ -7,13 +7,16 @@ import { useEffect } from "react";
 
 const OrderSuccessPage = () => {
   const navigate = useNavigate();
-  const { loadUserCartFromBackend } = useCart();
+  const { loadUserCartFromBackend, clearCart } = useCart();
 
   // Load the updated cart from backend after successful order
   useEffect(() => {
-    // Small delay to ensure backend has processed the order
+    // Clear frontend cart immediately to show correct state
+    clearCart();
+    
+    // Small delay to ensure backend has processed the order, then load updated cart
     const timer = setTimeout(() => {
-      loadUserCartFromBackend();
+      loadUserCartFromBackend(true); // Force load to bypass time restrictions
     }, 1000);
 
     return () => clearTimeout(timer);

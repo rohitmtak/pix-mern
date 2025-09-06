@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import apiClient from "@/utils/apiClient";
 import { showToast, toastMessages } from "@/config/toastConfig";
 import { config } from "@/config/env";
 import { useCart } from "@/contexts/CartContext";
 import { getStateName, getCountryName } from "@/utils/addressUtils";
 import { formatOrderPrice } from '@/utils/priceUtils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { isAuthenticated } from "@/utils/auth";
 
 interface OrderItem {
   _id: string;
@@ -66,18 +67,15 @@ const ProfilePage: React.FC = () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   useEffect(() => {
-    if (!token) {
+    // Check authentication status
+    if (!isAuthenticated()) {
       navigate('/login');
       return;
     }
 
     const fetchOrders = async () => {
       try {
-        const res = await axios.post(
-          `${config.api.baseUrl}/order/userorders`,
-          {},
-          { headers: { token } }
-        );
+        const res = await apiClient.post(`${config.api.baseUrl}/order/userorders`, {});
         
         if (res.data?.success && Array.isArray(res.data?.orders)) {
           setOrders(res.data.orders);
@@ -90,8 +88,12 @@ const ProfilePage: React.FC = () => {
         } else {
           showToast.error(res.data?.message || toastMessages.profile.ordersLoadFailed);
         }
-      } catch (err) {
-        showToast.error(toastMessages.profile.ordersLoadFailed);
+      } catch (err: any) {
+        // Error handling is now done by the axios interceptor
+        console.error('Failed to load orders:', err);
+        if (!err.response || err.response.status !== 401) {
+          showToast.error(toastMessages.profile.ordersLoadFailed);
+        }
       } finally {
         setLoading(false);
       }
@@ -99,7 +101,7 @@ const ProfilePage: React.FC = () => {
 
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`${config.api.baseUrl}/user/me`, { headers: { token } });
+        const res = await apiClient.get(`${config.api.baseUrl}/user/me`);
         if (res.data?.success && res.data.user) {
           // Sort addresses: default first, then others
           if (res.data.user.addresses && Array.isArray(res.data.user.addresses)) {
@@ -112,9 +114,13 @@ const ProfilePage: React.FC = () => {
           }
           setProfile(res.data.user);
         }
-      } catch (err) {
-        // surface but don't block the page
+      } catch (err: any) {
+        // Error handling is now done by the axios interceptor
         console.error('Failed to load profile', err);
+        if (!err.response || err.response.status !== 401) {
+          // Only show error if it's not an auth error (which is handled by interceptor)
+          console.error('Profile loading failed:', err);
+        }
       } finally {
         setProfileLoading(false);
       }

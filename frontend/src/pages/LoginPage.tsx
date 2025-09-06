@@ -2,6 +2,7 @@ import React, { useEffect, useState, FormEvent, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import apiClient from "@/utils/apiClient";
 import axios from "axios";
 import { showToast, toastMessages } from "@/config/toastConfig";
 import { config } from "@/config/env";
@@ -11,7 +12,7 @@ import { useCart } from "@/contexts/CartContext";
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { migrateGuestWishlist } = useWishlist();
-  const { migrateGuestCartToUser, loadUserCartFromBackend } = useCart();
+  const { migrateGuestCartToUser } = useCart();
 
   const [authMode, setAuthMode] = useState<"Login" | "Sign Up">("Login");
   const [name, setName] = useState("");
@@ -47,7 +48,7 @@ const Login: React.FC = () => {
 
       const endpoint = `${config.api.baseUrl}/user/${authMode === "Sign Up" ? "register" : "login"}`;
       const payload = authMode === "Sign Up" ? { name: name.trim(), email: trimmedEmail, password: trimmedPassword } : { email: trimmedEmail, password: trimmedPassword };
-      const response = await axios.post(endpoint, payload);
+      const response = await apiClient.post(endpoint, payload);
 
       if (response.data?.success && response.data?.token) {
         localStorage.setItem("token", response.data.token);
@@ -74,9 +75,6 @@ const Login: React.FC = () => {
             migrateGuestCartToUser(guestCart)
           ]);
           
-          // Load user's persistent cart from backend
-          await loadUserCartFromBackend();
-          
           // Show single, appropriate message based on auth mode
           if (authMode === "Sign Up") {
             // New user - show welcome message with wishlist info
@@ -96,10 +94,11 @@ const Login: React.FC = () => {
           }
         }
         
-        // Small delay to ensure toast is displayed before navigation
+        // Small delay to ensure cart migration completes before navigation
+        // This prevents race conditions with other components loading the cart
         setTimeout(() => {
           navigate("/");
-        }, 1500);
+        }, 2000);
       } else {
         showToast.error(response.data?.message || toastMessages.general.error);
       }

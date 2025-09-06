@@ -371,13 +371,18 @@ const verifyRazorpay = async (req,res) => {
             // Remove only the ordered items from cart collection
             const cart = await cartModel.findOne({ userId });
             if (cart) {
-                // Get the ordered item IDs
-                const orderedItemIds = newOrder.items.map(item => item.productId.toString());
-                
-                // Remove only the ordered items
-                cart.items = cart.items.filter(item => 
-                    !orderedItemIds.includes(item.productId.toString())
+                // Create a set of ordered item combinations (productId + size + color)
+                const orderedItemCombinations = new Set(
+                    newOrder.items.map(item => 
+                        `${item.productId}-${item.size}-${item.color}`
+                    )
                 );
+                
+                // Remove only the exact ordered item combinations
+                cart.items = cart.items.filter(item => {
+                    const itemKey = `${item.productId}-${item.size}-${item.color}`;
+                    return !orderedItemCombinations.has(itemKey);
+                });
                 
                 // Recalculate totals
                 cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);

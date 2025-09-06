@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback, useState } from 'react';
 import { isAuthenticated, getToken } from '@/utils/auth';
 import { config } from '@/config/env';
+import apiClient from '@/utils/apiClient';
 
 export interface CartItem {
   id: string;
@@ -147,7 +148,7 @@ interface CartContextType {
   isInCart: (productId: string, size: string, color: string) => boolean;
   getItemQuantity: (productId: string, size: string, color: string) => number;
   syncCartWithBackend: () => Promise<void>;
-  loadUserCartFromBackend: () => Promise<void>;
+  loadUserCartFromBackend: (forceLoad?: boolean) => Promise<void>;
   migrateGuestCartToUser: (guestCart: CartItem[]) => Promise<void>;
 }
 
@@ -242,15 +243,15 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [state.items]);
 
   // Function to load user cart from backend
-  const loadUserCartFromBackend = useCallback(async () => {
+  const loadUserCartFromBackend = useCallback(async (forceLoad = false) => {
     if (!isAuthenticated()) return;
     
-    // Debounce: prevent loading from backend too frequently
+    // Debounce: prevent loading from backend too frequently (unless forced)
     const now = Date.now();
     const timeSinceLastLoad = now - lastLoadTime;
     const minLoadInterval = 2 * 1000; // 2 seconds minimum between loads
     
-    if (timeSinceLastLoad < minLoadInterval) {
+    if (!forceLoad && timeSinceLastLoad < minLoadInterval) {
       return;
     }
     
@@ -258,16 +259,10 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       const token = getToken();
       if (!token) return;
 
-      const response = await fetch(`${config.api.baseUrl}/cart/get`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'token': token
-        }
-      });
+      const response = await apiClient.get(`${config.api.baseUrl}/cart/get`);
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200) {
+        const data = response.data;
         if (data.success && data.cart && data.cart.items) {
           // Convert backend cart format to frontend format
           const cartItems: CartItem[] = data.cart.items.map((item: any) => ({
@@ -281,12 +276,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             imageUrl: item.imageUrl
           }));
           
-          // Only load backend cart if frontend cart is empty or if frontend hasn't been modified recently
-          // This prevents backend from overriding recent frontend changes (like removals)
+          // Only load backend cart if frontend cart is empty, if frontend hasn't been modified recently,
+          // or if this is a forced load (e.g., after order completion)
           const timeSinceLastModification = now - state.lastModified;
           const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
           
-          if (state.items.length === 0 || timeSinceLastModification > fiveMinutes) {
+          if (forceLoad || state.items.length === 0 || timeSinceLastModification > fiveMinutes) {
             dispatch({ type: 'LOAD_CART', payload: cartItems });
             setLastLoadTime(now);
           }
@@ -302,8 +297,32 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     if (!isAuthenticated() || guestCart.length === 0) return;
     
     try {
-      // Merge guest cart with existing user cart
-      const mergedCart = [...state.items];
+      const token = getToken();
+      if (!token) return;
+
+      // First, get the user's existing backend cart
+      const response = await apiClient.get(`${config.api.baseUrl}/cart/get`);
+
+      let backendCart: CartItem[] = [];
+      if (response.status === 200) {
+        const data = response.data;
+        if (data.success && data.cart && data.cart.items) {
+          // Convert backend cart format to frontend format
+          backendCart = data.cart.items.map((item: any) => ({
+            id: `${item.productId}_${item.size}_${item.color}`,
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+            imageUrl: item.imageUrl
+          }));
+        }
+      }
+
+      // Merge guest cart with backend cart (not frontend state)
+      const mergedCart = [...backendCart];
       
       guestCart.forEach(guestItem => {
         const existingIndex = mergedCart.findIndex(item =>
@@ -321,16 +340,16 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         }
       });
       
-      // Update state with merged cart
+      // Update frontend state with merged cart
       dispatch({ type: 'LOAD_CART', payload: mergedCart });
       
-      // Sync to backend
+      // Sync merged cart to backend
       await syncCartWithBackend();
       
     } catch (error) {
       console.error('Failed to migrate guest cart:', error);
     }
-  }, [state.items]);
+  }, []);
 
   const addToCart = async (item: Omit<CartItem, 'id'>) => {
     const cartItem: CartItem = {

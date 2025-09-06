@@ -175,6 +175,7 @@ const ProductDetailPage = () => {
 
     setSelectedColor(color);
     setCurrentImageIndex(0); // Reset to first image when color changes
+    setSelectedSize(""); // Reset size selection when color changes
   };
 
   const handleSizeSelection = (size: string) => {
@@ -184,16 +185,15 @@ const ProductDetailPage = () => {
 
   // Get available sizes and colors from color variants
   const getAvailableSizes = () => {
-    if (!product || !product.colorVariants) return [];
+    if (!product || !product.colorVariants || !selectedColor) return [];
 
-    const allSizes = new Set<string>();
-    product.colorVariants.forEach((variant) => {
-      if (variant.sizes) {
-        variant.sizes.forEach((size) => allSizes.add(size));
-      }
-    });
+    // Find the color variant for the selected color
+    const selectedColorVariant = product.colorVariants.find(
+      variant => variant.color.toLowerCase() === selectedColor.toLowerCase()
+    );
 
-    return Array.from(allSizes);
+    // Return sizes only for the selected color variant
+    return selectedColorVariant?.sizes || [];
   };
 
   const getAvailableColors = () => {

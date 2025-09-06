@@ -369,6 +369,43 @@ const verifyResetToken = async (req, res) => {
     }
 };
 
+// Refresh token - generate new token for existing user
+const refreshToken = async (req, res) => {
+    try {
+        const { token } = req.headers;
+        
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'Token is required' });
+        }
+
+        // Verify the existing token
+        const token_decode = jwt.verify(token, process.env.JWT_SECRET);
+        
+        // Find the user
+        const user = await userModel.findById(token_decode.id);
+        
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'User not found' });
+        }
+
+        // Generate new token
+        const newToken = createToken(user._id);
+        
+        res.status(200).json({ 
+            success: true, 
+            token: newToken,
+            message: 'Token refreshed successfully'
+        });
+
+    } catch (error) {
+        console.log('Token refresh error:', error);
+        res.status(401).json({ 
+            success: false, 
+            message: 'Invalid or expired token' 
+        });
+    }
+};
+
 export { 
     loginUser, 
     registerUser, 
@@ -384,5 +421,6 @@ export {
     removeWishlist,
     forgotPassword,
     resetPassword,
-    verifyResetToken
+    verifyResetToken,
+    refreshToken
 }

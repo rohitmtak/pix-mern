@@ -23,15 +23,12 @@ const WishlistPage = () => {
   const { product: modalProduct } = useProduct(selectedProductId);
 
   const availableSizes = useMemo(() => {
-    const sizesSet = new Set<string>();
-    if (modalProduct?.colorVariants) {
-      modalProduct.colorVariants.forEach(variant => {
-        if (variant.sizes) {
-          variant.sizes.forEach((s: string) => sizesSet.add(s));
-        }
-      });
-    }
-    return Array.from(sizesSet);
+    if (!modalProduct?.colorVariants || !modalProduct.colorVariants[0]) return [];
+    
+    // For wishlist, we'll show sizes from the first color variant
+    // In a more advanced implementation, you might want to let users select color first
+    const firstVariant = modalProduct.colorVariants[0];
+    return firstVariant.sizes || [];
   }, [modalProduct]);
 
   const firstVariant = modalProduct?.colorVariants?.[0];
