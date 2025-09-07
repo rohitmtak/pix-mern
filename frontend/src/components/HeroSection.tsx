@@ -2,7 +2,7 @@ const HeroSection = () => {
   return (
     <section className="relative w-full h-screen overflow-hidden">
       <video
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover md:object-cover"
         autoPlay
         loop
         muted
@@ -13,8 +13,8 @@ const HeroSection = () => {
         Your browser does not support the video tag.
       </video>
       
-      {/* Optional overlay for better text readability */}
-      <div className="absolute inset-0 bg-black bg-opacity-30" />
+      {/* Optional overlay for better text readability - adjusted for mobile */}
+      <div className="absolute inset-0 bg-black bg-opacity-20 md:bg-opacity-30" />
       
       {/* Content overlay - add your hero content here */}
       {/* <div className="relative z-10 flex items-center justify-center h-full">

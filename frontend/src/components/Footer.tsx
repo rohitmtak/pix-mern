@@ -1,10 +1,22 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const Footer = () => {
-  // Data structure for navigation links
-  const navigationData = [
+  // Accordion state management
+  const [expandedSections, setExpandedSections] = useState({});
+
+  const toggleSection = (sectionId) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  };
+
+  // Accordion sections data
+  const accordionSections = [
     {
-      title: "EXPLORE",
+      id: 'explore',
+      title: 'EXPLORE',
       links: [
         { name: "Signature Collection", path: "/collection/signature" },
         { name: "Bridal Couture", path: "/collection/bridal" },
@@ -13,7 +25,8 @@ const Footer = () => {
       ]
     },
     {
-      title: "ACCOUNT",
+      id: 'account',
+      title: 'ACCOUNT',
       links: [
         { name: "My Account", path: "/profile" },
         { name: "Wishlist", path: "/wishlist" },
@@ -21,7 +34,8 @@ const Footer = () => {
       ]
     },
     {
-      title: "BRAND",
+      id: 'brand',
+      title: 'BRAND',
       links: [
         { name: "About", path: "/about" },
         { name: "Press", path: "/press" },
@@ -29,12 +43,25 @@ const Footer = () => {
       ]
     },
     {
-      title: "SUPPORT",
+      id: 'support',
+      title: 'SUPPORT',
       links: [
         { name: "FAQs", path: "/faq" },
         { name: "Contact", path: "/contact" },
         { name: "Find A Store", path: "/stores" }
       ]
+    }
+  ];
+
+  // Contact information data
+  const contactInfo = [
+    {
+      icon: "M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z",
+      text: "info@highstreetpix.com"
+    },
+    {
+      icon: "M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z",
+      text: "+91 9812345678"
     }
   ];
 
@@ -54,37 +81,12 @@ const Footer = () => {
     }
   ];
 
-  // Contact information data
-  const contactInfo = [
-    {
-      icon: "M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z",
-      text: "info@highstreetpix.com"
-    },
-    {
-      icon: "M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z",
-      text: "+91 9812345678"
-    }
-  ];
-
-  // Reusable components
-  const NavigationColumn = ({ title, links }) => (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-white">
-          {title}
-        </h3>
-      </div>
-      <div className="space-y-2">
-        {links.map((link, index) => (
-          <Link
-            key={index}
-            to={link.path}
-            className="block text-xs font-normal text-gray-400 hover:text-white transition-colors duration-200"
-          >
-            {link.name}
-          </Link>
-        ))}
-      </div>
+  const ContactItem = ({ icon, text }) => (
+    <div className="flex items-center space-x-3 text-gray-400 hover:text-white transition-colors duration-200">
+      <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <path d={icon} />
+      </svg>
+      <span className="text-sm font-normal">{text}</span>
     </div>
   );
 
@@ -104,78 +106,154 @@ const Footer = () => {
     </a>
   );
 
-  const ContactItem = ({ icon, text }) => (
-    <div className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors duration-200">
-      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-        <path d={icon} />
-      </svg>
-      <span className="text-xs font-normal">{text}</span>
-    </div>
-  );
-
   return (
-    <footer className="w-full bg-black pt-16 pb-8 px-4 md:px-16 font-jost">
+    <footer className="w-full bg-black pt-8 pb-8 px-8 md:px-16 font-jost">
       <div className="max-w-screen-2xl mx-auto text-white">
-        {/* Main Footer Content */}
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 mb-12">
-          {/* Logo Section - Left */}
-          <div className="flex-shrink-0">
+        {/* Mobile Layout */}
+        <div className="block lg:hidden">
+          {/* Brand Section */}
+          <div className="text-center mb-8">
             <img
               src="/images/pix-golden-logo.png"
               alt="High Street Pix Logo"
-              className="h-24 w-auto"
+              className="h-16 w-auto mx-auto mb-4"
             />
+            <h2 className="text-xl font-light text-white mb-2">
+              High Street Pix
+            </h2>
+            <p className="text-gray-400 text-sm leading-relaxed max-w-md mx-auto">
+              Celebrating the artistry of traditional Indian drapes with contemporary elegance.
+            </p>
           </div>
 
-          {/* Content Section - Right */}
-          <div className="flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 lg:gap-6">
-              {/* Brand Description */}
-              <div className="space-y-3">
-                <h2 className="text-lg font-light text-white">
-                  High Street Pix
-                </h2>
-                <p className="text-gray-400 text-xs leading-relaxed">
-                  Celebrating the artistry of traditional Indian drapes with contemporary elegance.
-                </p>
-              </div>
-
-              {/* Navigation Columns */}
-              {navigationData.map((section, index) => (
-                <NavigationColumn
-                  key={index}
-                  title={section.title}
-                  links={section.links}
-                />
-              ))}
-
-              {/* Contact and Social */}
-              <div className="space-y-4">
-                {/* Contact */}
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-white mb-3">
-                    CONTACT
+          {/* Accordion Sections */}
+          <div className="max-w-sm mx-auto mb-6">
+            {accordionSections.map((section, index) => (
+              <div key={section.id} className="border-b border-gray-800">
+                <button
+                  onClick={() => toggleSection(section.id)}
+                  className="w-full flex items-center justify-between py-4 text-left"
+                >
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-white">
+                    {section.title}
                   </h3>
-                  <div className="space-y-2">
-                    {contactInfo.map((contact, index) => (
-                      <ContactItem
-                        key={index}
-                        icon={contact.icon}
-                        text={contact.text}
-                      />
+                  <svg 
+                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                      expandedSections[section.id] ? 'rotate-45' : ''
+                    }`} 
+                    fill="currentColor" 
+                    viewBox="0 0 20 20"
+                  >
+                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                
+                {expandedSections[section.id] && (
+                  <div className="pb-4 space-y-2">
+                    {section.links.map((link, linkIndex) => (
+                      <Link
+                        key={linkIndex}
+                        to={link.path}
+                        className="block text-sm font-normal text-gray-400 hover:text-white transition-colors duration-200"
+                      >
+                        {link.name}
+                      </Link>
                     ))}
                   </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Contact Section */}
+          <div className="max-w-sm mx-auto mb-6">
+            <div className="space-y-3">
+              {contactInfo.map((contact, index) => (
+                <ContactItem
+                  key={index}
+                  icon={contact.icon}
+                  text={contact.text}
+                />
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Desktop Layout */}
+        <div className="hidden lg:block">
+          {/* Main Footer Content */}
+          <div className="flex flex-row gap-16 mb-12">
+            {/* Logo Section - Left */}
+            <div className="flex-shrink-0">
+              <img
+                src="/images/pix-golden-logo.png"
+                alt="High Street Pix Logo"
+                className="h-24 w-auto"
+              />
+            </div>
+
+            {/* Content Section - Right */}
+            <div className="flex-1">
+              <div className="grid grid-cols-6 gap-6">
+                {/* Brand Description */}
+                <div className="space-y-3">
+                  <h2 className="text-lg font-light text-white">
+                    High Street Pix
+                  </h2>
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    Celebrating the artistry of traditional Indian drapes with contemporary elegance.
+                  </p>
                 </div>
 
-                {/* Social Icons */}
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-300 mb-2">
-                    Follow Us
-                  </h4>
-                  <div className="flex space-x-2">
-                    {socialIcons.map((social, index) => (
-                      <SocialIcon key={index} path={social.path} name={social.name} />
-                    ))}
+                {/* Navigation Columns */}
+                {accordionSections.map((section, index) => (
+                  <div key={index} className="space-y-3">
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-white">
+                      {section.title}
+                    </h3>
+                    <div className="space-y-2">
+                      {section.links.map((link, linkIndex) => (
+                        <Link
+                          key={linkIndex}
+                          to={link.path}
+                          className="block text-xs font-normal text-gray-400 hover:text-white transition-colors duration-200"
+                        >
+                          {link.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Contact and Social */}
+                <div className="space-y-4">
+                  {/* Contact */}
+                  <div>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-white mb-3">
+                      CONTACT
+                    </h3>
+                    <div className="space-y-2">
+                      {contactInfo.map((contact, index) => (
+                        <ContactItem
+                          key={index}
+                          icon={contact.icon}
+                          text={contact.text}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Social Icons */}
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-300 mb-2">
+                      Follow Us
+                    </h4>
+                    <div className="flex space-x-2">
+                      {socialIcons.map((social, index) => (
+                        <SocialIcon key={index} path={social.path} name={social.name} />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -183,29 +261,72 @@ const Footer = () => {
           </div>
         </div>
 
-
-        {/* Bottom Section */}
-        <div className="border-t border-gray-800 pt-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            {/* Copyright */}
-            <div className="text-sm text-gray-400">
-              © 2025 High Street Pix. All rights reserved.
+        {/* Mobile Bottom Section */}
+        <div className="block lg:hidden">
+          <div className="border-t border-gray-800 pt-6">
+            <div className="text-center">
+              {/* Social Icons */}
+              <div className="flex justify-center space-x-4 mb-6">
+                {socialIcons.map((social, index) => (
+                  <a 
+                    key={index}
+                    href="#" 
+                    className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-white hover:bg-gray-600 transition-colors duration-200"
+                    aria-label={social.name}
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      {social.name === "Instagram" ? (
+                        <path fillRule="evenodd" clipRule="evenodd" d={social.path} fill="currentColor" />
+                      ) : (
+                        <path d={social.path} />
+                      )}
+                    </svg>
+                  </a>
+                ))}
+              </div>
+              
+              {/* Legal Information */}
+              <div className="space-y-2 text-sm text-gray-400">
+                <div className="flex justify-center space-x-4">
+                  <Link to="/terms" className="hover:text-white transition-colors duration-200">
+                    Terms & Conditions
+                  </Link>
+                  <Link to="/privacy" className="hover:text-white transition-colors duration-200">
+                    Privacy Policy
+                  </Link>
+                </div>
+                <div className="text-xs">
+                  © 2025 High Street Pix. All rights reserved.
+                </div>
+              </div>
             </div>
-            
-            {/* Legal Information */}
-            <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-6 text-sm">
-              <Link to="/terms" className="text-gray-400 hover:text-white transition-colors duration-200">
-                Terms & Conditions
-              </Link>
-              <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors duration-200">
-                Privacy Policy
-              </Link>
-              <Link to="/shipping" className="text-gray-400 hover:text-white transition-colors duration-200">
-                Shipping Policy
-              </Link>
-              <Link to="/returns" className="text-gray-400 hover:text-white transition-colors duration-200">
-                Returns & Exchanges
-              </Link>
+          </div>
+        </div>
+
+        {/* Desktop Bottom Section */}
+        <div className="hidden lg:block">
+          <div className="border-t border-gray-800 pt-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              {/* Copyright */}
+              <div className="text-sm text-gray-400">
+                © 2025 High Street Pix. All rights reserved.
+              </div>
+              
+              {/* Legal Information */}
+              <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-6 text-sm">
+                <Link to="/terms" className="text-gray-400 hover:text-white transition-colors duration-200">
+                  Terms & Conditions
+                </Link>
+                <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors duration-200">
+                  Privacy Policy
+                </Link>
+                <Link to="/shipping" className="text-gray-400 hover:text-white transition-colors duration-200">
+                  Shipping Policy
+                </Link>
+                <Link to="/returns" className="text-gray-400 hover:text-white transition-colors duration-200">
+                  Returns & Exchanges
+                </Link>
+              </div>
             </div>
           </div>
         </div>

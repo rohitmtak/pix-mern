@@ -35,7 +35,7 @@ const Header = () => {
   // Determine header background based on page
   const getHeaderBackground = () => {
     if (isHomePage) {
-      return 'bg-transparent border-b border-b-[1px] border-b-transparent';
+      return 'bg-transparent hover:bg-white border-b border-b-[1px] border-b-transparent hover:border-b-[#dddddd]';
     } else {
       return 'bg-white border-b border-b-[1px] border-b-[#dddddd]';
     }

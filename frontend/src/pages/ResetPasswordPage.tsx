@@ -85,9 +85,9 @@ const ResetPasswordPage: React.FC = () => {
        <div className="min-h-screen bg-white">
          <Header />
          <main className="pt-24">
-           <section className="px-16 py-16">
+           <section className="px-4 sm:px-8 md:px-16 py-8 sm:py-12 md:py-16">
              <div className="max-w-screen-2xl mx-auto">
-               <div className="w-full max-w-md mx-auto p-8 text-center">
+               <div className="w-full max-w-md mx-auto p-4 sm:p-6 md:p-8 text-center">
                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
                  <p className="text-gray-600">Verifying reset link...</p>
                </div>
@@ -104,18 +104,18 @@ const ResetPasswordPage: React.FC = () => {
        <div className="min-h-screen bg-white">
          <Header />
          <main className="pt-24">
-           <section className="px-16 py-16">
+           <section className="px-4 sm:px-8 md:px-16 py-8 sm:py-12 md:py-16">
              <div className="max-w-screen-2xl mx-auto">
-               <div className="w-full max-w-md mx-auto p-8 text-center">
+               <div className="w-full max-w-md mx-auto p-4 sm:p-6 md:p-8 text-center">
                  <div className="inline-flex items-center gap-2 mb-6">
-                   <p className="font-jost text-3xl uppercase">Invalid Reset Link</p>
+                   <p className="font-jost text-2xl sm:text-3xl uppercase">Invalid Reset Link</p>
                  </div>
                  <p className="text-gray-600 mb-6">
                    This password reset link is invalid or has expired. Please request a new one.
                  </p>
                  <button
                    onClick={() => navigate("/forgot-password")}
-                   className="bg-black text-white font-light px-8 py-2"
+                   className="bg-black text-white font-light px-8 py-3 sm:py-2 h-12 sm:h-auto text-base"
                  >
                    Request New Reset Link
                  </button>
@@ -132,14 +132,14 @@ const ResetPasswordPage: React.FC = () => {
      <div className="min-h-screen bg-white">
        <Header />
        <main className="pt-24">
-         <section className="px-16 py-16">
+         <section className="px-4 sm:px-8 md:px-16 py-8 sm:py-12 md:py-16">
            <div className="max-w-screen-2xl mx-auto">
-             <div className="w-full max-w-md mx-auto p-8">
+             <div className="w-full max-w-md mx-auto p-4 sm:p-6 md:p-8">
                <div className="inline-flex items-center gap-2 mb-6">
-                 <p className="font-jost text-3xl uppercase">Reset Password</p>
+                 <p className="font-jost text-2xl sm:text-3xl uppercase">Reset Password</p>
                </div>
 
-               <form onSubmit={onSubmitHandler} className="flex flex-col gap-4 text-gray-800">
+               <form onSubmit={onSubmitHandler} className="flex flex-col gap-5 sm:gap-4 text-gray-800">
                  <div className="flex flex-col gap-2">
                    <label htmlFor="password" className="text-sm font-medium">New Password</label>
                    <div className="relative">
@@ -148,7 +148,7 @@ const ResetPasswordPage: React.FC = () => {
                        onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                        value={password}
                        type={showPassword ? "text" : "password"}
-                       className="w-full pr-10 pl-3 py-2 h-11 border border-gray-300 focus:outline-none"
+                       className="w-full pr-10 pl-3 py-3 sm:py-2 h-12 sm:h-11 border border-gray-300 focus:outline-none text-black text-base"
                        autoComplete="new-password"
                        disabled={loading}
                        placeholder="Enter new password"
@@ -159,7 +159,7 @@ const ResetPasswordPage: React.FC = () => {
                      <button
                        type="button"
                        onClick={() => setShowPassword(!showPassword)}
-                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-black p-0 leading-none"
+                       className="absolute right-3 inset-y-0 flex items-center justify-center text-gray-600 hover:text-black p-2 -m-2"
                        aria-label={showPassword ? "Hide password" : "Show password"}
                      >
                        {showPassword ? (
@@ -179,7 +179,7 @@ const ResetPasswordPage: React.FC = () => {
                        onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                        value={confirmPassword}
                        type={showConfirmPassword ? "text" : "password"}
-                       className="w-full pr-10 pl-3 py-2 h-11 border border-gray-300 focus:outline-none"
+                       className="w-full pr-10 pl-3 py-3 sm:py-2 h-12 sm:h-11 border border-gray-300 focus:outline-none text-black text-base"
                        autoComplete="new-password"
                        disabled={loading}
                        placeholder="Confirm new password"
@@ -190,7 +190,7 @@ const ResetPasswordPage: React.FC = () => {
                      <button
                        type="button"
                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-black p-0 leading-none"
+                       className="absolute right-3 inset-y-0 flex items-center justify-center text-gray-600 hover:text-black p-2 -m-2"
                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                      >
                        {showConfirmPassword ? (
@@ -205,7 +205,7 @@ const ResetPasswordPage: React.FC = () => {
                  <button
                    type="submit"
                    disabled={loading}
-                   className={`bg-black text-white font-light px-8 py-2 mt-2 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                   className={`bg-black text-white font-light px-8 py-3 sm:py-2 mt-2 h-12 sm:h-auto text-base ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                  >
                    {loading ? "Resetting..." : "Reset Password"}
                  </button>
@@ -214,7 +214,7 @@ const ResetPasswordPage: React.FC = () => {
                    <button
                      type="button"
                      onClick={() => navigate("/login")}
-                     className="text-black hover:opacity-70 transition-opacity text-sm"
+                     className="text-black hover:opacity-70 transition-opacity text-sm py-2 px-1 -mx-1"
                    >
                      Back to Login
                    </button>

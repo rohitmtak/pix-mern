@@ -125,14 +125,14 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-white">
       <Header />
       <main className="pt-24">
-        <section className="px-16 py-16">
+        <section className="px-4 sm:px-8 md:px-16 py-8 sm:py-12 md:py-16">
           <div className="max-w-screen-2xl mx-auto">
-            <div className="w-full max-w-md mx-auto p-8">
+            <div className="w-full max-w-md mx-auto p-4 sm:p-6 md:p-8">
               <div className="inline-flex items-center gap-2 mb-6">
-                <p className="font-jost text-3xl uppercase">{authMode}</p>
+                <p className="font-jost text-2xl sm:text-3xl uppercase">{authMode}</p>
               </div>
 
-              <form onSubmit={onSubmitHandler} className="flex flex-col gap-4 text-gray-800">
+              <form onSubmit={onSubmitHandler} className="flex flex-col gap-5 sm:gap-4 text-gray-800">
                 {authMode === "Sign Up" && (
                   <div className="flex flex-col gap-2">
                     <label htmlFor="name" className="text-sm font-medium">Name</label>
@@ -141,7 +141,7 @@ const Login: React.FC = () => {
                       onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                       value={name}
                       type="text"
-                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none"
+                      className="w-full px-3 py-3 sm:py-2 h-12 sm:h-11 border border-gray-300 focus:outline-none text-base"
                       autoComplete="name"
                       disabled={loading}
                       placeholder="Your name"
@@ -158,7 +158,7 @@ const Login: React.FC = () => {
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                     value={email}
                     type="email"
-                    className="w-full px-3 py-2 h-11 border border-gray-300 focus:outline-none"
+                    className="w-full px-3 py-3 sm:py-2 h-12 sm:h-11 border border-gray-300 focus:outline-none text-base"
                     autoComplete="email"
                     disabled={loading}
                     placeholder="Enter your email"
@@ -175,7 +175,7 @@ const Login: React.FC = () => {
                       onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                       value={password}
                       type={showPassword ? "text" : "password"}
-                      className="w-full pr-10 pl-3 py-2 h-11 border border-gray-300 focus:outline-none text-black text-base md:text-base"
+                      className="w-full pr-10 pl-3 py-3 sm:py-2 h-12 sm:h-11 border border-gray-300 focus:outline-none text-black text-base"
                       autoComplete={authMode === "Login" ? "current-password" : "new-password"}
                       disabled={loading}
                       placeholder="Enter your password"
@@ -186,7 +186,7 @@ const Login: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-black p-0 leading-none"
+                      className="absolute right-3 inset-y-0 flex items-center justify-center text-gray-600 hover:text-black p-2 -m-2"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? (
@@ -200,20 +200,20 @@ const Login: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="w-full flex justify-between text-sm -mt-1">
+                <div className="w-full flex flex-col sm:flex-row justify-between text-sm -mt-1 gap-2 sm:gap-0">
                   <button 
                     type="button" 
                     onClick={() => navigate("/forgot-password")}
-                    className="text-black hover:opacity-70 transition-opacity"
+                    className="text-black hover:opacity-70 transition-opacity py-2 px-1 -mx-1 text-left"
                   >
                     Forgot your password?
                   </button>
                   {authMode === "Login" ? (
-                    <button type="button" onClick={() => setAuthMode("Sign Up")} className="text-black hover:opacity-70 transition-opacity">
+                    <button type="button" onClick={() => setAuthMode("Sign Up")} className="text-black hover:opacity-70 transition-opacity py-2 px-1 -mx-1 text-left sm:text-right">
                       Create account
                     </button>
                   ) : (
-                    <button type="button" onClick={() => setAuthMode("Login")} className="text-black hover:opacity-70 transition-opacity">
+                    <button type="button" onClick={() => setAuthMode("Login")} className="text-black hover:opacity-70 transition-opacity py-2 px-1 -mx-1 text-left sm:text-right">
                       Login here
                     </button>
                   )}
@@ -222,7 +222,7 @@ const Login: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`bg-black text-white font-light px-8 py-2 mt-2 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`bg-black text-white font-light px-8 py-3 sm:py-2 mt-2 h-12 sm:h-auto text-base ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   {loading ? "Processing..." : authMode === "Login" ? "Sign In" : "Sign Up"}
                 </button>

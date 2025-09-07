@@ -206,35 +206,19 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     if (!isAuthenticated()) return;
     
     try {
-      const token = getToken();
-      if (!token) return;
-
       // Clear the backend cart first to avoid duplicates
-      await fetch(`${config.api.baseUrl}/cart/clear`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'token': token
-        }
-      });
+      await apiClient.delete(`${config.api.baseUrl}/cart/clear`);
 
       // Send each cart item to backend
       for (const item of state.items) {
-        await fetch(`${config.api.baseUrl}/cart/add`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'token': token
-          },
-          body: JSON.stringify({
-            productId: item.productId,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            size: item.size,
-            color: item.color,
-            imageUrl: item.imageUrl
-          })
+        await apiClient.post(`${config.api.baseUrl}/cart/add`, {
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color,
+          imageUrl: item.imageUrl
         });
       }
     } catch (error) {
@@ -361,24 +345,14 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     // If user is authenticated, sync with backend
     if (isAuthenticated()) {
       try {
-        const token = getToken();
-        if (!token) return;
-
-        await fetch(`${config.api.baseUrl}/cart/add`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'token': token
-          },
-          body: JSON.stringify({
-            productId: item.productId,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            size: item.size,
-            color: item.color,
-            imageUrl: item.imageUrl
-          })
+        await apiClient.post(`${config.api.baseUrl}/cart/add`, {
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color,
+          imageUrl: item.imageUrl
         });
       } catch (error) {
         console.error('Failed to sync cart with backend:', error);
@@ -392,32 +366,18 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     // If user is authenticated, sync with backend
     if (isAuthenticated()) {
       try {
-        const token = getToken();
-        if (!token) return;
-
-        const response = await fetch(`${config.api.baseUrl}/cart/remove`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'token': token
-          },
-          body: JSON.stringify({ productId, size, color })
+        const response = await apiClient.delete(`${config.api.baseUrl}/cart/remove`, {
+          data: { productId, size, color }
         });
 
-        if (!response.ok) {
-          console.error('Backend cart removal failed:', response.status, response.statusText);
-          // Don't revert frontend change - let it stay removed locally
-        } else {
-          // Check if the response indicates success
-          const data = await response.json();
-          if (!data.success) {
-            // Item not found in backend cart - this is expected when frontend removes an item
-            // that wasn't in the backend or was already removed
-            console.log('Item not found in backend cart (expected for frontend removals)');
-          }
+        // Check if the response indicates success
+        if (!response.data.success) {
+          // Item not found in backend cart - this is expected when frontend removes an item
+          // that wasn't in the backend or was already removed
+          console.log('Item not found in backend cart (expected for frontend removals)');
         }
       } catch (error) {
-        console.error('Failed to sync cart with backend:', error);
+        console.error('Backend cart removal failed:', error);
         // Don't revert frontend change - let it stay removed locally
       }
     }
@@ -429,16 +389,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     // If user is authenticated, sync with backend
     if (isAuthenticated()) {
       try {
-        const token = getToken();
-        if (!token) return;
-
-        await fetch(`${config.api.baseUrl}/cart/update`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'token': token
-          },
-          body: JSON.stringify({ productId, size, color, quantity })
+        await apiClient.put(`${config.api.baseUrl}/cart/update`, {
+          productId,
+          size,
+          color,
+          quantity
         });
       } catch (error) {
         console.error('Failed to sync cart with backend:', error);
@@ -452,21 +407,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     // If user is authenticated, sync with backend
     if (isAuthenticated()) {
       try {
-        const token = getToken();
-        if (!token) return;
-
-        const response = await fetch(`${config.api.baseUrl}/cart/clear`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'token': token
-          }
-        });
-
-        if (!response.ok) {
-          console.error('Backend cart clear failed:', response.status, response.statusText);
-          // Don't revert frontend change - let it stay cleared locally
-        }
+        await apiClient.delete(`${config.api.baseUrl}/cart/clear`);
       } catch (error) {
         console.error('Failed to sync cart with backend:', error);
         // Don't revert frontend change - let it stay cleared locally

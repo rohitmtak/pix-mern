@@ -6,8 +6,8 @@ const ContactPage = () => {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <main className="pt-40 px-16 py-12">
-        <div className="max-w-screen-2xl mx-auto">
+      <main className="pt-24">
+        <div className="container mx-auto px-4 sm:px-8 lg:px-16 py-8 sm:py-12 lg:py-16">
           {/* Original code commented out */}
           {/* 
           <h1 className="text-4xl text-black mb-8 uppercase font-jost">
@@ -103,12 +103,12 @@ const ContactPage = () => {
           */}
 
           {/* New design matching the image layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-40 max-w-screen-lg mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-40 max-w-screen-lg mx-auto">
             {/* Left Column - Contact Information */}
-            <div className="space-y-10">
+            <div className="space-y-6 md:space-y-10">
               {/* Get in Touch Section */}
               <div>
-                <h2 className="text-5xl text-black mb-10 font-jost uppercase tracking-wide">
+                <h2 className="text-3xl md:text-5xl text-black mb-6 md:mb-10 font-jost uppercase tracking-wide">
                   Get in Touch
                   <br />
                   with Us
@@ -153,7 +153,7 @@ const ContactPage = () => {
 
             {/* Right Column - Contact Form */}
             <div>
-              <form className="space-y-6">
+              <form className="space-y-4 md:space-y-6">
                 <div>
                   <input
                     type="text"
@@ -198,12 +198,12 @@ const ContactPage = () => {
             </div>
           </div>
 
-          <div>
-            <img src="/images/contact.webp" alt="Contact Map" className="w-full h-full mt-24" />
+          <div className="hidden md:block">
+            <img src="/images/contact.webp" alt="Contact Map" className="w-full h-full mt-12 md:mt-24" />
           </div>
 
           {/* Visit Us Section - matching the image layout */}
-          <div className="mt-24 flex flex-col lg:flex-row gap-0">
+          <div className="mt-12 md:mt-24 flex flex-col lg:flex-row gap-0">
             {/* Left Section - Store Interior (40% width) */}
             <div className="lg:w-1/2">
               <img 
@@ -214,12 +214,12 @@ const ContactPage = () => {
             </div>
 
             {/* Right Section - Text Content (60% width) */}
-            <div className="lg:w-1/2 bg-white flex items-center justify-center p-8 lg:p-16">
+            <div className="lg:w-1/2 bg-white flex items-center justify-center p-6 md:p-8 lg:p-16">
               <div className="max-w-md">
-                <h2 className="text-4xl lg:text-5xl text-black mb-6 font-jost uppercase tracking-wide">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl text-black mb-4 md:mb-6 font-jost uppercase tracking-wide">
                   Visit Us
                 </h2>
-                <p className="text-gray-700 leading-relaxed mb-8">
+                <p className="text-gray-700 leading-relaxed mb-6 md:mb-8 text-sm md:text-base">
                   Visit our stores and experience the artistry of design, the richness of materials, and the exceptional service that define the High Street PIX world.
                 </p>
                 <button 

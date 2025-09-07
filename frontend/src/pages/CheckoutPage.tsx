@@ -239,11 +239,14 @@ const CheckoutPage = () => {
         image: item.imageUrl,
       }));
 
-      // Prepare billing address based on checkbox state
+      // Prepare billing address - Uses feature flag for conditional logic
       let billingAddress = address; // Default to shipping address
       
-      if (formData.payment?.method === 'card' && !formData.payment?.sameAsShipping && formData.payment?.billingAddress) {
-        // For card payments with different billing address
+      // Only process different billing address if feature is enabled
+      if (config.features.billingAddress.enabled && 
+          formData.payment?.method === 'card' && 
+          !formData.payment?.sameAsShipping && 
+          formData.payment?.billingAddress) {
         billingAddress = {
           fullName: `${formData.firstName || ''} ${formData.lastName || ''}`.trim(),
           phone: formData.phone,
@@ -254,9 +257,6 @@ const CheckoutPage = () => {
           postalCode: formData.payment.billingAddress.postalCode,
           country: formData.payment.billingAddress.country || 'India',
         };
-      } else {
-        // For UPI, NetBanking, COD, or card payments with same address
-        billingAddress = address;
       }
 
       // Calculate totals (use the existing calculated values)
@@ -494,18 +494,18 @@ const CheckoutPage = () => {
 
       {/* Main Content */}
       <main className="pt-24">
-        <div className="container mx-auto px-16 py-16">
+        <div className="container mx-auto px-4 sm:px-8 lg:px-16 py-8 sm:py-12 lg:py-16">
           
           {/* Page Header */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
             <h1 
-              className="text-black font-normal uppercase text-2xl"
+              className="text-black font-normal uppercase text-xl sm:text-2xl"
             >
               Checkout
             </h1>
             
             {/* Breadcrumb */}
-            <div className="flex justify-center items-center gap-2 mt-4 text-sm text-gray-600">
+            <div className="flex justify-center items-center gap-2 mt-3 sm:mt-4 text-xs sm:text-sm text-gray-600">
               <button 
                 onClick={() => navigate('/cart')}
                 className="hover:text-black transition-colors"
@@ -519,30 +519,30 @@ const CheckoutPage = () => {
 
           {/* Empty Cart Check */}
           {cartItems.length === 0 ? (
-            <div className="text-center py-24">
+            <div className="text-center py-12 sm:py-16 lg:py-24">
               <h2 
-                className="text-black font-normal mb-4"
+                className="text-black font-normal mb-4 sm:mb-6"
                 style={{
-                  fontSize: '32px',
+                  fontSize: 'clamp(24px, 5vw, 32px)',
                   fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
                   fontWeight: 400
                 }}
               >
                 Your cart is empty
               </h2>
-              <p className="text-gray-600 mb-8">
+              <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
                 Add some items to your cart before proceeding to checkout.
               </p>
               <Button 
                 onClick={() => navigate('/collection')}
-                className="bg-black text-white hover:bg-gray-800 px-8 py-3"
+                className="bg-black text-white hover:bg-gray-800 px-6 sm:px-8 py-3 text-sm sm:text-base"
               >
                 CONTINUE SHOPPING
               </Button>
             </div>
           ) : (
             /* Checkout Content */
-            <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-16">
+            <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 sm:gap-12 lg:gap-16">
               
               {/* Checkout Form */}
               <div>
@@ -564,11 +564,11 @@ const CheckoutPage = () => {
                 )}
                 
                 {/* Back to Cart */}
-                <div className="mt-8 pt-8 border-t border-gray-200">
+                <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200 hidden sm:block">
                   <Button
                     variant="outline"
                     onClick={handleBackToCart}
-                    className="border-gray-300 hover:bg-gray-50"
+                    className="border-gray-300 hover:bg-gray-50 text-sm sm:text-base py-2 sm:py-3"
                   >
                     ← Back to Cart
                   </Button>
@@ -593,7 +593,7 @@ const CheckoutPage = () => {
                 />
                 
                 {/* Submit button full width above security info */}
-                <div className="mt-6">
+                <div className="mt-4 sm:mt-6">
                   <Button 
                     onClick={() => {
                       console.log('Button clicked - current state:', {
@@ -620,13 +620,13 @@ const CheckoutPage = () => {
                           payment: { 
                             method: 'upi' as const,
                             sameAsShipping: true,
-                            billingAddress: {
+                            billingAddress: config.features.billingAddress.enabled ? {
                               address: "",
                               city: "",
                               state: "",
                               postalCode: "",
                               country: "India"
-                            }
+                            } : undefined
                           }
                         };
                           handleFormSubmit(formData);
@@ -640,7 +640,7 @@ const CheckoutPage = () => {
                       }
                     }}
                     disabled={!selectedAddressId && addresses.length > 0 && !showAddressForm}
-                    className={`w-full h-12 text-lg font-normal ${
+                    className={`w-full h-10 sm:h-12 text-sm sm:text-lg font-normal ${
                       selectedAddressId || addresses.length === 0 || showAddressForm
                         ? 'bg-black text-white hover:bg-gray-800' 
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -651,8 +651,8 @@ const CheckoutPage = () => {
                 </div>
 
                 {/* Security Info */}
-                <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-gray-100 rounded-lg">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                     <svg
                       width="16"
                       height="16"
@@ -677,6 +677,77 @@ const CheckoutPage = () => {
           )}
         </div>
       </main>
+
+      {/* Sticky Complete Purchase Button - Mobile Only */}
+      {cartItems.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 sm:hidden z-50">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-sm text-gray-600">
+              {selectedCartItems.length} {selectedCartItems.length === 1 ? 'item' : 'items'} selected
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-gray-600">Total</div>
+              <div className="text-lg font-medium text-black">
+                {total}
+              </div>
+            </div>
+          </div>
+          <Button 
+            onClick={() => {
+              console.log('Mobile sticky button clicked - current state:', {
+                addressesLength: addresses.length,
+                showAddressForm,
+                selectedAddressId
+              });
+              
+              // Handle form submission based on current state
+              if (addresses.length > 0 && !showAddressForm && selectedAddressId) {
+                // User has saved addresses and one is selected - submit with saved address
+                const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
+                if (selectedAddress) {
+                  const formData = {
+                    firstName: selectedAddress.fullName.split(' ')[0] || '',
+                    lastName: selectedAddress.fullName.split(' ').slice(1).join(' ') || '',
+                    phone: selectedAddress.phone,
+                    address: selectedAddress.line1,
+                    apartment: selectedAddress.line2 || '',
+                    city: selectedAddress.city,
+                    state: selectedAddress.state,
+                    postalCode: selectedAddress.postalCode,
+                    country: selectedAddress.country,
+                    payment: { 
+                      method: 'upi' as const,
+                      sameAsShipping: true,
+                      billingAddress: config.features.billingAddress.enabled ? {
+                        address: "",
+                        city: "",
+                        state: "",
+                        postalCode: "",
+                        country: "India"
+                      } : undefined
+                    }
+                  };
+                  handleFormSubmit(formData);
+                }
+              } else {
+                // User is filling out the form - trigger form submission
+                const form = document.getElementById('checkout-form') as HTMLFormElement;
+                if (form) {
+                  form.requestSubmit();
+                }
+              }
+            }}
+            disabled={!selectedAddressId && addresses.length > 0 && !showAddressForm}
+            className={`w-full py-4 text-base font-normal ${
+              selectedAddressId || addresses.length === 0 || showAddressForm
+                ? 'bg-black text-white hover:bg-gray-800' 
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {!selectedAddressId && addresses.length > 0 && !showAddressForm ? 'SELECT ADDRESS TO CONTINUE' : 'COMPLETE PURCHASE'}
+          </Button>
+        </div>
+      )}
 
       {/* Footer */}
       <Footer />
