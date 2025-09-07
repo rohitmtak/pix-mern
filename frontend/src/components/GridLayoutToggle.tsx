@@ -11,14 +11,29 @@ const GridLayoutToggle = ({
   onLayoutChange, 
   className 
 }: GridLayoutToggleProps) => {
-  const layouts = [
+  // Desktop layouts (2, 3, 4 columns)
+  const desktopLayouts = [
     { id: 2, squares: 2 },
     { id: 3, squares: 3 },
     { id: 4, squares: 4 }
   ];
 
-  const renderLayoutIcon = (layout: { id: number; squares: number }) => {
-    const isActive = currentLayout === layout.id;
+  // Mobile layouts (2, 1 columns) - shown on mobile screens
+  const mobileLayouts = [
+    { id: 2, squares: 2 },
+    { id: 1, squares: 1 }
+  ];
+
+  const renderLayoutIcon = (layout: { id: number; squares: number }, isMobile = false) => {
+    // For mobile, if currentLayout is not available (like 4), show the closest equivalent as active
+    let isActive = currentLayout === layout.id;
+    if (isMobile && !isActive) {
+      // If on mobile and currentLayout is 4, treat 2 as active
+      // If on mobile and currentLayout is 3, treat 2 as active  
+      if (currentLayout >= 3 && layout.id === 2) {
+        isActive = true;
+      }
+    }
     const squares = Array.from({ length: layout.squares }, (_, i) => i);
 
     return (
@@ -44,7 +59,7 @@ const GridLayoutToggle = ({
               className={cn(
                 "w-[10px] h-[10px] flex-shrink-0",
                 isActive
-                  ? "border-2 border-black bg-black"
+                  ? "bg-black border border-black"
                   : "border border-black bg-transparent"
               )}
               style={{ aspectRatio: '1/1' }}
@@ -57,7 +72,15 @@ const GridLayoutToggle = ({
 
   return (
     <div className={cn("flex items-center gap-6", className)}>
-      {layouts.map(renderLayoutIcon)}
+      {/* Desktop layouts - hidden on mobile */}
+      <div className="hidden md:flex items-center gap-6">
+        {desktopLayouts.map(layout => renderLayoutIcon(layout, false))}
+      </div>
+      
+      {/* Mobile layouts - shown only on mobile */}
+      <div className="flex md:hidden items-center gap-6">
+        {mobileLayouts.map(layout => renderLayoutIcon(layout, true))}
+      </div>
     </div>
   );
 };

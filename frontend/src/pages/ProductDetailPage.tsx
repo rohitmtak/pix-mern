@@ -246,10 +246,10 @@ const ProductDetailPage = () => {
 
       {/* Main Content */}
       <main className="pt-24">
-        <div className="container mx-auto px-0 py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-0 py-8 sm:py-12 lg:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16">
             {/* Product Gallery */}
-            <div className="space-y-8">
+            <div className="space-y-4 sm:space-y-6 lg:space-y-8">
               {/* Main Media - Carousel */}
               <div className="relative overflow-hidden bg-transparent group">
                 {currentMedia.length > 0 ? (
@@ -292,8 +292,8 @@ const ProductDetailPage = () => {
                       </CarouselContent>
                       {currentMedia.length > 1 && (
                         <>
-                          <CarouselPrevious className="left-4 right-auto top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-transparent text-gray-900 border-0 hover:bg-transparent opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto focus:outline-none" />
-                          <CarouselNext className="right-4 left-auto top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-transparent text-gray-900 border-0 hover:bg-transparent opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto focus:outline-none" />
+                          <CarouselPrevious className="left-2 sm:left-4 right-auto top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white/80 backdrop-blur-sm text-gray-900 border border-gray-200 hover:bg-white hover:border-gray-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-200 pointer-events-auto focus:outline-none shadow-sm" />
+                          <CarouselNext className="right-2 sm:right-4 left-auto top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white/80 backdrop-blur-sm text-gray-900 border border-gray-200 hover:bg-white hover:border-gray-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-200 pointer-events-auto focus:outline-none shadow-sm" />
                         </>
                       )}
                     </Carousel>
@@ -308,16 +308,16 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Product Information */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Title and Price */}
-              <div className="pb-6 border-b border-gray-200">
-                <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="pb-4 sm:pb-6 border-b border-gray-200">
+                <div className="flex items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
                   <h1
-                    className="text-black font-normal uppercase text-2xl flex-1 min-w-0"
+                    className="text-black font-normal uppercase text-xl sm:text-2xl flex-1 min-w-0 leading-tight"
                     style={{
                       fontFamily: "Playfair Display, Georgia, serif",
                       fontWeight: 400,
-                      lineHeight: "32px",
+                      lineHeight: "1.2",
                       color: "rgba(0,0,0,1)",
                     }}
                   >
@@ -333,7 +333,7 @@ const ProductDetailPage = () => {
                       imageUrl: currentMedia.find(m => m.type === 'image')?.url || "",
                       category: product.category,
                     }}
-                    className="bg-white/80 backdrop-blur-sm p-1 rounded-full hover:bg-white/90 shrink-0 [&>svg]:w-6 [&>svg]:h-6"
+                    className="bg-white/80 backdrop-blur-sm p-1.5 sm:p-1 rounded-full hover:bg-white/90 shrink-0 [&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-6 sm:[&>svg]:h-6"
                     aria-label={
                       isInWishlist(product._id)
                         ? "Remove from wishlist"
@@ -344,7 +344,7 @@ const ProductDetailPage = () => {
 
                 <div className="flex items-center gap-3">
                   <p
-                    className="text-black font-normal text-xl"
+                    className="text-black font-normal text-lg sm:text-xl"
                     style={{
                       fontFamily:
                         "Jost, -apple-system, Roboto, Jost, sans-serif",
@@ -354,8 +354,6 @@ const ProductDetailPage = () => {
                   >
                     {formatProductPrice(currentColorVariant?.price || 0)}
                   </p>
-                  
-
                 </div>
               </div>
 
@@ -363,13 +361,13 @@ const ProductDetailPage = () => {
               {sizes.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base font-medium">Size</h3>
+                    <h3 className="text-sm sm:text-base font-medium">Size</h3>
                     <button
                       onClick={() => setIsSizeChartOpen(true)}
-                      className="flex items-center gap-2 text-base text-gray-600 hover:text-black transition-colors duration-200"
+                      className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base text-gray-600 hover:text-black transition-colors duration-200 py-1"
                     >
                       <svg
-                        className="w-5 h-5"
+                        className="w-4 h-4 sm:w-5 sm:h-5"
                         fill="currentColor"
                         stroke="currentColor"
                         xmlns="http://www.w3.org/2000/svg"
@@ -377,28 +375,29 @@ const ProductDetailPage = () => {
                       >
                         <path d="M608 128H32c-17.67 0-32 14.33-32 32v192c0 17.67 14.33 32 32 32h576c17.67 0 32-14.33 32-32V160c0-17.67-14.33-32-32-32zm0 224H32V160h80v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h64v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h64v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h64v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h80v192z"></path>
                       </svg>
-                      Size Chart
+                      <span className="hidden sm:inline">Size Chart</span>
+                      <span className="sm:hidden">Chart</span>
                     </button>
                   </div>
-                                     <div className="flex gap-3 flex-wrap">
-                     {sizes.map((size) => {
-                       return (
-                                                  <button
-                             key={size}
-                             onClick={() => handleSizeSelection(size)}
-                                                          className={cn(
-                                "w-9 h-9 rounded-full border transition-all duration-300 ease-in-out text-sm font-medium flex items-center justify-center",
-                                selectedSize === size
-                                  ? "border-black bg-black text-white"
-                                  : "border-gray-300 hover:border-gray-400 text-gray-700"
-                              )}
-                             title={size}
-                           >
-                             {size}
-                           </button>
-                        );
-                      })}
-                    </div>
+                  <div className="flex gap-2 sm:gap-3 flex-wrap">
+                    {sizes.map((size) => {
+                      return (
+                        <button
+                          key={size}
+                          onClick={() => handleSizeSelection(size)}
+                          className={cn(
+                            "w-10 h-10 sm:w-9 sm:h-9 rounded-full border transition-all duration-300 ease-in-out text-sm font-medium flex items-center justify-center touch-manipulation",
+                            selectedSize === size
+                              ? "border-black bg-black text-white"
+                              : "border-gray-300 hover:border-gray-400 text-gray-700 active:scale-95"
+                          )}
+                          title={size}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
                     
                     {/* Size Prompt Message */}
                     {showSizePrompt && (
@@ -412,7 +411,7 @@ const ProductDetailPage = () => {
               {/* Color Selection */}
               {colors.length > 0 && (
                 <div>
-                  <h3 className="text-base font-medium mb-3">
+                  <h3 className="text-sm sm:text-base font-medium mb-3">
                     Color
                     {selectedColor && (
                       <>
@@ -420,11 +419,10 @@ const ProductDetailPage = () => {
                         <span className="font-normal text-gray-600">
                           {selectedColor}
                         </span>
-
                       </>
                     )}
                   </h3>
-                  <div className="flex gap-3 flex-wrap">
+                  <div className="flex gap-2 sm:gap-3 flex-wrap">
                     {colors.map((color) => {
                       // Map color names to actual hex values
                       const colorMap: { [key: string]: string } = {
@@ -447,15 +445,15 @@ const ProductDetailPage = () => {
                       const isSelected = selectedColor === color;
 
                       return (
-                                                 <button
-                           key={color}
-                           onClick={() => handleColorSelection(color)}
-                           className={cn(
-                             "w-7 h-7 rounded-full transition-all duration-200 ease-in-out relative",
-                             "ring-1 ring-gray-200 hover:ring-gray-400"
-                           )}
-                           title={color}
-                         >
+                        <button
+                          key={color}
+                          onClick={() => handleColorSelection(color)}
+                          className={cn(
+                            "w-8 h-8 sm:w-7 sm:h-7 rounded-full transition-all duration-200 ease-in-out relative touch-manipulation",
+                            "ring-1 ring-gray-200 hover:ring-gray-400 active:scale-95"
+                          )}
+                          title={color}
+                        >
                           <div
                             className="w-full h-full rounded-full"
                             style={{
@@ -466,7 +464,7 @@ const ProductDetailPage = () => {
                           {isSelected && (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <svg
-                                className="w-3 h-3 text-white drop-shadow-sm"
+                                className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white drop-shadow-sm"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                               >
@@ -478,8 +476,6 @@ const ProductDetailPage = () => {
                               </svg>
                             </div>
                           )}
-
-                          
                         </button>
                       );
                     })}
@@ -488,52 +484,52 @@ const ProductDetailPage = () => {
               )}
 
               {/* Add to Cart Button */}
-              <div className="mt-8 flex gap-4">
-                                 <Button
-                   className="w-full text-sm font-normal bg-black text-white hover:bg-gray-800"
-                   disabled={!selectedColor}
-                   onClick={() => {
-                     if (!selectedSize) {
-                       setShowSizePrompt(true);
-                       return;
-                     }
-                     
-                     if (product && selectedSize && selectedColor) {
-                       addToCart({
-                         productId: product._id,
-                         name: product.name,
-                         price: currentColorVariant?.price || 0,
-                         size: selectedSize,
-                         color: selectedColor,
-                         quantity: quantity,
-                         imageUrl: currentMedia.find(m => m.type === 'image')?.url || "",
-                       });
+              <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <Button
+                  className="w-full text-sm sm:text-sm font-normal bg-black text-white hover:bg-gray-800 h-12 sm:h-10 touch-manipulation"
+                  disabled={!selectedColor}
+                  onClick={() => {
+                    if (!selectedSize) {
+                      setShowSizePrompt(true);
+                      return;
+                    }
+                    
+                    if (product && selectedSize && selectedColor) {
+                      addToCart({
+                        productId: product._id,
+                        name: product.name,
+                        price: currentColorVariant?.price || 0,
+                        size: selectedSize,
+                        color: selectedColor,
+                        quantity: quantity,
+                        imageUrl: currentMedia.find(m => m.type === 'image')?.url || "",
+                      });
 
-                       // Show success feedback
-                       showToast.success(
-                         toastMessages.cart.added
-                       );
-                     }
-                   }}
-                 >
-                   ADD TO CART
-                 </Button>
+                      // Show success feedback
+                      showToast.success(
+                        toastMessages.cart.added
+                      );
+                    }
+                  }}
+                >
+                  ADD TO CART
+                </Button>
                 <Button
                   variant="outline"
-                  className="w-full text-sm font-normal border-2 border-black text-black hover:bg-gray-50"
+                  className="w-full text-sm sm:text-sm font-normal border-2 border-black text-black hover:bg-gray-50 h-12 sm:h-10 touch-manipulation"
                 >
                   ENQUIRE
                 </Button>
               </div>
 
               {/* Product Details Tabs */}
-              <div className="mt-8">
+              <div className="mt-6 sm:mt-8">
                 {/* Tab Navigation */}
-                <div className="flex border-b border-gray-200 mb-6 gap-8">
+                <div className="flex border-b border-gray-200 mb-4 sm:mb-6 gap-4 sm:gap-8 overflow-x-auto">
                   <button
                     onClick={() => setActiveTab("description")}
                     className={cn(
-                      "py-3 text-sm font-medium transition-colors duration-200",
+                      "py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap touch-manipulation",
                       activeTab === "description"
                         ? "text-black border-b-2 border-black"
                         : "text-gray-500 hover:text-gray-700"
@@ -544,7 +540,7 @@ const ProductDetailPage = () => {
                   <button
                     onClick={() => setActiveTab("details")}
                     className={cn(
-                      "py-3 text-sm font-medium transition-colors duration-200",
+                      "py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap touch-manipulation",
                       activeTab === "details"
                         ? "text-black border-b-2 border-black"
                         : "text-gray-500 hover:text-gray-700"
@@ -555,13 +551,14 @@ const ProductDetailPage = () => {
                   <button
                     onClick={() => setActiveTab("materials")}
                     className={cn(
-                      "py-3 text-sm font-medium transition-colors duration-200",
+                      "py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap touch-manipulation",
                       activeTab === "materials"
                         ? "text-black border-b-2 border-black"
                         : "text-gray-500 hover:text-gray-700"
                     )}
                   >
-                    Materials & Care
+                    <span className="hidden sm:inline">Materials & Care</span>
+                    <span className="sm:hidden">Care</span>
                   </button>
                 </div>
 
@@ -569,12 +566,10 @@ const ProductDetailPage = () => {
                 {activeTab === "description" && (
                   <div>
                     <p
-                      className="text-gray-700"
+                      className="text-gray-700 text-sm sm:text-base leading-relaxed"
                       style={{
-                        fontSize: "16px",
                         fontFamily:
                           "Jost, -apple-system, Roboto, Jost, sans-serif",
-                        lineHeight: "24px",
                       }}
                     >
                       {product.description || "No description available."}
@@ -584,51 +579,21 @@ const ProductDetailPage = () => {
 
                 {activeTab === "details" && (
                   <div>
-                    <ul className="space-y-2">
-                      <li
-                        className="text-gray-700"
-                        style={{
-                          fontSize: "14px",
-                          lineHeight: "20px",
-                        }}
-                      >
+                    <ul className="space-y-2 sm:space-y-3">
+                      <li className="text-gray-700 text-sm sm:text-sm leading-relaxed">
                         <strong>Category:</strong> {product.category}
                       </li>
-                      <li
-                        className="text-gray-700"
-                        style={{
-                          fontSize: "14px",
-                          lineHeight: "20px",
-                        }}
-                      >
+                      <li className="text-gray-700 text-sm sm:text-sm leading-relaxed">
                         <strong>Subcategory:</strong> {product.subCategory}
                       </li>
-                      <li
-                        className="text-gray-700"
-                        style={{
-                          fontSize: "14px",
-                          lineHeight: "20px",
-                        }}
-                      >
+                      <li className="text-gray-700 text-sm sm:text-sm leading-relaxed">
                         <strong>Available Colors:</strong> {colors.join(", ")}
                       </li>
-                      <li
-                        className="text-gray-700"
-                        style={{
-                          fontSize: "14px",
-                          lineHeight: "20px",
-                        }}
-                      >
+                      <li className="text-gray-700 text-sm sm:text-sm leading-relaxed">
                         <strong>Available Sizes:</strong> {sizes.join(", ")}
                       </li>
                       {product.bestseller && (
-                        <li
-                          className="text-gray-700"
-                          style={{
-                            fontSize: "14px",
-                            lineHeight: "20px",
-                          }}
-                        >
+                        <li className="text-gray-700 text-sm sm:text-sm leading-relaxed">
                           <strong>Bestseller:</strong> Yes
                         </li>
                       )}
@@ -638,7 +603,7 @@ const ProductDetailPage = () => {
 
                 {activeTab === "materials" && (
                   <div>
-                    <p className="text-gray-700 text-sm">
+                    <p className="text-gray-700 text-sm sm:text-sm leading-relaxed">
                       Product material and care information will be displayed
                       here. This information is typically provided by the
                       manufacturer.
@@ -663,16 +628,16 @@ const ProductDetailPage = () => {
           {/* Size Chart Panel */}
           <div
             className={cn(
-              "flex flex-col fixed top-0 right-0 min-w-[50%] h-screen z-50 transition-transform duration-300 bg-white shadow-2xl",
+              "flex flex-col fixed top-0 right-0 w-full sm:min-w-[50%] sm:max-w-[90%] h-screen z-50 transition-transform duration-300 bg-white shadow-2xl",
               isSizeChartOpen ? "translate-x-0" : "translate-x-full"
             )}
           >
             {/* Header */}
-            <div className="flex items-center justify-between py-6 px-16 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">SIZE GUIDE</h2>
+            <div className="flex items-center justify-between py-4 sm:py-6 px-4 sm:px-8 lg:px-16 border-b border-gray-200">
+              <h2 className="text-lg sm:text-xl font-semibold">SIZE GUIDE</h2>
               <button
                 onClick={() => setIsSizeChartOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors touch-manipulation"
               >
                 <svg
                   width="20"
@@ -694,22 +659,22 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Size Chart Content */}
-            <div className="py-6 px-16 flex-1 flex flex-col justify-center">
+            <div className="py-4 sm:py-6 px-4 sm:px-8 lg:px-16 flex-1 flex flex-col justify-center overflow-y-auto">
               {/* Body Measurements Header */}
-              <div className="mb-6">
-                <h3 className="text-lg text-center font-medium mb-6">
+              <div className="mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-lg text-center font-medium mb-4 sm:mb-6">
                   BODY MEASUREMENTS (
                   {selectedUnit === "inches" ? "INCHES" : "CM"})
                 </h3>
 
                 {/* Unit Toggle */}
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <span className="text-sm text-gray-600">Units:</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Units:</span>
                   <div className="flex border border-gray-300 overflow-hidden">
                     <button
                       onClick={() => setSelectedUnit("inches")}
                       className={cn(
-                        "px-3 py-1 text-sm transition-colors",
+                        "px-2 sm:px-3 py-1 text-xs sm:text-sm transition-colors touch-manipulation",
                         selectedUnit === "inches"
                           ? "bg-black text-white"
                           : "bg-white text-gray-600 hover:bg-gray-50"
@@ -720,7 +685,7 @@ const ProductDetailPage = () => {
                     <button
                       onClick={() => setSelectedUnit("cm")}
                       className={cn(
-                        "px-3 py-1 text-sm transition-colors border-l border-gray-300",
+                        "px-2 sm:px-3 py-1 text-xs sm:text-sm transition-colors border-l border-gray-300 touch-manipulation",
                         selectedUnit === "cm"
                           ? "bg-black text-white"
                           : "bg-white text-gray-600 hover:bg-gray-50"
@@ -733,9 +698,9 @@ const ProductDetailPage = () => {
               </div>
 
               {/* Size Table */}
-              <div className="mb-6">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm border border-gray-300">
+              <div className="mb-4 sm:mb-6">
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <table className="w-full text-xs sm:text-sm border border-gray-300 min-w-[600px]">
                     <thead>
                       <tr className="border-b border-gray-300 bg-[#f2f2f2]">
                         <th className="text-left py-3 px-4 font-medium border-r border-gray-300">
@@ -972,11 +937,11 @@ const ProductDetailPage = () => {
 
               {/* Custom Text */}
               <div className="text-center">
-                <p className="text-sm text-gray-700 mb-2">
+                <p className="text-xs sm:text-sm text-gray-700 mb-2">
                   Here's the size guide video!{" "}
                   <button
                     onClick={() => setIsCustomSizeOpen(true)}
-                    className="text-blue-600 hover:text-blue-800 underline font-medium cursor-pointer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium cursor-pointer touch-manipulation"
                   >
                     Click here
                   </button>
@@ -999,16 +964,16 @@ const ProductDetailPage = () => {
           {/* Custom Size Panel */}
           <div
             className={cn(
-              "flex flex-col fixed top-0 right-0 min-w-[50%] h-screen z-50 transition-transform duration-300 bg-white shadow-2xl",
+              "flex flex-col fixed top-0 right-0 w-full sm:min-w-[50%] sm:max-w-[90%] h-screen z-50 transition-transform duration-300 bg-white shadow-2xl",
               isCustomSizeOpen ? "translate-x-0" : "translate-x-full"
             )}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Size Guide Video</h2>
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
+              <h2 className="text-lg sm:text-xl font-semibold">Size Guide Video</h2>
               <button
                 onClick={() => setIsCustomSizeOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors touch-manipulation"
               >
                 <svg
                   width="20"
@@ -1030,7 +995,7 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Video Content */}
-            <div className="px-16 flex-1 flex flex-col justify-center">
+            <div className="px-4 sm:px-8 lg:px-16 flex-1 flex flex-col justify-center">
               <div className="flex justify-center">
                 <iframe
                   src="https://www.youtube.com/embed/03b56tc7sAE?autoplay=1"

@@ -6,10 +6,6 @@ import { useCart } from "@/contexts/CartContext";
 const Header = () => {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [isCollectionHovered, setIsCollectionHovered] = useState(false);
-  const [isNavigationVisible, setIsNavigationVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isHeaderHovered, setIsHeaderHovered] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { state: cartState, loadUserCartFromBackend } = useCart();
@@ -21,36 +17,6 @@ const Header = () => {
   useEffect(() => {
     loadUserCartFromBackend();
   }, []); // Empty dependency array to run only once
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      // Check if scrolled past 100px for background change
-      if (currentScrollY > 40) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-
-      // Show navigation when scrolling up, hide when scrolling down
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down and past initial 100px
-        setIsNavigationVisible(false);
-      } else if (currentScrollY < lastScrollY) {
-        // Scrolling up
-        setIsNavigationVisible(true);
-      }
-
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [lastScrollY]);
 
   const toggleSideMenu = () => {
     setIsSideMenuOpen(!isSideMenuOpen);
@@ -66,29 +32,133 @@ const Header = () => {
     navigate(path);
   };
 
-  // Determine header background based on page and state
+  // Determine header background based on page
   const getHeaderBackground = () => {
     if (isHomePage) {
-      // On home page: transparent by default, white on hover only
-      if (isHeaderHovered) {
-        return 'bg-white border-b border-b-[1px] border-b-[#dddddd]';
-      }
       return 'bg-transparent border-b border-b-[1px] border-b-transparent';
     } else {
-      // On other pages: always white
       return 'bg-white border-b border-b-[1px] border-b-[#dddddd]';
     }
   };
 
   return (
     <>
+      {/* Mobile Header */}
       <header 
-        className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-in-out ${getHeaderBackground()}`}
-        onMouseEnter={() => setIsHeaderHovered(true)}
-        onMouseLeave={() => setIsHeaderHovered(false)}
+        className={`md:hidden fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-in-out ${getHeaderBackground()}`}
+      >
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Hamburger Menu */}
+            <button
+              onClick={toggleSideMenu}
+              className="flex items-center justify-center"
+              aria-label="Open menu"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-6 h-6 fill-black"
+              >
+                <path
+                  d="M3 12H21M3 6H21M3 18H21"
+                  stroke="black"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+
+            {/* Center Logo */}
+            <div className="flex-1 flex justify-center">
+              <Link to="/">
+                <img
+                  src="/images/pix-black-logo.png"
+                  alt="Highstreet Pix Logo"
+                  className="w-12 h-12 object-contain"
+                />
+              </Link>
+            </div>
+
+            {/* Right Icons */}
+            <div className="flex items-center space-x-4">
+              {/* Wishlist */}
+              <Link
+                to="/wishlist"
+                className="flex items-center justify-center"
+                aria-label="Wishlist"
+              >
+                <svg
+                  width="20"
+                  height="25"
+                  viewBox="0 0 100 125"
+                  fill="none"
+                  stroke="black"
+                  strokeWidth="9"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                >
+                  <path d="M9,66.4C3.46,61.12,0,53.67,0,45.4c0-16.02,12.98-29,29-29,8.26,0,15.72,3.46,21,9,5.28-5.54,12.74-9,21-9,16.02,0,29,12.98,29,29,0,8.26-3.46,15.72-9,21l-40.98,42.19L9,66.4Z" />
+                </svg>
+              </Link>
+
+              {/* Account */}
+              <button
+                className="flex items-center justify-center"
+                aria-label="Account"
+                onClick={() => handleNavigation(localStorage.getItem('token') ? '/profile' : '/login')}
+              >
+                <svg
+                  width="31"
+                  height="31"
+                  viewBox="0 0 31 31"
+                  className="w-4 h-4 fill-black"
+                >
+                  <path
+                    d="M21.2558 16.5994C22.7829 15.4046 23.8976 13.766 24.4447 11.9118C24.9918 10.0575 24.9442 8.07977 24.3085 6.25369C23.6727 4.4276 22.4805 2.84399 20.8976 1.72315C19.3148 0.602316 17.42 0 15.4769 0C13.5338 0 11.639 0.602316 10.0562 1.72315C8.47329 2.84399 7.28106 4.4276 6.64533 6.25369C6.0096 8.07977 5.96199 10.0575 6.50911 11.9118C7.05624 13.766 8.17089 15.4046 9.698 16.5994C7.08126 17.6421 4.79807 19.3713 3.09182 21.6029C1.38558 23.8345 0.320246 26.4848 0.00939552 29.2711C-0.0131054 29.4746 0.00490408 29.6804 0.0623953 29.8769C0.119887 30.0734 0.215734 30.2568 0.344465 30.4164C0.604449 30.7389 0.982592 30.9455 1.39571 30.9906C1.80882 31.0358 2.22307 30.916 2.54732 30.6574C2.87157 30.3989 3.07926 30.0228 3.1247 29.6119C3.46674 26.5837 4.91863 23.787 7.20298 21.7561C9.48733 19.7252 12.444 18.6025 15.5081 18.6025C18.5721 18.6025 21.5288 19.7252 23.8131 21.7561C26.0975 23.787 27.5494 26.5837 27.8914 29.6119C27.9337 29.9926 28.1164 30.3441 28.404 30.5987C28.6917 30.8534 29.064 30.993 29.449 30.9906H29.6204C30.0287 30.9439 30.4019 30.7386 30.6587 30.4194C30.9154 30.1002 31.0349 29.6931 30.9911 29.2866C30.6788 26.4924 29.6077 23.8353 27.8927 21.6003C26.1777 19.3653 23.8834 17.6365 21.2558 16.5994ZM15.4769 15.4996C14.2446 15.4996 13.04 15.1362 12.0154 14.4553C10.9907 13.7744 10.1921 12.8067 9.72056 11.6744C9.24898 10.5422 9.12559 9.29628 9.366 8.09429C9.60641 6.8923 10.1998 5.7882 11.0712 4.92162C11.9426 4.05503 13.0527 3.46488 14.2614 3.22579C15.47 2.9867 16.7228 3.10941 17.8612 3.5784C18.9997 4.0474 19.9728 4.84161 20.6575 5.8606C21.3421 6.8796 21.7075 8.07762 21.7075 9.30315C21.7075 10.9465 21.0511 12.5226 19.8826 13.6847C18.7141 14.8467 17.1294 15.4996 15.4769 15.4996Z"
+                    fill="black"
+                  />
+                </svg>
+              </button>
+
+              {/* Cart */}
+              <Link
+                to="/cart"
+                className="flex items-center justify-center relative"
+                aria-label="Shopping cart"
+              >
+                <svg 
+                  width="20" 
+                  height="17" 
+                  viewBox="0 0 19 23" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="fill-black"
+                  role="presentation"
+                >
+                  <path d="M0 22.985V5.995L2 6v.03l17-.014v16.968H0zm17-15H2v13h15v-13zm-5-2.882c0-2.04-.493-3.203-2.5-3.203-2 0-2.5 1.164-2.5 3.203v.912H5V4.647C5 1.19 7.274 0 9.5 0 11.517 0 14 1.354 14 4.647v1.368h-2v-.912z" fill="currentColor"></path>
+                </svg>
+                {cartState.totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                    {cartState.totalItems > 99 ? '99+' : cartState.totalItems}
+                  </span>
+                )}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Desktop Header */}
+      <header 
+        className={`hidden md:block fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-in-out ${getHeaderBackground()}`}
       >
         {/* Main Navbar */}
-        <div className={`px-16 py-8 relative`}>
+        <div className={`px-4 md:px-16 py-4 md:py-8 relative`}>
           <div className="flex items-center justify-between w-full max-w-screen-2xl mx-auto">
             {/* Left - Navigation Links */}
             <div className="flex items-center space-x-12">
@@ -442,29 +512,6 @@ const Header = () => {
             </div>
           </div>
         </div>
-
-        {/* Commented out Hamburger Menu Button */}
-        {/* <button
-          onClick={toggleSideMenu}
-          className="flex items-center justify-center"
-          aria-label="Open menu"
-        >
-          <svg
-            width="34"
-            height="28"
-            viewBox="0 0 34 28"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-4 fill-black"
-          >
-            <path
-              d="M1.43514 0.000123538C1.24764 -0.00219144 1.06148 0.0280497 0.887479 0.0890897C0.713481 0.15013 0.555114 0.240751 0.421582 0.355687C0.28805 0.470624 0.182016 0.607582 0.109643 0.758605C0.0372697 0.909627 0 1.0717 0 1.23541C0 1.39911 0.0372697 1.56119 0.109643 1.71221C0.182016 1.86323 0.28805 2.00019 0.421582 2.11513C0.555114 2.23006 0.713481 2.32068 0.887479 2.38172C1.06148 2.44276 1.24764 2.473 1.43514 2.47069H32.5649C32.7524 2.473 32.9385 2.44276 33.1125 2.38172C33.2865 2.32068 33.4449 2.23006 33.5784 2.11513C33.7119 2.00019 33.818 1.86323 33.8904 1.71221C33.9627 1.56119 34 1.39911 34 1.23541C34 1.0717 33.9627 0.909627 33.8904 0.758605C33.818 0.607582 33.7119 0.470624 33.5784 0.355687C33.4449 0.240751 33.2865 0.15013 33.1125 0.0890897C32.9385 0.0280497 32.7524 -0.00219144 32.5649 0.000123538H1.43514ZM1.43514 13.1765C1.24764 13.1742 1.06148 13.2044 0.887479 13.2654C0.713481 13.3265 0.555114 13.4171 0.421582 13.532C0.28805 13.647 0.182016 13.7839 0.109643 13.935C0.0372697 14.086 0 14.2481 0 14.4118C0 14.5755 0.0372697 14.7375 0.109643 14.8886C0.182016 15.0396 0.28805 15.1765 0.421582 15.2915C0.555114 15.4064 0.713481 15.497 0.887479 15.5581C1.06148 15.6191 1.24764 15.6494 1.43514 15.647H32.5649C32.7524 15.6494 32.9385 15.6191 33.1125 15.5581C33.2865 15.497 33.4449 15.4064 33.5784 15.2915C33.7119 15.1765 33.818 15.0396 33.8904 14.8886C33.9627 14.7375 34 14.5755 34 14.4118C34 14.2481 33.9627 14.086 33.8904 13.935C33.818 13.7839 33.7119 13.647 33.5784 13.532C33.4449 13.4171 33.2865 13.3265 33.1125 13.2654C32.9385 13.2044 32.7524 13.1742 32.5649 13.1765H1.43514ZM1.43514 25.5293C1.24764 25.527 1.06148 25.5572 0.887479 25.6183C0.713481 25.6793 0.555114 25.7699 0.421582 25.8849C0.28805 25.9998 0.182016 26.1368 0.109643 26.2878C0.0372697 26.4388 0 26.6009 0 26.7646C0 26.9283 0.0372697 27.0904 0.109643 27.2414C0.182016 27.3924 0.28805 27.5294 0.421582 27.6443C0.555114 27.7592 0.713481 27.8499 0.887479 27.9109C1.06148 27.9719 1.24764 28.0022 1.43514 27.9999H32.5649C32.7524 28.0022 32.9385 27.9719 33.1125 27.9109C33.2865 27.8499 33.4449 27.7592 33.5784 27.6443C33.7119 27.5294 33.818 27.3924 33.8904 27.2414C33.9627 27.0904 34 26.9283 34 26.7646C34 26.6009 33.9627 26.4388 33.8904 26.2878C33.818 26.1368 33.7119 25.9998 33.5784 25.8849C33.4449 25.7699 33.2865 25.6793 33.1125 25.6183C32.9385 25.5572 32.7524 25.527 32.5649 25.5293H1.43514Z"
-              fill="black"
-            />
-          </svg>
-        </button> */}
-
-        {/* Removed the separate Navigation Section - now integrated above */}
       </header>
 
       {/* Side Menu */}

@@ -35,22 +35,45 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   const getLayoutConfig = () => {
     switch (columns) {
+      case 1:
+        return { 
+          width: "w-full", 
+          gap: "0.5%",
+          responsiveWidth: "w-full md:w-full lg:w-full xl:w-full"
+        }; // 1 column on all screen sizes
       case 2:
-        return { width: "w-[49.75%]", gap: "0.5%" }; // 2 columns with 2% gap
+        return { 
+          width: "w-[49.75%]", 
+          gap: "0.5%",
+          responsiveWidth: "w-[49.75%] md:w-[49.75%] lg:w-[49.75%] xl:w-[49.75%]"
+        }; // 2 columns on all screen sizes
       case 3:
-        return { width: "w-[33%]", gap: "0.5%" }; // 3 columns with 1.5% gap
+        return { 
+          width: "w-[33%]", 
+          gap: "0.5%",
+          responsiveWidth: "w-[49.75%] md:w-[33%] lg:w-[33%] xl:w-[33%]"
+        }; // 3 columns on desktop, 2 on mobile
       case 4:
-        return { width: "w-[24.625%]", gap: "0.5%" }; // 4 columns with 1% gap
+        return { 
+          width: "w-[24.625%]", 
+          gap: "0.5%",
+          responsiveWidth: "w-[49.75%] md:w-[33%] lg:w-[24.625%] xl:w-[24.625%]"
+        }; // 4 columns on desktop, responsive on smaller screens
       default:
-        return { width: "w-[24.625%]", gap: "0.5%" }; // Default to 4 columns
+        return { 
+          width: "w-[24.625%]", 
+          gap: "0.5%",
+          responsiveWidth: "w-[49.75%] md:w-[33%] lg:w-[24.625%] xl:w-[24.625%]"
+        }; // Default to 4 columns with responsive behavior
     }
   };
 
   if (loading) {
+    const config = getLayoutConfig();
     return (
-      <div className={`flex flex-wrap w-full ${className}`} style={{ gap: getLayoutConfig().gap }}>
+      <div className={`flex flex-wrap w-full ${className}`} style={{ gap: config.gap }}>
         {[...Array(8)].map((_, index) => (
-          <div key={index} className={cn(getLayoutConfig().width, "animate-pulse")}>
+          <div key={index} className={cn(config.responsiveWidth, "animate-pulse")}>
             <div className="bg-gray-200 aspect-[4/5] rounded-lg mb-4"></div>
             <div className="space-y-2">
               <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -97,6 +120,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         style={{ gap: getLayoutConfig().gap }}
       >
         {products.map((product, index) => {
+          const config = getLayoutConfig();
           // console.log('Product in ProductGrid:', { 
           //   _id: product._id, 
           //   name: product.name, 
@@ -108,7 +132,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             <div 
               key={product._id || index}
               className={cn(
-                getLayoutConfig().width,
+                config.responsiveWidth,
                 "transition-all duration-1000 ease-in-out"
               )}
             >

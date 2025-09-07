@@ -141,18 +141,18 @@ const CartPage = () => {
 
       {/* Main Content */}
       <main className="pt-24">
-        <div className="container mx-auto px-16 py-16">
+        <div className="container mx-auto px-4 sm:px-8 lg:px-16 py-8 sm:py-12 lg:py-16">
 
           {/* Page Header */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
             <h1
-              className="text-black font-normal uppercase text-2xl"
+              className="text-black font-normal uppercase text-xl sm:text-2xl"
             >
               CART
             </h1>
             
             {/* Breadcrumb */}
-            <div className="flex justify-center items-center gap-2 mt-4 text-sm text-gray-600">
+            <div className="flex justify-center items-center gap-2 mt-3 sm:mt-4 text-xs sm:text-sm text-gray-600">
               <button
                 onClick={() => navigate('/collection')}
                 className="hover:text-black transition-colors"
@@ -166,11 +166,11 @@ const CartPage = () => {
 
           {/* Empty Cart Check */}
           {cartItems.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-8 sm:py-12">
               <h2
-                className="text-black font-normal mb-12"
+                className="text-black font-normal mb-8 sm:mb-12"
                 style={{
-                  fontSize: '32px',
+                  fontSize: 'clamp(24px, 5vw, 32px)',
                   fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
                   fontWeight: 400
                 }}
@@ -179,101 +179,110 @@ const CartPage = () => {
               </h2>
               <Button
                 onClick={handleContinueShopping}
-                className="bg-black text-white hover:bg-gray-800 px-8 py-3"
+                className="bg-black text-white hover:bg-gray-800 px-6 sm:px-8 py-3 text-sm sm:text-base"
               >
                 CONTINUE SHOPPING
               </Button>
             </div>
           ) : (
             /* Cart Content */
-            <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-16">
+            <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 sm:gap-12 lg:gap-16">
 
               {/* Cart Items */}
               <div>
                 {/* Selection Controls */}
-                <div className="flex items-center justify-between mb-6 p-4 bg-[#f2f2f2] border border-gray-200 rounded">
-                  <div className="flex items-center gap-4">
-                                         <input
-                       type="checkbox"
-                       checked={selectedItems.size === cartItems.length && cartItems.length > 0}
-                       onChange={() => selectedItems.size === cartItems.length ? deselectAllItems() : selectAllItems()}
-                       className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black cursor-pointer accent-black scale-75"
-                     />
-                    <span className="text-sm text-gray-700">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-6 p-3 sm:p-4 bg-[#f2f2f2] border border-gray-200 rounded">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.size === cartItems.length && cartItems.length > 0}
+                      onChange={() => selectedItems.size === cartItems.length ? deselectAllItems() : selectAllItems()}
+                      className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black cursor-pointer accent-black scale-75"
+                    />
+                    <span className="text-xs sm:text-sm text-gray-700">
                       {selectedItems.size === cartItems.length ? 'Deselect All' : 'Select All'}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-xs sm:text-sm text-gray-600">
                     {selectedItems.size} of {cartItems.length} items selected
                   </div>
                 </div>
                 
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {cartItems.map((item) => {
                     const itemId = `${item.productId}-${item.size}-${item.color}`;
                     const isSelected = selectedItems.has(itemId);
                     
                     return (
-                      <div key={`${item.id}-${item.size}-${item.color}`} className="flex justify-between p-6 bg-[#f2f2f2] border border-gray-100">
-                        <div className="flex gap-6">
-                          {/* Selection Checkbox */}
-                            <div className="flex items-center">
-                             <input
-                               type="checkbox"
-                               checked={isSelected}
-                               onChange={() => toggleItemSelection(itemId)}
-                               className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black cursor-pointer accent-black scale-75"
-                             />
-                           </div>
-                          
-                          {/* Product Image */}
-                          <div className="w-24 h-32 flex-shrink-0 overflow-hidden bg-gray-200">
-                            <img
-                              src={item.imageUrl}
-                              alt={item.name}
-                              className="w-full h-full object-cover"
-                            />
+                      <div key={`${item.id}-${item.size}-${item.color}`} className="bg-[#f2f2f2] border border-gray-100">
+                        {/* Mobile Layout */}
+                        <div className="block sm:hidden p-4">
+                          {/* Header Row: Checkbox + Product Info */}
+                          <div className="flex items-start gap-3 mb-4">
+                            <div className="flex items-center pt-1">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleItemSelection(itemId)}
+                                className="w-4 h-4 text-black border-gray-300 focus:ring-black cursor-pointer accent-black"
+                              />
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <h3
+                                className="text-black font-normal text-base mb-1"
+                                style={{
+                                  fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
+                                  fontWeight: 400
+                                }}
+                              >
+                                {item.name}
+                              </h3>
+                              <p className="text-gray-600 text-sm mb-2">
+                                Size: {item.size} | Color: {item.color}
+                              </p>
+                            </div>
                           </div>
-
-                        {/* Product Details */}
-                        <div className="flex-1 min-w-0">
-                          <h3
-                            className="text-black font-normal text-base mb-1"
-                            style={{
-                              fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
-                              fontWeight: 400
-                            }}
-                          >
-                            {item.name}
-                          </h3>
-                          <p className="text-gray-600 text-sm mb-1">
-                            Size: {item.size} | Color: {item.color}
-                          </p>
-                          {/* <p
-                            className="text-black font-normal text-base mb-4"
-                            style={{
-                              fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
-                              fontWeight: 400
-                            }}
-                          >
-                            Rs.{item.price}
-                          </p> */}
-
-                          {/* Quantity Controls */}
-                          <div className="flex flex-col-reverse items-start gap-3">
+                          
+                          {/* Image Row */}
+                          <div className="flex justify-center mb-4">
+                            <div className="w-32 h-40 overflow-hidden bg-gray-200">
+                              <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </div>
+                          
+                          {/* Price Row */}
+                          <div className="text-center mb-4">
+                            <p
+                              className="text-black font-normal text-lg"
+                              style={{
+                                fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
+                                fontWeight: 400
+                              }}
+                            >
+                              {formatCartPrice(item.price)}
+                            </p>
+                          </div>
+                          
+                          {/* Controls Row */}
+                          <div className="flex items-center justify-between">
                             <div className="flex items-center border border-gray-300">
                               <button
                                 onClick={() => handleQuantityChange(item.productId, item.size, item.color, item.quantity - 1)}
-                                className="px-3 py-1 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black"
+                                className="px-4 py-2 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black text-base"
                               >
                                 -
                               </button>
-                              <span className="px-3 py-1 border-x border-gray-300 bg-white min-w-[2rem] text-center">
+                              <span className="px-4 py-2 border-x border-gray-300 bg-white min-w-[3rem] text-center text-base font-medium">
                                 {item.quantity}
                               </span>
                               <button
                                 onClick={() => handleQuantityChange(item.productId, item.size, item.color, item.quantity + 1)}
-                                className="px-3 py-1 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black"
+                                className="px-4 py-2 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black text-base"
                               >
                                 +
                               </button>
@@ -287,27 +296,97 @@ const CartPage = () => {
                             </button>
                           </div>
                         </div>
+
+                        {/* Desktop Layout */}
+                        <div className="hidden sm:flex justify-between p-4 lg:p-6">
+                          <div className="flex gap-4 lg:gap-6">
+                            {/* Selection Checkbox */}
+                            <div className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleItemSelection(itemId)}
+                                className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black cursor-pointer accent-black scale-75"
+                              />
+                            </div>
+                            
+                            {/* Product Image */}
+                            <div className="w-20 h-24 lg:w-24 lg:h-32 flex-shrink-0 overflow-hidden bg-gray-200">
+                              <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+
+                            {/* Product Details */}
+                            <div className="flex-1 min-w-0">
+                              <h3
+                                className="text-black font-normal text-sm lg:text-base mb-1"
+                                style={{
+                                  fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
+                                  fontWeight: 400
+                                }}
+                              >
+                                {item.name}
+                              </h3>
+                              <p className="text-gray-600 text-xs lg:text-sm mb-1">
+                                Size: {item.size} | Color: {item.color}
+                              </p>
+
+                              {/* Quantity Controls */}
+                              <div className="flex flex-col-reverse items-start gap-3">
+                                <div className="flex items-center border border-gray-300">
+                                  <button
+                                    onClick={() => handleQuantityChange(item.productId, item.size, item.color, item.quantity - 1)}
+                                    className="px-3 py-1 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black text-sm"
+                                  >
+                                    -
+                                  </button>
+                                  <span className="px-3 py-1 border-x border-gray-300 bg-white min-w-[2rem] text-center text-sm">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    onClick={() => handleQuantityChange(item.productId, item.size, item.color, item.quantity + 1)}
+                                    className="px-3 py-1 hover:bg-gray-100 transition-colors text-gray-600 hover:text-black text-sm"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+
+                                <button
+                                  onClick={() => handleRemoveItem(item.productId, item.size, item.color)}
+                                  className="text-red-600 hover:text-red-800 text-xs lg:text-sm underline transition-colors"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start">
+                            <p
+                              className="text-black font-normal text-sm lg:text-base"
+                              style={{
+                                fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
+                                fontWeight: 400
+                              }}
+                            >
+                              {formatCartPrice(item.price)}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <p
-                        className="text-black font-normal text-base mb-4"
-                        style={{
-                          fontFamily: 'Jost, -apple-system, Roboto, Jost, sans-serif',
-                          fontWeight: 400
-                        }}
-                      >
-                        {formatCartPrice(item.price)}
-                      </p>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
                 </div>
 
                 {/* Cart Actions */}
-                <div className="mt-8 pt-8 border-t border-gray-200 flex justify-between items-center">
+                <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0">
                   <Button
                     variant="outline"
                     onClick={handleContinueShopping}
-                    className="border-gray-300 hover:bg-gray-50"
+                    className="border-gray-300 hover:bg-gray-50 text-sm sm:text-base py-2 sm:py-3"
                   >
                     ← Continue Shopping
                   </Button>
@@ -316,7 +395,7 @@ const CartPage = () => {
                     <Button
                       variant="outline"
                       onClick={handleClearAllItems}
-                      className="border-gray-300 hover:bg-gray-50"
+                      className="border-gray-300 hover:bg-gray-50 text-sm sm:text-base py-2 sm:py-3"
                     >
                       Clear All Items
                     </Button>
@@ -344,10 +423,10 @@ const CartPage = () => {
                 />
 
                 {/* Checkout Button */}
-                <div className="mt-6">
+                <div className="mt-4 sm:mt-6">
                   <Button
                     onClick={handleProceedToCheckout}
-                    className="w-full bg-black text-white hover:bg-gray-800 py-4 text-lg font-normal"
+                    className="w-full bg-black text-white hover:bg-gray-800 py-3 sm:py-4 text-base sm:text-lg font-normal"
                   >
                     CHECKOUT
                   </Button>

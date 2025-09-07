@@ -39,6 +39,7 @@ const CollectionPage = () => {
     setCurrentPage(1);
   }, [category]);
 
+
   // Pagination logic
   const productsPerPage = 20;
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
@@ -81,7 +82,7 @@ const CollectionPage = () => {
     return (
       <div className="min-h-screen bg-white">
         <Header />
-        <main className="pt-24">
+        <main className="pt-20 md:pt-24">
           <div className="container mx-auto px-16 py-16">
             <Error
               title="Error Loading Products"
@@ -102,7 +103,7 @@ const CollectionPage = () => {
       <Header />
 
       {/* Main Content */}
-      <main className="pt-24">
+      <main className="pt-20 md:pt-24">
         {/* Page Title */}
         <div className="flex justify-center pt-8 pb-6">
           <h1
@@ -113,7 +114,7 @@ const CollectionPage = () => {
         </div>
 
         {/* Filter Controls */}
-        <div className="px-16 pb-8">
+        <div className="px-4 md:px-16 pb-8">
           <div className="flex justify-end">
             {/* Grid Layout Toggle */}
             <GridLayoutToggle
@@ -125,14 +126,14 @@ const CollectionPage = () => {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="px-16 pb-16">
+          <div className="px-4 md:px-16 pb-16">
             <Loading size="lg" text="Loading products..." className="py-16" />
           </div>
         )}
 
         {/* Products Grid */}
         {!isLoading && currentProducts.length > 0 && (
-          <div className="px-16 pb-16">
+          <div className="px-4 md:px-16 pb-16">
             <ProductGrid
               products={currentProducts}
               columns={gridLayout}
@@ -143,7 +144,7 @@ const CollectionPage = () => {
 
         {/* No Products Found */}
         {!isLoading && currentProducts.length === 0 && (
-          <div className="px-16 pb-16">
+          <div className="px-4 md:px-16 pb-16">
             <div className="text-center py-16">
               <p className="text-gray-600 text-lg">
                 {category 
@@ -164,7 +165,7 @@ const CollectionPage = () => {
 
         {/* Pagination */}
         {!isLoading && totalPages > 1 && (
-          <div className="px-16 pb-16">
+          <div className="px-4 md:px-16 pb-16">
             <div className="flex justify-center items-center gap-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}

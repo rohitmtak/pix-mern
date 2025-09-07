@@ -115,7 +115,7 @@ const ProductCard = ({
             !showWishlist && centered ? 'justify-center' : 'justify-between'
           )}>
             {/* Title */}
-            <h3 className="text-black text-base">
+            <h3 className="text-black text-sm md:text-base">
               {title}
             </h3>
 
@@ -143,7 +143,7 @@ const ProductCard = ({
             !showWishlist && centered ? 'justify-center' : 'justify-between'
           )}>
             {/* Price */}
-            <p className="text-gray-500 font-normal text-sm">
+            <p className="text-gray-500 font-normal text-xs md:text-sm">
               {price}
             </p>
 

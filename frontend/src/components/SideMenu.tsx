@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface SideMenuProps {
@@ -7,6 +8,22 @@ interface SideMenuProps {
 }
 
 const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
+  const [isCollectionOpen, setIsCollectionOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleNavigation = (path: string) => {
+    // Scroll to top before navigation
+    window.scrollTo(0, 0);
+    // Navigate to the specified path
+    navigate(path);
+    // Close the menu
+    onClose();
+  };
+
+  const toggleCollection = () => {
+    setIsCollectionOpen(!isCollectionOpen);
+  };
+
   return (
     <>
       {/* Overlay */}
@@ -22,17 +39,18 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
       <div
         className={cn(
           "fixed top-0 left-0 h-screen z-50 transition-transform duration-300",
-          "bg-gradient-to-br from-white/40 to-white/1 backdrop-blur-[50px]",
+          "bg-gradient-to-br from-white/95 to-white/80 backdrop-blur-[20px]",
+          "border-r border-white/20 shadow-2xl",
           // Responsive width: full width on mobile, 80% on tablet, 960px on desktop
           "w-full sm:w-4/5 md:w-[600px] lg:w-[800px] xl:w-[960px]",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         {/* Header with Close Button */}
-        <div className="flex items-center justify-between p-6 sm:p-8 md:p-12">
+        <div className="flex items-center justify-between p-6 sm:p-8 md:p-12 border-b border-white/10">
           <button
             onClick={onClose}
-            className="flex items-center justify-center p-2 hover:opacity-70 transition-opacity"
+            className="flex items-center justify-center p-2 hover:opacity-70 transition-all duration-200 hover:scale-105"
             aria-label="Close menu"
           >
             <svg
@@ -49,50 +67,97 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
         </div>
 
         {/* Mobile Navigation Menu */}
-        <div className="flex-1 px-6 sm:px-8 md:px-12 pb-12">
-          <nav className="flex flex-col space-y-8 sm:space-y-10 md:space-y-12 lg:space-y-16">
+        <div className="flex-1 px-6 sm:px-8 md:px-12 pb-12 overflow-y-auto">
+          <nav className="flex flex-col space-y-6 sm:space-y-8 md:space-y-10 lg:space-y-12 pt-8">
             {/* Home */}
             <div className="group">
-              <Link
-                to="/"
-                onClick={onClose}
-                className="text-black font-jost text-xl sm:text-2xl md:text-3xl font-normal leading-normal uppercase hover:opacity-70 transition-opacity block"
+              <button
+                onClick={() => handleNavigation("/")}
+                className="text-black font-jost text-xl sm:text-2xl md:text-3xl font-normal leading-normal uppercase hover:opacity-70 transition-all duration-200 hover:translate-x-2 block text-left"
               >
-                home
-              </Link>
+                Home
+              </button>
             </div>
 
-            {/* Our Collection */}
+            {/* Collection - with submenu */}
             <div className="group">
-              <Link
-                to="/collection"
-                onClick={onClose}
-                className="text-black font-jost text-xl sm:text-2xl md:text-3xl font-normal leading-normal uppercase hover:opacity-70 transition-opacity block"
+              <button
+                onClick={toggleCollection}
+                className="text-black font-jost text-xl sm:text-2xl md:text-3xl font-normal leading-normal uppercase hover:opacity-70 transition-all duration-200 hover:translate-x-2 flex items-center justify-between w-full text-left"
               >
-                our collection
-              </Link>
+                <span>Collection</span>
+                <svg
+                  className={cn(
+                    "w-5 h-5 transition-transform duration-200",
+                    isCollectionOpen ? "rotate-180" : "rotate-0"
+                  )}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {/* Collection Submenu */}
+              <div className={cn(
+                "overflow-hidden transition-all duration-300 ease-in-out",
+                isCollectionOpen ? "max-h-96 opacity-100 mt-4" : "max-h-0 opacity-0"
+              )}>
+                <div className="space-y-3 pl-4 border-l-2 border-black/10">
+                  <button
+                    onClick={() => handleNavigation("/collection/signature")}
+                    className="text-gray-700 font-jost text-lg sm:text-xl md:text-2xl font-normal leading-normal hover:text-black hover:opacity-70 transition-all duration-200 hover:translate-x-2 block text-left"
+                  >
+                    Signature Collection
+                  </button>
+                  <button
+                    onClick={() => handleNavigation("/collection/bridal")}
+                    className="text-gray-700 font-jost text-lg sm:text-xl md:text-2xl font-normal leading-normal hover:text-black hover:opacity-70 transition-all duration-200 hover:translate-x-2 block text-left"
+                  >
+                    Bridal Couture
+                  </button>
+                  <button
+                    onClick={() => handleNavigation("/collection/contemporary")}
+                    className="text-gray-700 font-jost text-lg sm:text-xl md:text-2xl font-normal leading-normal hover:text-black hover:opacity-70 transition-all duration-200 hover:translate-x-2 block text-left"
+                  >
+                    Contemporary Drapes
+                  </button>
+                  <button
+                    onClick={() => handleNavigation("/collection/luxury")}
+                    className="text-gray-700 font-jost text-lg sm:text-xl md:text-2xl font-normal leading-normal hover:text-black hover:opacity-70 transition-all duration-200 hover:translate-x-2 block text-left"
+                  >
+                    Luxury Fusion Lounge
+                  </button>
+                  <div className="border-t border-gray-200 my-3"></div>
+                  <button
+                    onClick={() => handleNavigation("/collection")}
+                    className="text-gray-600 font-jost text-base sm:text-lg md:text-xl font-medium leading-normal hover:text-black hover:opacity-70 transition-all duration-200 hover:translate-x-2 block text-left"
+                  >
+                    VIEW ALL
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {/* About Us */}
+            {/* About */}
             <div className="group">
-              <Link
-                to="/about"
-                onClick={onClose}
-                className="text-black font-jost text-xl sm:text-2xl md:text-3xl font-normal leading-normal uppercase hover:opacity-70 transition-opacity block"
+              <button
+                onClick={() => handleNavigation("/about")}
+                className="text-black font-jost text-xl sm:text-2xl md:text-3xl font-normal leading-normal uppercase hover:opacity-70 transition-all duration-200 hover:translate-x-2 block text-left"
               >
-                about us
-              </Link>
+                About
+              </button>
             </div>
 
-            {/* Contact Us */}
+            {/* Contact */}
             <div className="group">
-              <Link
-                to="/contact"
-                onClick={onClose}
-                className="text-black font-jost text-xl sm:text-2xl md:text-3xl font-normal leading-normal uppercase hover:opacity-70 transition-opacity block"
+              <button
+                onClick={() => handleNavigation("/contact")}
+                className="text-black font-jost text-xl sm:text-2xl md:text-3xl font-normal leading-normal uppercase hover:opacity-70 transition-all duration-200 hover:translate-x-2 block text-left"
               >
-                contact us
-              </Link>
+                Contact
+              </button>
             </div>
           </nav>
         </div>
