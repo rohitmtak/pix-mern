@@ -246,9 +246,9 @@ const Footer = () => {
 
                   {/* Social Icons */}
                   <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-300 mb-2">
+                    {/* <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-300 mb-2">
                       Follow Us
-                    </h4>
+                    </h4> */}
                     <div className="flex space-x-2">
                       {socialIcons.map((social, index) => (
                         <SocialIcon key={index} path={social.path} name={social.name} />

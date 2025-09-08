@@ -6,6 +6,7 @@ import HeroSection from "@/components/HeroSection";
 import StoreInfo from "@/components/StoreInfo";
 import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
+import CloudinaryImage from "@/components/ui/CloudinaryImage";
 
 const Index = () => {
   const { loadUserCartFromBackend } = useCart();
@@ -34,16 +35,24 @@ const Index = () => {
           {/* Left Image */}
           <div className="w-full md:w-1/2 flex items-center justify-center relative group h-1/2 md:h-full">
             {/* First image (default) */}
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/06d622ea0c5fff4f600cdb92f073df475fb85d8b?width=1922"
+            <CloudinaryImage
+              cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757309457/signature-collection-main_m0xi89.webp"
               alt="Signature Collection"
               className="w-full h-full object-cover transition-opacity custom-fade ease-in-out group-hover:opacity-0"
+              quality="auto"
+              format="auto"
+              crop="scale"
+              loading="eager"
             />
             {/* Second image (on hover) */}
-            <img
-              src="/images/img9.png"
+            <CloudinaryImage
+              cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757273498/signature-collection-hover_yxltpy.webp"
               alt="Signature Collection Hover"
               className="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity custom-fade ease-in-out group-hover:opacity-100"
+              quality="auto"
+              format="auto"
+              crop="scale"
+              loading="lazy"
             />
           </div>
 
@@ -121,17 +130,20 @@ const Index = () => {
 
       {/* Bridal Couture Section */}
       <Link to="/collection/bridal" className="block">
-        <section className="relative w-full h-screen transform transition-all duration-700 ease-out hover:scale-[1.02]">
+        <section className="relative w-full h-screen">
           {/* Mobile Section Separator */}
           <div className="md:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div>
           
-          <div className="relative w-full h-full flex items-center justify-center">
-            <img
-              src="/images/img7.png"
-              alt="Bridal Couture Collection"
-              className="w-full h-full object-cover custom-object-pos"
-            />
-            
+          <div className="relative w-full h-screen bg-black flex items-center justify-center">
+          <CloudinaryImage
+            cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/c_fill,w_1920,h_1080/v1757273492/bridal-couture-main_whvkli.webp"
+            alt="Bridal Couture Collection"
+            className="w-full h-full object-cover"
+            quality="auto"
+            format="auto"
+            loading="lazy"
+          />
+ 
             {/* Enhanced Mobile Text Container */}
             <div className="absolute bottom-8 md:bottom-16 left-0 right-0 text-center w-fit mx-auto px-4">
               {/* Mobile-only decorative element */}
@@ -168,7 +180,7 @@ const Index = () => {
 
       {/* Contemporary Drapes Section */}
       <Link to="/collection/contemporary" className="block">
-        <section className="relative w-full h-screen flex flex-col md:flex-row transform transition-all duration-700 ease-out hover:scale-[1.01]">
+        <section className="relative w-full h-screen flex flex-col md:flex-row">
           {/* Mobile Section Separator */}
           <div className="md:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div>
           
@@ -247,16 +259,24 @@ const Index = () => {
           {/* Right Image */}
           <div className="w-full md:w-1/2 flex items-center justify-center relative group h-1/2 md:h-full order-1 md:order-2">
             {/* First image (default) */}
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/05207931248df06094a5acff4d84e14cf9df5cd5?width=1922"
+            <CloudinaryImage
+              cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757273495/contemporary-drapes-main_weoz2z.webp"
               alt="Contemporary Drapes"
               className="w-full h-full object-cover object-top transition-opacity custom-fade ease-in-out group-hover:opacity-0"
+              quality="auto"
+              format="auto"
+              crop="scale"
+              loading="lazy"
             />
             {/* Second image (on hover) */}
-            <img
-              src="/images/img1.webp"
+            <CloudinaryImage
+              cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757273493/contemporary-drapes-hover_pmd6uf.webp"
               alt="Contemporary Drapes Hover"
               className="w-full h-full object-cover object-top absolute inset-0 opacity-0 transition-opacity custom-fade ease-in-out group-hover:opacity-100"
+              quality="auto"
+              format="auto"
+              crop="scale"
+              loading="lazy"
             />
           </div>
         </section>
@@ -266,20 +286,22 @@ const Index = () => {
       <div className="md:hidden h-6 bg-gradient-to-b from-amber-50 via-white to-white"></div>
 
       {/* Luxury Fusion Lounge Section */}
-      <Link to="/collection/luxury" className="block">
-        <section className="relative w-full h-screen">
+      <Link to="/collection/luxury" className="block group">
+        <section className="relative w-full h-screen overflow-hidden">
           <div className="relative w-full h-full flex items-center justify-center">
-            <img
-              src="/images/img8.png"
-              alt="Luxury Fusion Lounge"
-              className="w-full h-full object-cover custom-object-pos"
-            />
+          <CloudinaryImage
+            cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/c_fill,w_1920,h_1080/v1757273496/luxury-fusion-main_ojwtwi.webp"
+            alt="Luxury Fusion Lounge"
+            className="w-full h-full object-cover"
+            quality="auto"
+            format="auto"
+            loading="lazy"
+          />
+
             <div className="absolute bottom-8 md:bottom-16 left-0 right-0 text-center w-fit mx-auto px-4">
               <h2
                 className="font-playfair text-3xl md:text-8xl text-white font-normal uppercase font-jost cursor-pointer hover:opacity-80 transition-opacity duration-300"
                 style={{
-                  // fontFamily:
-                  //   "Helvetica, -apple-system, Roboto, Helvetica, sans-serif",
                   fontSize: "clamp(2rem, 8vw, 120px)",
                   lineHeight: "normal",
                 }}

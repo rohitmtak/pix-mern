@@ -9,7 +9,10 @@ const HeroSection = () => {
         playsInline
         preload="auto"
       >
-        <source src="/videos/intro2.webm" type="video/webm" />
+        <source 
+          src="https://res.cloudinary.com/djhnxxllr/video/upload/v1757268595/hero-video_n2jjtq.webm" 
+          type="video/webm" 
+        />
         Your browser does not support the video tag.
       </video>
       

@@ -1,3 +1,5 @@
+import CloudinaryImage from "@/components/ui/CloudinaryImage";
+
 const StoreInfo = () => {
   return (
     <section className="relative w-full">
@@ -17,10 +19,14 @@ const StoreInfo = () => {
 
       {/* Store Image with Address Overlay */}
       <div className="relative w-full h-screen">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/3eedf065cf24f597f94f56c610073d7213656c5b?width=3840"
+        <CloudinaryImage
+          cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757270290/store-image_tqpac8.jpg"
           alt="Our Store"
           className="w-full h-full object-cover"
+          quality="auto"
+          format="auto"
+          crop="scale"
+          loading="lazy"
         />
 
         {/* Address Overlay */}
