@@ -60,35 +60,6 @@ const Index = () => {
             <div className="absolute inset-0 overflow-hidden">
               {/* Elegant background pattern */}
               <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 via-transparent to-gray-100/30"></div>
-              
-              {/* Mobile luxury elements */}
-              <div className="md:hidden">
-                {/* Gold accent corners */}
-                <div className="absolute top-6 left-6 w-12 h-12 border-l-2 border-t-2 border-amber-300/40"></div>
-                <div className="absolute top-6 right-6 w-12 h-12 border-r-2 border-t-2 border-amber-300/40"></div>
-                <div className="absolute bottom-6 left-6 w-12 h-12 border-l-2 border-b-2 border-amber-300/40"></div>
-                <div className="absolute bottom-6 right-6 w-12 h-12 border-r-2 border-b-2 border-amber-300/40"></div>
-              </div>
-              
-              {/* Desktop luxury elements */}
-              <div className="hidden md:block">
-                {/* Sophisticated gold corner frames */}
-                <div className="absolute top-12 left-12 w-16 h-16 border-l-2 border-t-2 border-amber-300/35"></div>
-                <div className="absolute top-12 right-12 w-16 h-16 border-r-2 border-t-2 border-amber-300/35"></div>
-                <div className="absolute bottom-12 left-12 w-16 h-16 border-l-2 border-b-2 border-amber-300/35"></div>
-                <div className="absolute bottom-12 right-12 w-16 h-16 border-r-2 border-b-2 border-amber-300/35"></div>
-                
-                {/* Elegant side patterns */}
-                <div className="absolute top-1/4 left-8 w-12 h-px bg-gradient-to-r from-transparent via-amber-300/25 to-transparent"></div>
-                <div className="absolute top-1/4 right-8 w-12 h-px bg-gradient-to-r from-transparent via-amber-300/25 to-transparent"></div>
-                <div className="absolute bottom-1/4 left-8 w-12 h-px bg-gradient-to-r from-transparent via-amber-300/25 to-transparent"></div>
-                <div className="absolute bottom-1/4 right-8 w-12 h-px bg-gradient-to-r from-transparent via-amber-300/25 to-transparent"></div>
-                
-                
-                {/* Vertical accent lines */}
-                <div className="absolute top-1/3 left-6 w-px h-24 bg-gradient-to-b from-transparent via-amber-300/20 to-transparent"></div>
-                <div className="absolute top-1/3 right-6 w-px h-24 bg-gradient-to-b from-transparent via-amber-300/20 to-transparent"></div>
-              </div>
             </div>
             
             <div className="relative z-10">
@@ -169,41 +140,7 @@ const Index = () => {
             {/* Luxury Fashion Decorative Elements */}
             <div className="absolute inset-0 overflow-hidden">
               {/* Elegant background pattern */}
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-50/40 via-transparent to-gray-50/20"></div>
-              
-              {/* Mobile luxury elements */}
-              <div className="md:hidden">
-                {/* Amber accent corners */}
-                <div className="absolute top-6 left-6 w-12 h-12 border-l-2 border-t-2 border-amber-300/40"></div>
-                <div className="absolute top-6 right-6 w-12 h-12 border-r-2 border-t-2 border-amber-300/40"></div>
-                <div className="absolute bottom-6 left-6 w-12 h-12 border-l-2 border-b-2 border-amber-300/40"></div>
-                <div className="absolute bottom-6 right-6 w-12 h-12 border-r-2 border-b-2 border-amber-300/40"></div>
-                
-                
-                {/* Side accent lines */}
-                <div className="absolute top-1/3 left-4 w-8 h-px bg-gradient-to-r from-transparent via-amber-300/30 to-transparent"></div>
-                <div className="absolute top-1/3 right-4 w-8 h-px bg-gradient-to-r from-transparent via-amber-300/30 to-transparent"></div>
-              </div>
-              
-              {/* Desktop luxury elements */}
-              <div className="hidden md:block">
-                {/* Sophisticated gold corner frames */}
-                <div className="absolute top-12 left-12 w-16 h-16 border-l-2 border-t-2 border-amber-300/35"></div>
-                <div className="absolute top-12 right-12 w-16 h-16 border-r-2 border-t-2 border-amber-300/35"></div>
-                <div className="absolute bottom-12 left-12 w-16 h-16 border-l-2 border-b-2 border-amber-300/35"></div>
-                <div className="absolute bottom-12 right-12 w-16 h-16 border-r-2 border-b-2 border-amber-300/35"></div>
-                
-                {/* Elegant side patterns */}
-                <div className="absolute top-1/4 left-8 w-12 h-px bg-gradient-to-r from-transparent via-amber-300/25 to-transparent"></div>
-                <div className="absolute top-1/4 right-8 w-12 h-px bg-gradient-to-r from-transparent via-amber-300/25 to-transparent"></div>
-                <div className="absolute bottom-1/4 left-8 w-12 h-px bg-gradient-to-r from-transparent via-amber-300/25 to-transparent"></div>
-                <div className="absolute bottom-1/4 right-8 w-12 h-px bg-gradient-to-r from-transparent via-amber-300/25 to-transparent"></div>
-                
-                
-                {/* Vertical accent lines */}
-                <div className="absolute top-1/3 left-6 w-px h-24 bg-gradient-to-b from-transparent via-amber-300/20 to-transparent"></div>
-                <div className="absolute top-1/3 right-6 w-px h-24 bg-gradient-to-b from-transparent via-amber-300/20 to-transparent"></div>
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-50/40 via-transparent to-gray-50/20"></div>   
             </div>
             
             <div className="relative z-10">
@@ -228,7 +165,7 @@ const Index = () => {
           <div className="w-full md:w-1/2 flex items-center justify-center relative group h-1/2 md:h-full order-1 md:order-2">
             {/* First image (default) */}
             <CloudinaryImage
-              cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757273495/contemporary-drapes-main_weoz2z.webp"
+              cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757410412/sec4-img3_qnh5ns.png"
               alt="Contemporary Drapes"
               className="w-full h-full object-cover object-top transition-opacity custom-fade ease-in-out group-hover:opacity-0"
               quality="auto"
@@ -238,7 +175,7 @@ const Index = () => {
             />
             {/* Second image (on hover) */}
             <CloudinaryImage
-              cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757273493/contemporary-drapes-hover_pmd6uf.webp"
+              cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757411073/sec4-img4_gj1qge.webp"
               alt="Contemporary Drapes Hover"
               className="w-full h-full object-cover object-top absolute inset-0 opacity-0 transition-opacity custom-fade ease-in-out group-hover:opacity-100"
               quality="auto"
@@ -258,7 +195,7 @@ const Index = () => {
         <section className="relative w-full h-[60vh] md:h-screen overflow-hidden">
           <div className="relative w-full h-full flex items-center justify-center">
           <CloudinaryImage
-            cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/c_fill,w_1920,h_1080/v1757273496/luxury-fusion-main_ojwtwi.webp"
+            cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757411708/img8.1_cbwkx6.jpg"
             alt="Luxury Fusion Lounge"
             imgClassName="object-[center_top] md:object-center"
             className="w-full h-full"

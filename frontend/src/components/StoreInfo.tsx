@@ -6,10 +6,8 @@ const StoreInfo = () => {
       {/* Store Title */}
       <div className="text-center py-6 md:py-10 px-4">
         <h2
-          className="text-2xl md:text-4xl font-bold uppercase text-black font-jost"
+          className="text-2xl md:text-4xl uppercase text-black font-jost"
           style={{
-            // fontFamily:
-            //   "Helvetica, -apple-system, Roboto, Helvetica, sans-serif",
             lineHeight: "clamp(2rem, 6vw, 96px)",
           }}
         >
@@ -20,7 +18,7 @@ const StoreInfo = () => {
       {/* Store Image with Address Overlay */}
       <div className="relative w-full h-[60vh] md:h-screen">
         <CloudinaryImage
-          cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757270290/store-image_tqpac8.jpg"
+          cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757412649/storefront_fzas9n.png"
           alt="Our Store"
           className="w-full h-full object-cover"
           quality="auto"
