@@ -94,7 +94,7 @@ const Index = () => {
           <CloudinaryImage
             cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/c_fill,w_1920,h_1080/v1757273492/bridal-couture-main_whvkli.webp"
             alt="Bridal Couture Collection"
-            imgClassName="object-[center_top] md:object-center"
+            imgClassName="object-[center_top] custom-object-pos"
             className="w-full h-full"
             quality="auto"
             format="auto"
@@ -197,7 +197,7 @@ const Index = () => {
           <CloudinaryImage
             cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757411708/img8.1_cbwkx6.jpg"
             alt="Luxury Fusion Lounge"
-            imgClassName="object-[center_top] md:object-center"
+            imgClassName="object-[center_top] custom-object-pos"
             className="w-full h-full"
             quality="auto"
             format="auto"

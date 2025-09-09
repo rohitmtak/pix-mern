@@ -120,11 +120,18 @@
 }
 
 .custom-object-pos {
-  object-position: bottom;
-  transition: object-position 3s cubic-bezier(0.4, 0, 0.2, 1);
+  object-position: center top;
 }
-.custom-object-pos:hover {
-  object-position: 50% 20%;
+
+@media (min-width: 768px) {
+  .custom-object-pos {
+    object-position: bottom;
+    transition: object-position 3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .custom-object-pos:hover {
+    object-position: 50% 20%;
+  }
 }
 
 .custom-fade {
