@@ -115,11 +115,11 @@ const Index = () => {
 
       {/* Bridal Couture Section */}
       <Link to="/collection/bridal" className="block">
-        <section className="relative w-full h-screen">
+        <section className="relative w-full h-[60vh] md:h-screen">
           {/* Mobile Section Separator */}
           {/* <div className="md:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div> */}
           
-          <div className="relative w-full h-screen bg-black flex items-center justify-center">
+          <div className="relative w-full h-full bg-black flex items-center justify-center">
           <CloudinaryImage
             cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/c_fill,w_1920,h_1080/v1757273492/bridal-couture-main_whvkli.webp"
             alt="Bridal Couture Collection"
@@ -255,7 +255,7 @@ const Index = () => {
 
       {/* Luxury Fusion Lounge Section */}
       <Link to="/collection/luxury" className="block group">
-        <section className="relative w-full h-screen overflow-hidden">
+        <section className="relative w-full h-[60vh] md:h-screen overflow-hidden">
           <div className="relative w-full h-full flex items-center justify-center">
           <CloudinaryImage
             cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/c_fill,w_1920,h_1080/v1757273496/luxury-fusion-main_ojwtwi.webp"

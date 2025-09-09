@@ -22,21 +22,21 @@ const AboutPage = () => {
     <div className="min-h-screen bg-white">
       <Header />
       
-      <main className="pt-36 px-16 py-12">
+      <main className="pt-36 px-4 sm:px-8 lg:px-16 py-8 sm:py-12">
         <div className="max-w-screen-2xl mx-auto">
           {/* First Section - About Us Hero */}
-          <section className="mb-20">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <section className="mb-12 sm:mb-16 lg:mb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center">
               {/* Text Content */}
-              <div className="space-y-6 max-w-lg">
-                <h1 className="text-5xl font-serif text-black leading-tight">
+              <div className="space-y-4 sm:space-y-6 max-w-lg">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-black leading-tight">
                   ABOUT US
                 </h1>
-                <div className="space-y-4">
-                  <p className="text-lg text-gray-800 leading-relaxed">
+                <div className="space-y-3 sm:space-y-4">
+                  <p className="text-base sm:text-lg text-gray-800 leading-relaxed">
                     PIX is the iconic brand born from one woman's extraordinary vision to revive contemporary fashion with timeless elegance. Founded with a deep passion for design and cultural appreciation, the brand helps bring sophisticated style to global prominence.
                   </p>
-                  <p className="text-lg text-gray-800 leading-relaxed">
+                  <p className="text-base sm:text-lg text-gray-800 leading-relaxed">
                     With a deep respect for craftsmanship and a passion for innovation, PIX creates a bridge between traditional elegance and modern aesthetics, introducing rich design traditions to the world and empowering generations of fashion enthusiasts in the process.
                   </p>
                 </div>
@@ -47,16 +47,16 @@ const AboutPage = () => {
                 <img 
                   src="https://res.cloudinary.com/djhnxxllr/image/upload/v1757334101/Designer-Portrait_qivuar.jpg" 
                   alt="Founder portrait" 
-                  className="w-full h-[600px] object-cover object-center"
+                  className="w-full h-[300px] sm:h-[400px] lg:h-[600px] object-cover object-center"
                 />
               </div>
             </div>
           </section>
 
           {/* Quote Section */}
-          <section className="mb-20">
-            <div className="text-center max-w-4xl mx-auto py-16">
-              <blockquote className="text-3xl font-serif text-black leading-relaxed mb-6">
+          <section className="mb-12 sm:mb-16 lg:mb-20">
+            <div className="text-center max-w-4xl mx-auto py-8 sm:py-12 lg:py-16">
+              <blockquote className="text-xl sm:text-2xl lg:text-3xl font-serif text-black leading-relaxed mb-6 px-4">
                 "Indo-contemporary luxury is not just fashion, it's a cultural narrative."
               </blockquote>
               {/* <cite className="text-lg font-sans font-medium text-black uppercase tracking-wide">
@@ -66,27 +66,27 @@ const AboutPage = () => {
           </section>
 
           {/* The Craft Section */}
-          <section className="mb-20">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <section className="mb-12 sm:mb-16 lg:mb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center">
               {/* Image */}
               <div className="relative order-1 lg:order-1">
                 <img 
                   src="https://res.cloudinary.com/djhnxxllr/image/upload/v1757330212/fashionable-clothes-london-boutique-store_kzbbsy.jpg" 
                   alt="Craftsmanship in action" 
-                  className="w-full h-[600px] object-cover object-center"
+                  className="w-full h-[300px] sm:h-[400px] lg:h-[600px] object-cover object-center"
                 />
               </div>
               
               {/* Text Content */}
-              <div className="space-y-6 order-2 lg:order-2 max-w-lg">
-                <h2 className="text-5xl font-serif text-black leading-tight">
+              <div className="space-y-4 sm:space-y-6 order-2 lg:order-2 max-w-lg">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-black leading-tight">
                   THE CRAFT
                 </h2>
-                <div className="space-y-4">
-                  <p className="text-lg text-gray-800 leading-relaxed">
+                <div className="space-y-3 sm:space-y-4">
+                  <p className="text-base sm:text-lg text-gray-800 leading-relaxed">
                     PIX is dedicated to craftsmanship, standing as a leading producer of handcrafted contemporary fashion. Our vertically integrated process encompasses design conception, fabric selection, pattern creation, and meticulous finishing.
                   </p>
-                  <p className="text-lg text-gray-800 leading-relaxed">
+                  <p className="text-base sm:text-lg text-gray-800 leading-relaxed">
                     Every piece reflects uncompromising quality, mastery, passion, and precision. Our artisans preserve and evolve a storied tradition, ensuring each garment tells a story of exceptional craftsmanship and contemporary elegance.
                   </p>
                 </div>
@@ -95,33 +95,33 @@ const AboutPage = () => {
           </section>
 
           {/* Banner Image Section */}
-          <section className="mb-20">
+          <section className="mb-12 sm:mb-16 lg:mb-20">
             <div className="relative">
               <img 
                 src="https://res.cloudinary.com/djhnxxllr/image/upload/v1757327796/bridal-couture-main_t6qdn0.jpg" 
                 alt="PIX brand story" 
-                className="w-full h-screen object-cover object-center"
+                className="w-full h-[400px] sm:h-[500px] lg:h-screen object-cover object-center"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-end justify-center pb-16">
-                <div className="text-center text-white">
-                  <h3 className="text-5xl font-serif mb-4">ELEGANCE REDEFINED</h3>
-                  <p className="text-xl font-sans">Where Tradition Meets Contemporary</p>
+              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-end justify-center pb-8 sm:pb-12 lg:pb-16">
+                <div className="text-center text-white px-4">
+                  <h3 className="text-2xl sm:text-3xl lg:text-5xl font-serif mb-2 sm:mb-4">ELEGANCE REDEFINED</h3>
+                  <p className="text-base sm:text-lg lg:text-xl font-sans">Where Tradition Meets Contemporary</p>
                 </div>
               </div>
             </div>
           </section>
 
           {/* Border Separator */}
-          <section className="mb-20">
+          <section className="mb-12 sm:mb-16 lg:mb-20">
             <div className="w-full h-px bg-gray-300"></div>
           </section>
 
           {/* Instagram Carousel Section */}
-          <section className="mb-20 -mx-16 overflow-hidden">
+          <section className="mb-12 sm:mb-16 lg:mb-20 -mx-4 sm:-mx-8 lg:-mx-16 overflow-hidden">
             {/* Instagram Header */}
-            <div className="px-16 mb-14">
+            <div className="px-4 sm:px-8 lg:px-16 mb-8 sm:mb-12 lg:mb-14">
               <div className="flex justify-center">
-                <h3 className="text-2xl font-serif text-gray-800">Follow Our Journey on Instagram</h3>
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-serif text-gray-800 text-center">Follow Our Journey on Instagram</h3>
               </div>
             </div>
 
@@ -156,7 +156,7 @@ const AboutPage = () => {
                     <img
                       src={image}
                       alt={`Instagram post ${index + 1}`}
-                      className="w-full h-[436px] object-cover transition-all duration-300 group-hover:brightness-75"
+                      className="w-full h-[250px] sm:h-[350px] lg:h-[436px] object-cover transition-all duration-300 group-hover:brightness-75"
                     />
                     {/* Instagram Overlay */}
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">

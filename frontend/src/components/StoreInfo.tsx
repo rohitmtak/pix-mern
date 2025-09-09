@@ -18,7 +18,7 @@ const StoreInfo = () => {
       </div>
 
       {/* Store Image with Address Overlay */}
-      <div className="relative w-full h-screen">
+      <div className="relative w-full h-[60vh] md:h-screen">
         <CloudinaryImage
           cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757270290/store-image_tqpac8.jpg"
           alt="Our Store"
