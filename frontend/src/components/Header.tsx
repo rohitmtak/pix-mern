@@ -369,7 +369,7 @@ const Header = () => {
 
                           {/* Second Paragraph */}
                           <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-200">
-                            <p className="text-gray-600 leading-relaxed mb-8">
+                            <p className="text-gray-700 leading-relaxed mb-8 text-lg">
                               Our collections feature signature pieces, bridal couture, contemporary drapes, and luxury fusion lounge wear, each designed to tell a unique story and celebrate the rich heritage of Indian fashion.
                             </p>
                           </div>

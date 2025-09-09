@@ -56,7 +56,7 @@ const AboutPage = () => {
           {/* Quote Section */}
           <section className="mb-20">
             <div className="text-center max-w-4xl mx-auto py-16">
-              <blockquote className="text-4xl font-serif text-black leading-relaxed mb-6">
+              <blockquote className="text-3xl font-serif text-black leading-relaxed mb-6">
                 "Indo-contemporary luxury is not just fashion, it's a cultural narrative."
               </blockquote>
               {/* <cite className="text-lg font-sans font-medium text-black uppercase tracking-wide">

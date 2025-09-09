@@ -4,7 +4,9 @@ import { cn } from '@/lib/utils';
 interface CloudinaryImageProps {
   cloudinaryUrl: string; // Use full Cloudinary URL instead of publicId
   alt: string;
-  className?: string;
+  className?: string; // Backwards-compatible: applied to both container and img if specific classes not provided
+  containerClassName?: string; // New: classes for the outer container wrapper
+  imgClassName?: string; // New: classes for the actual <img>
   width?: number | string;
   height?: number | string;
   quality?: 'auto' | 'best' | 'good' | 'eco' | 'low' | number;
@@ -26,6 +28,8 @@ const CloudinaryImage: React.FC<CloudinaryImageProps> = ({
   cloudinaryUrl,
   alt,
   className,
+  containerClassName,
+  imgClassName,
   width,
   height,
   quality = 'auto',
@@ -106,7 +110,7 @@ const CloudinaryImage: React.FC<CloudinaryImageProps> = ({
       <div 
         className={cn(
           "bg-gray-200 flex items-center justify-center text-gray-500",
-          className
+          containerClassName || className
         )}
         style={{ width, height }}
       >
@@ -116,7 +120,7 @@ const CloudinaryImage: React.FC<CloudinaryImageProps> = ({
   }
 
   return (
-    <div className={cn("relative overflow-hidden", className)}>
+    <div className={cn("relative overflow-hidden", containerClassName || className)}>
       {/* Placeholder */}
       {!isLoaded && (
         <img
@@ -134,8 +138,11 @@ const CloudinaryImage: React.FC<CloudinaryImageProps> = ({
         sizes={sizes || "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"}
         alt={alt}
         className={cn(
-          "transition-opacity duration-300",
-          isLoaded ? "opacity-100" : "opacity-0"
+          // Ensure the image can fill its container by default
+          "w-full h-full object-cover transition-opacity duration-300",
+          isLoaded ? "opacity-100" : "opacity-0",
+          // Allow caller to override image-specific classes
+          imgClassName || className
         )}
         loading={loading}
         onLoad={handleLoad}

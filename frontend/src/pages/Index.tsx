@@ -23,8 +23,6 @@ const Index = () => {
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Mobile Section Spacer */}
-      <div className="md:hidden h-6 bg-gradient-to-b from-white via-gray-50 to-white"></div>
 
       {/* Signature Collection Section */}
       <Link to="/collection/signature" className="block">
@@ -70,11 +68,6 @@ const Index = () => {
                 <div className="absolute top-6 right-6 w-12 h-12 border-r-2 border-t-2 border-amber-300/40"></div>
                 <div className="absolute bottom-6 left-6 w-12 h-12 border-l-2 border-b-2 border-amber-300/40"></div>
                 <div className="absolute bottom-6 right-6 w-12 h-12 border-r-2 border-b-2 border-amber-300/40"></div>
-                
-                
-                {/* Side accent lines */}
-                <div className="absolute top-1/3 left-4 w-8 h-px bg-gradient-to-r from-transparent via-amber-300/30 to-transparent"></div>
-                <div className="absolute top-1/3 right-4 w-8 h-px bg-gradient-to-r from-transparent via-amber-300/30 to-transparent"></div>
               </div>
               
               {/* Desktop luxury elements */}
@@ -101,14 +94,6 @@ const Index = () => {
             <div className="relative z-10">
               <div
                 className="text-4xl md:text-9xl font-medium text-center md:text-right leading-tight md:leading-none font-playfair px-4 md:px-0 text-black"
-                // style={{
-                //   backgroundImage: "url('/images/img1.webp')",
-                //   backgroundSize: "cover",
-                //   backgroundPosition: "center",
-                //   backgroundClip: "text",
-                //   WebkitBackgroundClip: "text",
-                //   WebkitTextFillColor: "transparent",
-                // }}
               >
                 SIGN<br />ATURE<br />COLLEC<br />TION
               </div>
@@ -132,13 +117,14 @@ const Index = () => {
       <Link to="/collection/bridal" className="block">
         <section className="relative w-full h-screen">
           {/* Mobile Section Separator */}
-          <div className="md:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div>
+          {/* <div className="md:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div> */}
           
           <div className="relative w-full h-screen bg-black flex items-center justify-center">
           <CloudinaryImage
             cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/c_fill,w_1920,h_1080/v1757273492/bridal-couture-main_whvkli.webp"
             alt="Bridal Couture Collection"
-            className="w-full h-full object-cover"
+            imgClassName="object-[center_top] md:object-center"
+            className="w-full h-full"
             quality="auto"
             format="auto"
             loading="lazy"
@@ -147,9 +133,6 @@ const Index = () => {
             {/* Enhanced Mobile Text Container */}
             <div className="absolute bottom-8 md:bottom-16 left-0 right-0 text-center w-fit mx-auto px-4">
               {/* Mobile-only decorative element */}
-              <div className="md:hidden mb-4 flex justify-center">
-                <div className="w-16 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent"></div>
-              </div>
               
               <h2
                 className="font-playfair text-3xl md:text-8xl text-white font-normal uppercase font-jost cursor-pointer hover:opacity-80 transition-opacity duration-300"
@@ -174,9 +157,6 @@ const Index = () => {
           <div className="md:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div>
         </section>
       </Link>
-
-      {/* Mobile Section Spacer */}
-      <div className="md:hidden h-6 bg-gradient-to-b from-amber-50 via-white to-amber-50"></div>
 
       {/* Contemporary Drapes Section */}
       <Link to="/collection/contemporary" className="block">
@@ -227,21 +207,9 @@ const Index = () => {
             </div>
             
             <div className="relative z-10">
-              {/* Mobile-only decorative element */}
-              <div className="md:hidden mb-4 flex justify-center">
-                <div className="w-16 h-px bg-gradient-to-r from-transparent via-amber-300/40 to-transparent"></div>
-              </div>
-              
+
               <div
                 className="text-4xl md:text-9xl font-medium text-center md:text-left leading-tight md:leading-none font-playfair px-4 md:px-0 text-black"
-                // style={{
-                //   backgroundImage: "url('/images/img9.png')",
-                //   backgroundSize: "cover",
-                //   backgroundPosition: "center",
-                //   backgroundClip: "text",
-                //   WebkitBackgroundClip: "text",
-                //   WebkitTextFillColor: "transparent",
-                // }}
               >
                 CON<br />TEMPO<br />RARY<br />DRAPES
               </div>
@@ -292,7 +260,8 @@ const Index = () => {
           <CloudinaryImage
             cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/c_fill,w_1920,h_1080/v1757273496/luxury-fusion-main_ojwtwi.webp"
             alt="Luxury Fusion Lounge"
-            className="w-full h-full object-cover"
+            imgClassName="object-[center_top] md:object-center"
+            className="w-full h-full"
             quality="auto"
             format="auto"
             loading="lazy"
