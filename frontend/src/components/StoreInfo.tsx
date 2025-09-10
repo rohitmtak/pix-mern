@@ -28,13 +28,11 @@ const StoreInfo = () => {
         />
 
         {/* Address Overlay */}
-        <div className="absolute bottom-8 md:bottom-16 left-1/2 transform -translate-x-1/2 text-center px-4">
+        <div className="absolute bottom-8 md:bottom-16 left-1/2 transform -translate-x-1/2 text-center px-2 md:px-4 w-[95%] md:w-auto">
           <div className="text-white">
             <p
-              className="text-sm md:text-xl font-normal font-jost leading-relaxed md:whitespace-nowrap"
+              className="text-sm md:text-xl font-normal font-jost leading-relaxed whitespace-nowrap overflow-hidden"
               style={{
-                // fontFamily:
-                //   "Helvetica, -apple-system, Roboto, Helvetica, sans-serif",
                 lineHeight: "clamp(1.5rem, 4vw, 50px)",
               }}
             >
@@ -42,7 +40,7 @@ const StoreInfo = () => {
               Road, Camp, Pune - 411001 Maharashtra, India
             </p>
             <p
-              className="text-sm md:text-xl font-normal mt-2 md:mt-0 mb-0 leading-none font-jost"
+              className="text-sm md:text-xl font-normal mt-2 md:mt-0 mb-0 leading-none font-jost whitespace-nowrap overflow-hidden"
               style={{
                 // fontFamily:
                 //   "Helvetica, -apple-system, Roboto, Helvetica, sans-serif",
