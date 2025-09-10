@@ -7,12 +7,16 @@ const HeroSection = () => {
         loop
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
       >
-        <source 
+        {/* <source 
           src="https://res.cloudinary.com/djhnxxllr/video/upload/v1757268595/hero-video_n2jjtq.webm" 
           type="video/webm" 
-        />
+        /> */}
+        <source 
+          src="https://res.cloudinary.com/djhnxxllr/video/upload/q_auto:low,f_webm,w_auto,c_limit,h_auto,dpr_auto/v1757268595/hero-video_n2jjtq.webm" 
+          type="video/webm" 
+/>
         Your browser does not support the video tag.
       </video>
       

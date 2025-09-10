@@ -122,7 +122,7 @@ const Footer = () => {
   );
 
   return (
-    <footer className="w-full bg-black pt-16 lg:pt-20 pb-12 px-8 md:px-16 font-jost">
+    <footer className="w-full bg-black pt-8 lg:pt-20 pb-12 px-8 md:px-16 font-jost">
       <div className="max-w-screen-2xl mx-auto text-white">
         {/* Mobile Layout */}
         <div className="block lg:hidden">
@@ -330,7 +330,7 @@ const Footer = () => {
 
         {/* Mobile Bottom Section */}
         <div className="block lg:hidden">
-          <div className="pt-8">
+          <div className="pt-4">
             <div className="text-center">
               {/* Social Icons */}
                 <div className="flex justify-center space-x-3 mb-6">

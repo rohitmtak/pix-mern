@@ -376,7 +376,7 @@ const ProductDetailPage = () => {
                         <path d="M608 128H32c-17.67 0-32 14.33-32 32v192c0 17.67 14.33 32 32 32h576c17.67 0 32-14.33 32-32V160c0-17.67-14.33-32-32-32zm0 224H32V160h80v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h64v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h64v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h64v56c0 4.42 3.58 8 8 8h16c4.42 0 8-3.58 8-8v-56h80v192z"></path>
                       </svg>
                       <span className="hidden sm:inline">Size Chart</span>
-                      <span className="sm:hidden">Chart</span>
+                      <span className="sm:hidden">Size Chart</span>
                     </button>
                   </div>
                   <div className="flex gap-2 sm:gap-3 flex-wrap">
@@ -628,7 +628,7 @@ const ProductDetailPage = () => {
           {/* Size Chart Panel */}
           <div
             className={cn(
-              "flex flex-col fixed top-0 right-0 w-full sm:min-w-[50%] sm:max-w-[90%] h-screen z-50 transition-transform duration-300 bg-white shadow-2xl",
+              "flex flex-col fixed top-0 right-0 w-full sm:min-w-[25%] sm:max-w-[50%] h-screen z-50 transition-transform duration-300 bg-white shadow-2xl",
               isSizeChartOpen ? "translate-x-0" : "translate-x-full"
             )}
           >
@@ -964,7 +964,7 @@ const ProductDetailPage = () => {
           {/* Custom Size Panel */}
           <div
             className={cn(
-              "flex flex-col fixed top-0 right-0 w-full sm:min-w-[50%] sm:max-w-[90%] h-screen z-50 transition-transform duration-300 bg-white shadow-2xl",
+              "flex flex-col fixed top-0 right-0 w-full sm:min-w-[25%] sm:max-w-[50%] h-screen z-50 transition-transform duration-300 bg-white shadow-2xl",
               isCustomSizeOpen ? "translate-x-0" : "translate-x-full"
             )}
           >
@@ -995,12 +995,12 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Video Content */}
-            <div className="px-4 sm:px-8 lg:px-16 flex-1 flex flex-col justify-center">
+            <div className="px-4 sm:px-6 lg:px-8 flex-1 flex flex-col justify-center">
               <div className="flex justify-center">
                 <iframe
                   src="https://www.youtube.com/embed/03b56tc7sAE?autoplay=1"
                   title="Size Guide Video"
-                  className="w-full aspect-video"
+                  className="w-full max-w-2xl aspect-video"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />

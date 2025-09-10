@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from "react";
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 // import CollectionSection from "@/components/CollectionSection";
-import StoreInfo from "@/components/StoreInfo";
 import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import CloudinaryImage from "@/components/ui/CloudinaryImage";
@@ -17,36 +16,53 @@ const Index = () => {
   }, []); // Empty dependency array to run only once
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
+      {/* ===========================================
+          HEADER SECTION
+          ===========================================
+          Mobile: Fixed header with navigation
+          Desktop: Same header with full navigation
+      */}
       <Header />
 
-      {/* Hero Section */}
+      {/* ===========================================
+          HERO SECTION
+          ===========================================
+          Mobile: Full-screen hero with responsive text
+          Desktop: Full-screen hero with larger text
+      */}
       <HeroSection />
 
-
-      {/* Signature Collection Section */}
+      {/* ===========================================
+          SIGNATURE COLLECTION SECTION
+          ===========================================
+          Layout: Split-screen (50% image, 50% text)
+          Mobile: 40vh height, smaller text (text-4xl)
+          Desktop: Full screen height, large text (text-9xl)
+          Features: Image hover effect, gradient separators
+      */}
       <Link to="/collection/signature" className="block">
-        <section className="relative w-full h-screen flex flex-col md:flex-row">
-          {/* Mobile Section Separator */}
-          <div className="md:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div>
+        <section className="relative w-full h-[40vh] md:h-screen flex flex-row">
+          {/* Mobile-only top separator line */}
+          <div className="md:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
           
-          {/* Left Image */}
-          <div className="w-full md:w-1/2 flex items-center justify-center relative group h-1/2 md:h-full">
-            {/* First image (default) */}
+          {/* LEFT SIDE - IMAGE CONTAINER */}
+          <div className="w-1/2 flex items-center justify-center relative group h-full">
+            {/* Default image - visible by default */}
             <CloudinaryImage
               cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757309457/signature-collection-main_m0xi89.webp"
               alt="Signature Collection"
-              className="w-full h-full object-cover transition-opacity custom-fade ease-in-out group-hover:opacity-0"
+              className="w-full h-full object-cover transition-opacity custom-fade custom-fade-mobile ease-in-out group-hover:opacity-0"
               quality="auto"
               format="auto"
               crop="scale"
               loading="eager"
             />
-            {/* Second image (on hover) */}
+
+            {/* Hover image - appears on hover */}
             <CloudinaryImage
               cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757273498/signature-collection-hover_yxltpy.webp"
               alt="Signature Collection Hover"
-              className="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity custom-fade ease-in-out group-hover:opacity-100"
+              className="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity custom-fade custom-fade-mobile ease-in-out group-hover:opacity-100"
               quality="auto"
               format="auto"
               crop="scale"
@@ -54,59 +70,59 @@ const Index = () => {
             />
           </div>
 
-          {/* Right Side with Text Overlay */}
-          <div className="w-full md:w-1/2 relative flex items-center justify-center h-1/2 md:h-full bg-gradient-to-br from-gray-50 via-white to-gray-100 md:bg-transparent">
-            {/* Luxury Fashion Decorative Elements */}
+          {/* RIGHT SIDE - TEXT CONTAINER */}
+          <div className="w-1/2 relative flex items-center justify-center h-full bg-gradient-to-br from-gray-50 via-white to-gray-100">
+            {/* Background decorative pattern */}
             <div className="absolute inset-0 overflow-hidden">
-              {/* Elegant background pattern */}
               <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 via-transparent to-gray-100/30"></div>
             </div>
-            
-            <div className="relative z-10">
-              <div
-                className="text-4xl md:text-9xl font-medium text-center md:text-right leading-tight md:leading-none font-playfair px-4 md:px-0 text-black"
-              >
-                SIGN<br />ATURE<br />COLLEC<br />TION
-              </div>
-              
-              {/* Mobile-only subtitle */}
-              <div className="md:hidden mt-4 text-center">
-                <p className="text-sm text-gray-600 font-jost uppercase tracking-wider">
-                  Timeless Elegance
-                </p>
-                <div className="w-12 h-px bg-amber-300/30 mx-auto mt-2"></div>
+
+            {/* Main text content */}
+            <div className="relative z-10 mt-8 md:mt-0">
+              <div className="text-4xl md:text-9xl font-medium text-right leading-tight md:leading-none font-playfair px-4 md:px-0 text-black">
+                SIGN
+                <br />
+                ATURE
+                <br />
+                COLL
+                <br />
+                ECTION
               </div>
             </div>
           </div>
           
-          {/* Mobile Section Separator */}
-          <div className="md:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div>
+          {/* Mobile-only bottom separator line */}
+          <div className="md:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
         </section>
       </Link>
 
-      {/* Bridal Couture Section */}
+      {/* ===========================================
+          BRIDAL COUTURE SECTION
+          ===========================================
+          Layout: Full-width image with text overlay
+          Mobile: 60vh height, smaller text (text-3xl)
+          Desktop: Full screen height, large text (text-8xl)
+          Features: Black background, centered text overlay
+      */}
       <Link to="/collection/bridal" className="block">
         <section className="relative w-full h-[60vh] md:h-screen">
-          {/* Mobile Section Separator */}
-          {/* <div className="md:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div> */}
-          
+          {/* Main image container */}
           <div className="relative w-full h-full bg-black flex items-center justify-center">
-          <CloudinaryImage
-            cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757414519/img7.1_fgqnvb.jpg"
-            alt="Bridal Couture Collection"
-            imgClassName="object-[center_top] custom-object-pos"
-            className="w-full h-full"
-            quality="auto"
-            format="auto"
-            loading="lazy"
-          />
- 
-            {/* Enhanced Mobile Text Container */}
+            {/* Background image */}
+            <CloudinaryImage
+              cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757414519/img7.1_fgqnvb.jpg"
+              alt="Bridal Couture Collection"
+              imgClassName="object-[center_top] custom-object-pos"
+              className="w-full h-full"
+              quality="auto"
+              format="auto"
+              loading="lazy"
+            />
+
+            {/* Text overlay positioned at bottom */}
             <div className="absolute bottom-8 md:bottom-16 left-0 right-0 text-center w-fit mx-auto px-4">
-              {/* Mobile-only decorative element */}
-              
               <h2
-                className="font-playfair text-3xl md:text-8xl text-white font-normal uppercase font-jost cursor-pointer hover:opacity-80 transition-opacity duration-300"
+                className="font-playfair text-3xl md:text-8xl text-white font-normal uppercase font-jost cursor-pointer"
                 style={{
                   fontSize: "clamp(2rem, 8vw, 120px)",
                   lineHeight: "normal",
@@ -114,99 +130,105 @@ const Index = () => {
               >
                 Bridal Couture
               </h2>
-              
-              {/* Mobile-only subtitle */}
-              <div className="md:hidden mt-3">
-                <p className="text-sm text-white/80 font-jost uppercase tracking-wider">
-                  Timeless Romance
-                </p>
-              </div>
+
+              {/* Mobile-only spacing */}
+              <div className="md:hidden mt-3"></div>
             </div>
           </div>
           
-          {/* Mobile Section Separator */}
-          <div className="md:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div>
+          {/* Mobile-only bottom separator line */}
+          <div className="md:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
         </section>
       </Link>
 
-      {/* Contemporary Drapes Section */}
+      {/* ===========================================
+          CONTEMPORARY DRAPES SECTION
+          ===========================================
+          Layout: Split-screen (50% text, 50% image)
+          Mobile: 40vh height, smaller text (text-4xl)
+          Desktop: Full screen height, large text (text-9xl)
+          Features: Text on left, image on right, hover effect
+      */}
       <Link to="/collection/contemporary" className="block">
-        <section className="relative w-full h-screen flex flex-col md:flex-row">
-          {/* Mobile Section Separator */}
-          <div className="md:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div>
-          
-          {/* Left Text Overlay */}
-          <div className="w-full md:w-1/2 relative flex items-center justify-center md:justify-start md:pl-32 h-1/2 md:h-full bg-gradient-to-br from-slate-50 via-white to-gray-50 md:bg-transparent order-2 md:order-1">
-            {/* Luxury Fashion Decorative Elements */}
+        <section className="relative w-full h-[40vh] md:h-screen flex flex-row">
+          {/* LEFT SIDE - TEXT CONTAINER */}
+          <div className="w-1/2 relative flex items-center justify-center md:justify-start md:pl-32 h-full bg-gradient-to-br from-slate-50 via-white to-gray-50">
+            {/* Background decorative pattern */}
             <div className="absolute inset-0 overflow-hidden">
-              {/* Elegant background pattern */}
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-50/40 via-transparent to-gray-50/20"></div>   
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-50/40 via-transparent to-gray-50/20"></div>
             </div>
-            
-            <div className="relative z-10">
 
-              <div
-                className="text-4xl md:text-9xl font-medium text-center md:text-left leading-tight md:leading-none font-playfair px-4 md:px-0 text-black"
-              >
-                CON<br />TEMPO<br />RARY<br />DRAPES
-              </div>
-              
-              {/* Enhanced Mobile-only subtitle */}
-              <div className="md:hidden mt-4 text-center">
-                <p className="text-sm text-gray-600 font-jost uppercase tracking-wider">
-                  Modern Sophistication
-                </p>
-                <div className="w-12 h-px bg-amber-300/40 mx-auto mt-2"></div>
+            {/* Main text content */}
+            <div className="relative z-10 mt-8 md:mt-0">
+              <div className="text-4xl md:text-9xl font-medium text-left leading-tight md:leading-none font-playfair px-4 md:px-0 text-black">
+                CON
+                <br />
+                TEMPO
+                <br />
+                RARY
+                <br />
+                DRAPES
               </div>
             </div>
           </div>
 
-          {/* Right Image */}
-          <div className="w-full md:w-1/2 flex items-center justify-center relative group h-1/2 md:h-full order-1 md:order-2">
-            {/* First image (default) */}
+          {/* RIGHT SIDE - IMAGE CONTAINER */}
+          <div className="w-1/2 flex items-center justify-center relative group h-full">
+            {/* Default image - visible by default */}
             <CloudinaryImage
               cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757410412/sec4-img3_qnh5ns.png"
               alt="Contemporary Drapes"
-              className="w-full h-full object-cover object-top transition-opacity custom-fade ease-in-out group-hover:opacity-0"
+              className="w-full h-full object-cover object-top transition-opacity custom-fade custom-fade-mobile ease-in-out group-hover:opacity-0"
               quality="auto"
               format="auto"
               crop="scale"
               loading="lazy"
             />
-            {/* Second image (on hover) */}
+            
+            {/* Hover image - appears on hover */}
             <CloudinaryImage
               cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757411073/sec4-img4_gj1qge.webp"
               alt="Contemporary Drapes Hover"
-              className="w-full h-full object-cover object-top absolute inset-0 opacity-0 transition-opacity custom-fade ease-in-out group-hover:opacity-100"
+              className="w-full h-full object-cover object-top absolute inset-0 opacity-0 transition-opacity custom-fade custom-fade-mobile ease-in-out group-hover:opacity-100"
               quality="auto"
               format="auto"
               crop="scale"
               loading="lazy"
             />
           </div>
+          
+          {/* Mobile-only bottom separator line */}
+          <div className="md:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
         </section>
       </Link>
 
-      {/* Mobile Section Spacer */}
-      <div className="md:hidden h-6 bg-gradient-to-b from-amber-50 via-white to-white"></div>
-
-      {/* Luxury Fusion Lounge Section */}
+      {/* ===========================================
+          LUXURY FUSION LOUNGE SECTION
+          ===========================================
+          Layout: Full-width image with text overlay
+          Mobile: 60vh height, smaller text (text-3xl)
+          Desktop: Full screen height, large text (text-8xl)
+          Features: Similar to Bridal section, centered text overlay
+      */}
       <Link to="/collection/luxury" className="block group">
         <section className="relative w-full h-[60vh] md:h-screen overflow-hidden">
+          {/* Main image container */}
           <div className="relative w-full h-full flex items-center justify-center">
-          <CloudinaryImage
-            cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757411708/img8.1_cbwkx6.jpg"
-            alt="Luxury Fusion Lounge"
-            imgClassName="object-[center_top] custom-object-pos"
-            className="w-full h-full"
-            quality="auto"
-            format="auto"
-            loading="lazy"
-          />
+            {/* Background image */}
+            <CloudinaryImage
+              cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757411708/img8.1_cbwkx6.jpg"
+              alt="Luxury Fusion Lounge"
+              imgClassName="object-[center_top] custom-object-pos"
+              className="w-full h-full"
+              quality="auto"
+              format="auto"
+              loading="lazy"
+            />
 
+            {/* Text overlay positioned at bottom */}
             <div className="absolute bottom-8 md:bottom-16 left-0 right-0 text-center w-fit mx-auto px-4">
               <h2
-                className="font-playfair text-3xl md:text-8xl text-white font-normal uppercase font-jost cursor-pointer hover:opacity-80 transition-opacity duration-300"
+                className="font-playfair text-3xl md:text-8xl text-white font-normal uppercase font-jost cursor-pointer"
                 style={{
                   fontSize: "clamp(2rem, 8vw, 120px)",
                   lineHeight: "normal",
@@ -216,16 +238,79 @@ const Index = () => {
               </h2>
             </div>
           </div>
-          
-          {/* Mobile Section Separator */}
-          <div className="md:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent z-10"></div>
         </section>
       </Link>
 
-      {/* Store Info Section */}
-      <StoreInfo />
+      {/* ===========================================
+          STORE INFORMATION SECTION
+          ===========================================
+          Layout: Title + Full-width image with address overlay
+          Mobile: 60vh height, smaller text, responsive padding
+          Desktop: Full screen height, larger text
+          Features: Store address and hours overlay
+      */}
+      <section className="relative w-full">
+        {/* Store title section */}
+        <div className="text-center py-6 md:py-10 px-4">
+          <h2
+            className="text-2xl md:text-4xl uppercase text-black font-jost"
+            style={{
+              lineHeight: "clamp(2rem, 6vw, 96px)",
+            }}
+          >
+            OUR STORE
+          </h2>
+        </div>
 
-      {/* Footer */}
+        {/* Store image with address overlay */}
+        <div className="relative w-full h-[60vh] md:h-screen">
+          {/* Background store image */}
+          <CloudinaryImage
+            cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757412649/storefront_fzas9n.png"
+            alt="Our Store"
+            className="w-full h-full object-cover"
+            quality="auto"
+            format="auto"
+            crop="scale"
+            loading="lazy"
+          />
+
+          {/* Address and hours overlay */}
+          <div className="absolute bottom-8 md:bottom-16 left-1/2 transform -translate-x-1/2 text-center px-2 md:px-4 w-[95%] md:w-auto">
+            <div className="text-white">
+              {/* Store address */}
+              <p
+                className="text-sm md:text-xl font-normal font-jost leading-relaxed whitespace-nowrap overflow-hidden"
+                style={{
+                  lineHeight: "clamp(1.5rem, 4vw, 50px)",
+                }}
+              >
+                HIGH STREET PIX, 22 - 25, Wonderland, Lower Ground Floor, 7 M.G.
+                Road, Camp, Pune - 411001 Maharashtra, India
+              </p>
+              
+              {/* Store hours and contact */}
+              <p
+                className="text-sm md:text-xl font-normal mt-2 md:mt-0 mb-0 leading-none font-jost whitespace-nowrap overflow-hidden"
+                style={{
+                  lineHeight: "clamp(1.25rem, 3vw, 25px)",
+                  margin: 0,
+                  padding: 0,
+                }}
+              >
+                7 Days Open | 11AM - 7PM | Contact : 020 - 41207311
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===========================================
+          FOOTER SECTION
+          ===========================================
+          Mobile: Compact footer with essential links
+          Desktop: Full footer with all sections
+      */}
       <Footer />
     </div>
   );
