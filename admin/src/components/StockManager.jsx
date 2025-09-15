@@ -46,7 +46,7 @@ const StockManager = ({ token }) => {
           colorVariantIndex,
           newStock: parseInt(newStock)
         },
-        { headers: { token } }
+        { withCredentials: true } // Include httpOnly cookies
       );
 
       if (response.data.success) {

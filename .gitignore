@@ -99,3 +99,7 @@ backend/wwebjs_auth/
 .wwebjs_cache/
 */wwebjs_cache/
 backend/.wwebjs_cache/
+
+# Cookie files (curl/libcurl generated)
+cookies.txt
+*.cookies

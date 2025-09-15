@@ -6,6 +6,7 @@ import CheckoutForm from "@/components/checkout/CheckoutForm";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import axios from "axios";
 import { config } from "@/config/env";
 import { showToast, toastMessages } from "@/config/toastConfig";
@@ -16,6 +17,7 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { state: cartState, clearCart, removeFromCart } = useCart();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const cartItems = cartState.items;
   
   // Get selected items from navigation state, or use all items if none specified
@@ -74,12 +76,11 @@ const CheckoutPage = () => {
   // Load user addresses on component mount
   useEffect(() => {
     const loadUserAddresses = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!isAuthenticated) return;
 
       try {
         setLoadingAddresses(true);
-        const response = await axios.get(`${config.api.baseUrl}/user/me`, { headers: { token } });
+        const response = await axios.get(`${config.api.baseUrl}/user/me`);
         if (response.data?.success && response.data?.user?.addresses) {
           const userAddresses = response.data.user.addresses;
           
@@ -118,7 +119,7 @@ const CheckoutPage = () => {
     };
 
     loadUserAddresses();
-  }, []);
+  }, [isAuthenticated]);
 
   // Calculate totals based on selected cart items
   const calculateTotals = () => {
@@ -151,7 +152,7 @@ const CheckoutPage = () => {
         return;
       }
 
-      console.log('Form data received:', formData);
+      console.log('Form data received - processing checkout');
 
       // If user has saved addresses and one is selected, and the form is not showing,
       // use the selected address
@@ -204,9 +205,8 @@ const CheckoutPage = () => {
         return;
       }
 
-      // Get authentication token
-      const token = localStorage.getItem('token');
-      if (!token) {
+      // Check if user is authenticated
+      if (!isAuthenticated) {
         showToast.error('Authentication required. Please log in.');
         navigate('/login');
         return;
@@ -275,7 +275,9 @@ const CheckoutPage = () => {
       // This ensures we always have the correct, up-to-date email for the order.
       let userEmail = 'user@example.com'; // Default fallback
       try {
-        const userResponse = await axios.get(`${config.api.baseUrl}/user/me`, { headers: { token } });
+        const userResponse = await axios.get(`${config.api.baseUrl}/user/me`, {
+          withCredentials: true
+        });
         if (userResponse.data?.success && userResponse.data?.user?.email) {
           userEmail = userResponse.data.user.email;
         }
@@ -302,7 +304,7 @@ const CheckoutPage = () => {
       const res = await axios.post(
         `${config.api.baseUrl}/order/razorpay`,
         orderPayload,
-        { headers: { token } }
+        { withCredentials: true }
       );
 
       if (!res.data?.success || !res.data?.order?.id) {
@@ -348,12 +350,14 @@ const CheckoutPage = () => {
                 razorpay_payment_id: response.razorpay_payment_id,
                 orderData: orderPayload // Pass the order data to backend
               },
-              { headers: { token } }
+              { withCredentials: true }
             );
 
             // Always update user profile with checkout information
             try {
-              await axios.put(`${config.api.baseUrl}/user/me`, { name: address.fullName, phone: address.phone }, { headers: { token } });
+              await axios.put(`${config.api.baseUrl}/user/me`, { name: address.fullName, phone: address.phone }, {
+                withCredentials: true
+              });
             } catch (_) {
               // non-blocking
             }
@@ -389,7 +393,7 @@ const CheckoutPage = () => {
                     isDefault: addresses.length === 0, // Only set as default if no addresses exist
                   },
                 };
-                await axios.post(`${config.api.baseUrl}/user/addresses`, addressPayload, { headers: { token } });
+                await axios.post(`${config.api.baseUrl}/user/addresses`, addressPayload, {});
               } else {
                 console.log('Address not saved - already exists in address book');
               }
@@ -434,8 +438,7 @@ const CheckoutPage = () => {
 
   // Handler for saving a new address
   const handleSaveAddress = async (addressData: any) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!isAuthenticated) {
       showToast.error('Authentication required. Please log in.');
       return;
     }
@@ -445,7 +448,7 @@ const CheckoutPage = () => {
       const response = await axios.post(
         `${config.api.baseUrl}/user/addresses`,
         { address: addressData },
-        { headers: { token } }
+        { withCredentials: true }
       );
 
       if (response.data?.success) {
@@ -489,8 +492,26 @@ const CheckoutPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <Header />
+      {/* Show loading screen while checking authentication */}
+      {authLoading ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">Checking authentication...</p>
+          </div>
+        </div>
+      ) : !isAuthenticated ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
+            <p className="text-gray-600 mb-4">Please log in to proceed with checkout.</p>
+            <Button onClick={() => navigate('/login')}>Go to Login</Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Header */}
+          <Header />
 
       {/* Main Content */}
       <main className="pt-24">
@@ -596,11 +617,7 @@ const CheckoutPage = () => {
                 <div className="mt-4 sm:mt-6">
                   <Button 
                     onClick={() => {
-                      console.log('Button clicked - current state:', {
-                        addressesLength: addresses.length,
-                        showAddressForm,
-                        selectedAddressId
-                      });
+                      console.log('Checkout button clicked');
                       
                       // Handle form submission based on current state
                       if (addresses.length > 0 && !showAddressForm && selectedAddressId) {
@@ -760,6 +777,8 @@ const CheckoutPage = () => {
             <p className="text-lg">Processing your order...</p>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

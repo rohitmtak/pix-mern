@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode, useCallback, useState } from 'react';
-import { isAuthenticated, getToken } from '@/utils/auth';
+import { getToken } from '@/utils/auth';
+import { useAuth } from './AuthContext';
 import { config } from '@/config/env';
 import apiClient from '@/utils/apiClient';
 
@@ -169,6 +170,7 @@ interface CartProviderProps {
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
   const [lastLoadTime, setLastLoadTime] = useState(0);
+  const { isAuthenticated } = useAuth();
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -203,7 +205,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   // Function to sync cart with backend
   const syncCartWithBackend = useCallback(async () => {
-    if (!isAuthenticated()) return;
+    if (!isAuthenticated) return;
     
     try {
       // Clear the backend cart first to avoid duplicates
@@ -228,7 +230,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   // Function to load user cart from backend
   const loadUserCartFromBackend = useCallback(async (forceLoad = false) => {
-    if (!isAuthenticated()) return;
+    if (!isAuthenticated) return;
     
     // Debounce: prevent loading from backend too frequently (unless forced)
     const now = Date.now();
@@ -240,9 +242,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
     
     try {
-      const token = getToken();
-      if (!token) return;
-
       const response = await apiClient.get(`${config.api.baseUrl}/cart/get`);
 
       if (response.status === 200) {
@@ -274,16 +273,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Failed to load cart from backend:', error);
     }
-  }, [state.items.length, state.lastModified, lastLoadTime]);
+  }, [isAuthenticated, state.items.length, state.lastModified, lastLoadTime]);
 
   // Function to migrate guest cart to authenticated user
   const migrateGuestCartToUser = useCallback(async (guestCart: CartItem[]) => {
-    if (!isAuthenticated() || guestCart.length === 0) return;
+    if (!isAuthenticated || guestCart.length === 0) return;
     
     try {
-      const token = getToken();
-      if (!token) return;
-
       // First, get the user's existing backend cart
       const response = await apiClient.get(`${config.api.baseUrl}/cart/get`);
 
@@ -333,7 +329,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Failed to migrate guest cart:', error);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const addToCart = async (item: Omit<CartItem, 'id'>) => {
     const cartItem: CartItem = {
@@ -343,7 +339,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     dispatch({ type: 'ADD_TO_CART', payload: cartItem });
     
     // If user is authenticated, sync with backend
-    if (isAuthenticated()) {
+    if (isAuthenticated) {
       try {
         await apiClient.post(`${config.api.baseUrl}/cart/add`, {
           productId: item.productId,
@@ -364,7 +360,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     dispatch({ type: 'REMOVE_FROM_CART', payload: { productId, size, color } });
     
     // If user is authenticated, sync with backend
-    if (isAuthenticated()) {
+    if (isAuthenticated) {
       try {
         const response = await apiClient.delete(`${config.api.baseUrl}/cart/remove`, {
           data: { productId, size, color }
@@ -387,7 +383,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, size, color, quantity } });
     
     // If user is authenticated, sync with backend
-    if (isAuthenticated()) {
+    if (isAuthenticated) {
       try {
         await apiClient.put(`${config.api.baseUrl}/cart/update`, {
           productId,
@@ -405,7 +401,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     dispatch({ type: 'CLEAR_CART' });
     
     // If user is authenticated, sync with backend
-    if (isAuthenticated()) {
+    if (isAuthenticated) {
       try {
         await apiClient.delete(`${config.api.baseUrl}/cart/clear`);
       } catch (error) {

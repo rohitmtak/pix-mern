@@ -1,91 +1,63 @@
-// Enhanced auth utility with JWT token validation and refresh handling
-// Removed jsonwebtoken dependency - using browser-compatible JWT decoding
+// Enhanced auth utility for httpOnly cookie-based authentication
+// Since tokens are now stored in httpOnly cookies, we can't access them directly
+// We'll use API calls to check authentication status
 
-// Helper function to decode JWT token without external dependencies
-const decodeJWT = (token: string): any => {
+// Helper function to check if user is authenticated by making an API call
+export const isAuthenticated = async (): Promise<boolean> => {
   try {
-    // JWT tokens have 3 parts separated by dots
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      throw new Error('Invalid JWT format');
-    }
-    
-    // Decode the payload (second part)
-    const payload = parts[1];
-    // Add padding if needed for base64 decoding
-    const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
-    
-    // Decode base64url to JSON
-    const decodedPayload = atob(paddedPayload.replace(/-/g, '+').replace(/_/g, '/'));
-    return JSON.parse(decodedPayload);
+    const response = await fetch('/api/user/me', {
+      method: 'GET',
+      credentials: 'include', // Include httpOnly cookies
+    });
+    return response.ok;
   } catch (error) {
-    console.error('Error decoding JWT:', error);
-    return null;
-  }
-};
-
-export const isAuthenticated = (): boolean => {
-  const token = localStorage.getItem('token');
-  if (!token) return false;
-  
-  try {
-    // Decode token to check expiration
-    const decoded = decodeJWT(token);
-    if (!decoded || !decoded.exp) return false;
-    
-    // Check if token is expired
-    const currentTime = Date.now() / 1000;
-    return decoded.exp > currentTime;
-  } catch (error) {
-    console.error('Error validating token:', error);
+    console.error('Error checking authentication:', error);
     return false;
   }
 };
 
-export const getToken = (): string | null => {
-  const token = localStorage.getItem('token');
-  if (!token) return null;
-  
-  // Validate token before returning
-  if (!isAuthenticated()) {
-    logout();
-    return null;
-  }
-  
-  return token;
+// Get authentication status synchronously (for immediate checks)
+export const isAuthenticatedSync = (): boolean => {
+  // Since we can't access httpOnly cookies directly, we'll assume
+  // the user is authenticated if they're on a protected page
+  // The actual validation happens server-side
+  return true; // This will be validated by the server on each request
 };
 
-export const logout = (): void => {
-  localStorage.removeItem('token');
-  // Clear any other user-related data
+export const getToken = (): string | null => {
+  // With httpOnly cookies, we can't access the token directly
+  // The token is automatically sent with requests
+  return null;
+};
+
+export const logout = async (): Promise<void> => {
+  try {
+    // Call logout endpoint to clear httpOnly cookie
+    await fetch('/api/user/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch (error) {
+    console.error('Error during logout:', error);
+  }
+  
+  // Clear any other user-related data from localStorage
   localStorage.removeItem('cart');
   localStorage.removeItem('wishlist');
 };
 
+// Legacy functions for compatibility (now deprecated)
 export const isTokenExpired = (token: string): boolean => {
-  try {
-    const decoded = decodeJWT(token);
-    if (!decoded || !decoded.exp) return true;
-    
-    const currentTime = Date.now() / 1000;
-    return decoded.exp <= currentTime;
-  } catch (error) {
-    return true;
-  }
+  console.warn('isTokenExpired is deprecated with httpOnly cookies');
+  return true;
 };
 
 export const getTokenExpirationTime = (token: string): number | null => {
-  try {
-    const decoded = decodeJWT(token);
-    return decoded?.exp ? decoded.exp * 1000 : null; // Convert to milliseconds
-  } catch (error) {
-    return null;
-  }
+  console.warn('getTokenExpirationTime is deprecated with httpOnly cookies');
+  return null;
 };
 
 export const getTimeUntilExpiration = (token: string): number => {
-  const expirationTime = getTokenExpirationTime(token);
-  if (!expirationTime) return 0;
-  
-  return expirationTime - Date.now();
+  console.warn('getTimeUntilExpiration is deprecated with httpOnly cookies');
+  return 0;
 };

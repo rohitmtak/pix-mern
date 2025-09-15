@@ -4,6 +4,7 @@ import cartModel from "../models/cartModel.js";
 import productModel from "../models/productModel.js";
 import razorpay from 'razorpay'
 import NotificationService from '../utils/notificationService.js'
+import 'dotenv/config'
 
 // Environment detection
 const isProduction = process.env.NODE_ENV === 'production';
@@ -47,6 +48,11 @@ const validateStockAvailability = async (items) => {
                 };
             }
 
+            console.log(`Stock check for ${item.name} (${item.color}, ${item.size}):`);
+            console.log(`  Requested quantity: ${item.quantity}`);
+            console.log(`  Available stock: ${colorVariant.stock}`);
+            console.log(`  Stock check result: ${colorVariant.stock < item.quantity ? 'OUT OF STOCK' : 'IN STOCK'}`);
+            
             if (colorVariant.stock < item.quantity) {
                 outOfStockItems.push({
                     productId: item.productId,
@@ -60,6 +66,11 @@ const validateStockAvailability = async (items) => {
         }
 
         if (outOfStockItems.length > 0) {
+            console.log('❌ Out of stock items detected:');
+            outOfStockItems.forEach(item => {
+                console.log(`  - ${item.name} (${item.color}, ${item.size}): Requested ${item.requestedQuantity}, Available ${item.availableStock}`);
+            });
+            
             return {
                 success: false,
                 message: 'Some items are out of stock or have insufficient quantity',
@@ -100,6 +111,9 @@ const reduceStock = async (items) => {
 };
 
 // gateway initialize
+console.log('🔑 Razorpay Key ID:', process.env.RAZORPAY_KEY_ID);
+console.log('🔑 Razorpay Key Secret:', process.env.RAZORPAY_KEY_SECRET ? 'SET' : 'NOT SET');
+
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
     console.error('❌ Razorpay keys are missing from environment variables');
     console.error('Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your .env file');
@@ -109,6 +123,8 @@ const razorpayInstance = new razorpay({
     key_id : process.env.RAZORPAY_KEY_ID,
     key_secret : process.env.RAZORPAY_KEY_SECRET,
 })
+
+console.log('✅ Razorpay instance initialized successfully');
 
 
 
@@ -304,102 +320,134 @@ const verifyRazorpay = async (req,res) => {
         const { razorpay_order_id, razorpay_payment_id, orderData } = req.body
         const { userId } = req.user; // Get userId from auth middleware
 
-        // Fetch order from Razorpay
-        const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id)
+        // Fetch order from Razorpay to verify payment
+        const razorpayOrder = await razorpayInstance.orders.fetch(razorpay_order_id)
         
-        if (orderInfo.status === 'paid') {
-            // Create the order in database with payment details
-            const finalOrderData = {
-                userId: userId,
-                customerEmail: orderData.customerEmail,
-                customerPhone: orderData.customerPhone,
-                items: orderData.items,
-                subtotal: orderData.subtotal,
-                shipping: orderData.shipping,
-                total: orderData.total,
-                shippingAddress: orderData.address, // Map address to shippingAddress
-                billingAddress: orderData.billingAddress,
-                paymentDetails: {
-                    method: orderData.paymentMethod,
-                    gateway: 'razorpay',
-                    gatewayOrderId: razorpay_order_id,
-                    transactionId: razorpay_payment_id
-                },
-                paymentStatus: 'paid',
-                paymentDate: new Date(),
-                status: 'confirmed',
-                // Legacy fields
-                amount: orderData.amount,
-                address: orderData.address,
-                paymentMethod: orderData.paymentMethod,
-                payment: true,
-                date: Date.now()
-            }
-
-            console.log('Creating order with data:', finalOrderData);
-
-            const newOrder = new orderModel(finalOrderData)
-            try {
-                await newOrder.save()
-                console.log('Order created successfully:', newOrder._id);
-            } catch (saveError) {
-                console.error('Failed to save order:', saveError);
-                return res.json({ success: false, message: 'Failed to create order: ' + saveError.message });
-            }
-
-            // Send real-time notification to admin
-            await NotificationService.sendNewOrderNotification(newOrder)
-
-            // Send order and payment confirmation to customer via WhatsApp
-            try {
-                await NotificationService.sendOrderAndPaymentConfirmation(newOrder)
-            } catch (whatsappError) {
-                console.log('Customer WhatsApp notification failed:', whatsappError)
-            }
-
-            // Reduce stock for ordered items
-            try {
-                await reduceStock(newOrder.items);
-            } catch (stockError) {
-                console.error('Failed to reduce stock:', stockError);
-                // Continue with order completion even if stock reduction fails
-            }
-
-            // Clear user's cart from both systems
-            await userModel.findByIdAndUpdate(userId, { cartData: {} })
-            
-            // Remove only the ordered items from cart collection
-            const cart = await cartModel.findOne({ userId });
-            if (cart) {
-                // Create a set of ordered item combinations (productId + size + color)
-                const orderedItemCombinations = new Set(
-                    newOrder.items.map(item => 
-                        `${item.productId}-${item.size}-${item.color}`
-                    )
-                );
-                
-                // Remove only the exact ordered item combinations
-                cart.items = cart.items.filter(item => {
-                    const itemKey = `${item.productId}-${item.size}-${item.color}`;
-                    return !orderedItemCombinations.has(itemKey);
-                });
-                
-                // Recalculate totals
-                cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
-                cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                cart.lastUpdated = new Date();
-                
-                await cart.save();
-            }
-            
-            res.json({ 
-                success: true, 
-                message: "Payment Successful",
-                orderId: newOrder._id
-            })
-        } else {
-             res.json({ success: false, message: 'Payment Failed' });
+        // Verify payment amount matches order amount
+        const expectedAmount = Math.round(orderData.total * 100); // Convert to paise
+        if (razorpayOrder.amount !== expectedAmount) {
+            console.log('Amount mismatch:', {
+                razorpayAmount: razorpayOrder.amount,
+                expectedAmount: expectedAmount,
+                orderTotal: orderData.total
+            });
+            return res.json({ 
+                success: false, 
+                message: 'Payment amount mismatch' 
+            });
         }
+        
+        // Verify payment status
+        if (razorpayOrder.status !== 'paid') {
+            return res.json({ 
+                success: false, 
+                message: 'Payment not completed' 
+            });
+        }
+        
+        // Check if order already exists (prevent duplicate processing)
+        const existingOrder = await orderModel.findOne({
+            'paymentDetails.gatewayOrderId': razorpay_order_id,
+            'paymentDetails.transactionId': razorpay_payment_id
+        });
+        
+        if (existingOrder) {
+            return res.json({ 
+                success: true, 
+                message: "Payment already processed",
+                orderId: existingOrder._id
+            });
+        }
+        
+        // Create the order in database with payment details
+        const finalOrderData = {
+            userId: userId,
+            customerEmail: orderData.customerEmail,
+            customerPhone: orderData.customerPhone,
+            items: orderData.items,
+            subtotal: orderData.subtotal,
+            shipping: orderData.shipping,
+            total: orderData.total,
+            shippingAddress: orderData.address,
+            billingAddress: orderData.billingAddress,
+            paymentDetails: {
+                method: orderData.paymentMethod,
+                gateway: 'razorpay',
+                gatewayOrderId: razorpay_order_id,
+                transactionId: razorpay_payment_id
+            },
+            paymentStatus: 'paid',
+            paymentDate: new Date(),
+            status: 'confirmed',
+            // Legacy fields
+            amount: orderData.amount,
+            address: orderData.address,
+            paymentMethod: orderData.paymentMethod,
+            payment: true,
+            date: Date.now()
+        }
+
+        console.log('Creating order with data:', finalOrderData);
+
+        const newOrder = new orderModel(finalOrderData)
+        try {
+            await newOrder.save()
+            console.log('Order created successfully:', newOrder._id);
+        } catch (saveError) {
+            console.error('Failed to save order:', saveError);
+            return res.json({ success: false, message: 'Failed to create order: ' + saveError.message });
+        }
+
+        // Send real-time notification to admin
+        await NotificationService.sendNewOrderNotification(newOrder)
+
+        // Send order and payment confirmation to customer via WhatsApp
+        try {
+            await NotificationService.sendOrderAndPaymentConfirmation(newOrder)
+        } catch (whatsappError) {
+            console.log('Customer WhatsApp notification failed:', whatsappError)
+        }
+
+        // Reduce stock for ordered items
+        try {
+            await reduceStock(newOrder.items);
+        } catch (stockError) {
+            console.error('Failed to reduce stock:', stockError);
+            // Continue with order completion even if stock reduction fails
+        }
+
+        // Clear user's cart from both systems
+        await userModel.findByIdAndUpdate(userId, { cartData: {} })
+        
+        // Remove only the ordered items from cart collection
+        const cart = await cartModel.findOne({ userId });
+        if (cart) {
+            // Create a set of ordered item combinations (productId + size + color)
+            const orderedItemCombinations = new Set(
+                newOrder.items.map(item => 
+                    `${item.productId}-${item.size}-${item.color}`
+                )
+            );
+            
+            // Remove only the exact ordered item combinations
+            cart.items = cart.items.filter(item => {
+                const itemKey = `${item.productId}-${item.size}-${item.color}`;
+                return !orderedItemCombinations.has(itemKey);
+            });
+            
+            // Recalculate totals
+            cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+            cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cart.lastUpdated = new Date();
+            
+            await cart.save();
+        }
+        
+        res.json({ 
+            success: true, 
+            message: "Payment Successful",
+            orderId: newOrder._id
+        })
 
     } catch (error) {
         console.log('Payment verification error:', error)

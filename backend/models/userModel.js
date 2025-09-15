@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema({
     cartData: { type: Object, default: {} },
     lastLoginAt: { type: Date },
     role: { type: String, enum: ['user','admin'], default: 'user' },
+    // Session management
+    activeSessionId: { type: String, default: null },
     // Password reset fields
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date }

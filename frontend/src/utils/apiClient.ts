@@ -6,15 +6,12 @@ import { config } from '@/config/env';
 // Create axios instance with base configuration
 const apiClient = axios.create({
   timeout: 10000,
+  withCredentials: true, // Enable cookies for httpOnly tokens
 });
 
-// Request interceptor to add token to all requests
+// Request interceptor - no need to add token manually with httpOnly cookies
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.token = token;
-    }
     return config;
   },
   (error) => {
@@ -32,7 +29,7 @@ apiClient.interceptors.response.use(
     
     // Handle authentication errors
     if (error.response?.status === 401 || error.response?.status === 403) {
-      const errorMessage = error.response?.data?.message || '';
+      const errorMessage = (error.response?.data as any)?.message || '';
       
       // Check if it's a JWT expiration error
       if (errorMessage.toLowerCase().includes('expired') || 
@@ -45,15 +42,11 @@ apiClient.interceptors.response.use(
           
           try {
             const refreshResponse = await axios.post(`${config.api.baseUrl}/user/refresh-token`, {}, {
-              headers: { token: localStorage.getItem('token') }
+              withCredentials: true
             });
             
-            if (refreshResponse.data?.success && refreshResponse.data?.token) {
-              // Update the token in localStorage
-              localStorage.setItem('token', refreshResponse.data.token);
-              
-              // Retry the original request with the new token
-              originalRequest.headers.token = refreshResponse.data.token;
+            if (refreshResponse.data?.success) {
+              // Retry the original request
               return apiClient(originalRequest);
             }
           } catch (refreshError) {

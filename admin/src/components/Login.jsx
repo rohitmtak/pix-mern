@@ -33,11 +33,15 @@ const Login = ({setToken}) => {
             const response = await axios.post(backendUrl + '/api/user/admin', {
                 email: trimmedEmail, 
                 password: trimmedPassword
+            }, {
+                withCredentials: true // Include cookies in the request
             })
             
             if (response.data.success) {
-                setToken(response.data.token)
-                toast.success('Login successful! Welcome to Admin Panel')
+                // Since we're using httpOnly cookies, we don't need to store the token
+                // Just set a flag to indicate successful login
+                setToken('authenticated')
+                toast.success('Login successful!')
             } else {
                 toast.error(response.data.message || 'Login failed')
             }

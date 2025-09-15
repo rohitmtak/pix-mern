@@ -1,4 +1,4 @@
-import { isAuthenticated, getToken } from './auth';
+import { isAuthenticated } from './auth';
 import { config } from '@/config/env';
 
 /**
@@ -8,9 +8,6 @@ export const syncCartWithBackend = async (cartItems: any[]): Promise<void> => {
   if (!isAuthenticated() || cartItems.length === 0) return;
   
   try {
-    const token = getToken();
-    if (!token) return;
-
     // Convert cart items to backend format
     const cartData: Record<string, Record<string, number>> = {};
     
@@ -26,9 +23,9 @@ export const syncCartWithBackend = async (cartItems: any[]): Promise<void> => {
     await fetch(`${config.api.baseUrl}/cart/update-entire`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'token': token
+        'Content-Type': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify({ cartData })
     });
   } catch (error) {
@@ -43,15 +40,12 @@ export const loadUserCartFromBackend = async (): Promise<any[]> => {
   if (!isAuthenticated()) return [];
   
   try {
-    const token = getToken();
-    if (!token) return [];
-
     const response = await fetch(`${config.api.baseUrl}/cart/get`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'token': token
-      }
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
     });
 
     if (response.ok) {
@@ -77,15 +71,12 @@ export const clearUserCartOnBackend = async (): Promise<void> => {
   if (!isAuthenticated()) return;
   
   try {
-    const token = getToken();
-    if (!token) return;
-
     await fetch(`${config.api.baseUrl}/cart/clear`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'token': token
-      }
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
     });
   } catch (error) {
     console.error('Failed to clear cart on backend:', error);

@@ -5,12 +5,14 @@ import Footer from "@/components/Footer";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { showToast, toastMessages } from "@/config/toastConfig";
 import { formatCartPrice } from '@/utils/priceUtils';
 
 const CartPage = () => {
   const navigate = useNavigate();
   const { state: cartState, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { isAuthenticated } = useAuth();
   const cartItems = cartState.items;
 
   // Item selection state
@@ -107,9 +109,7 @@ const CartPage = () => {
     }
 
     // Check if user is authenticated
-    const token = localStorage.getItem("token");
-    
-    if (!token) {
+    if (!isAuthenticated) {
       // User is not logged in, redirect to login page
       showToast.error(toastMessages.cart.loginRequired);
       navigate("/login");

@@ -2,21 +2,18 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import SideMenu from "./SideMenu";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [isCollectionHovered, setIsCollectionHovered] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { state: cartState, loadUserCartFromBackend } = useCart();
+  const { state: cartState } = useCart();
+  const { isAuthenticated } = useAuth();
 
   // Check if we're on the home page
   const isHomePage = location.pathname === "/";
-
-  // Load cart from backend when component mounts (for authenticated users)
-  useEffect(() => {
-    loadUserCartFromBackend();
-  }, []); // Empty dependency array to run only once
 
   const toggleSideMenu = () => {
     setIsSideMenuOpen(!isSideMenuOpen);
@@ -30,6 +27,15 @@ const Header = () => {
     // Scroll to top before navigation
     window.scrollTo(0, 0);
     navigate(path);
+  };
+
+  const handleProfileNavigation = () => {
+    // Check if user is authenticated before navigating to profile
+    if (isAuthenticated) {
+      handleNavigation('/profile');
+    } else {
+      handleNavigation('/login');
+    }
   };
 
   // Determine header background based on page
@@ -113,7 +119,7 @@ const Header = () => {
               <button
                 className="flex items-center justify-center"
                 aria-label="Account"
-                onClick={() => handleNavigation(localStorage.getItem('token') ? '/profile' : '/login')}
+                onClick={handleProfileNavigation}
               >
                 <svg
                   width="31"
@@ -462,7 +468,7 @@ const Header = () => {
               <button
                 className="flex items-center justify-center"
                 aria-label="Account"
-                onClick={() => handleNavigation(localStorage.getItem('token') ? '/profile' : '/login')}
+                onClick={handleProfileNavigation}
               >
                 <svg
                   width="31"

@@ -8,11 +8,13 @@ import { showToast, toastMessages } from "@/config/toastConfig";
 import { config } from "@/config/env";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { migrateGuestWishlist } = useWishlist();
   const { migrateGuestCartToUser } = useCart();
+  const { isAuthenticated, checkAuth } = useAuth();
 
   const [authMode, setAuthMode] = useState<"Login" | "Sign Up">("Login");
   const [name, setName] = useState("");
@@ -41,6 +43,32 @@ const Login: React.FC = () => {
         return;
       }
 
+      // Enhanced password validation for sign up
+      if (authMode === "Sign Up") {
+        const passwordErrors = [];
+        
+        if (trimmedPassword.length < 8) {
+          passwordErrors.push('At least 8 characters');
+        }
+        if (!/[A-Z]/.test(trimmedPassword)) {
+          passwordErrors.push('One uppercase letter');
+        }
+        if (!/[a-z]/.test(trimmedPassword)) {
+          passwordErrors.push('One lowercase letter');
+        }
+        if (!/[0-9]/.test(trimmedPassword)) {
+          passwordErrors.push('One number');
+        }
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(trimmedPassword)) {
+          passwordErrors.push('One special character');
+        }
+        
+        if (passwordErrors.length > 0) {
+          showToast.error(`Password must have: ${passwordErrors.join(', ')}`);
+          return;
+        }
+      }
+
       if (authMode === "Sign Up" && name.trim().length < 2) {
         showToast.error(toastMessages.auth.nameRequired);
         return;
@@ -50,9 +78,7 @@ const Login: React.FC = () => {
       const payload = authMode === "Sign Up" ? { name: name.trim(), email: trimmedEmail, password: trimmedPassword } : { email: trimmedEmail, password: trimmedPassword };
       const response = await apiClient.post(endpoint, payload);
 
-      if (response.data?.success && response.data?.token) {
-        localStorage.setItem("token", response.data.token);
-        
+      if (response.data?.success) {
         // Get current guest cart before migration
         const savedCart = localStorage.getItem('cart') || '[]';
         let guestCart = [];
@@ -96,7 +122,9 @@ const Login: React.FC = () => {
         
         // Small delay to ensure cart migration completes before navigation
         // This prevents race conditions with other components loading the cart
-        setTimeout(() => {
+        setTimeout(async () => {
+          // Refresh authentication state after successful login
+          await checkAuth();
           navigate("/");
         }, 2000);
       } else {
@@ -115,11 +143,11 @@ const Login: React.FC = () => {
   };
 
   useEffect(() => {
-    const existingToken = localStorage.getItem("token");
-    if (existingToken) {
+    // Check if user is already authenticated
+    if (isAuthenticated) {
       navigate("/");
     }
-  }, [navigate]);
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -198,6 +226,18 @@ const Login: React.FC = () => {
                       )}
                     </button>
                   </div>
+                  {authMode === "Sign Up" && (
+                    <div className="text-xs text-gray-600 mt-1">
+                      <p className="font-medium mb-1">Password must contain:</p>
+                      <ul className="list-disc list-inside space-y-0.5">
+                        <li>At least 8 characters</li>
+                        <li>One uppercase letter (A-Z)</li>
+                        <li>One lowercase letter (a-z)</li>
+                        <li>One number (0-9)</li>
+                        <li>One special character (!@#$%^&*)</li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 <div className="w-full flex flex-col sm:flex-row justify-between text-sm -mt-1 gap-2 sm:gap-0">

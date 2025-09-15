@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, UNSAFE_future } from "react-router-dom";
 import { useScrollToTop } from "./hooks/use-scroll-to-top";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import CartLoader from "./components/CartLoader";
 import Index from "./pages/Index";
 import CollectionPage from "./pages/CollectionPage";
@@ -53,9 +54,10 @@ const AppRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <CartLoader />
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <CartLoader />
           <Toaster />
           <Sonner />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -63,8 +65,9 @@ const App = () => (
           </BrowserRouter>
         </WishlistProvider>
       </CartProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+    </AuthProvider>
+  </TooltipProvider>
+</QueryClientProvider>
 );
 
 export default App;

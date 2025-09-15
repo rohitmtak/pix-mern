@@ -1,5 +1,7 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
+import cookieParser from 'cookie-parser'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -13,6 +15,7 @@ import productRouter from './routes/productRoute.js'
 import cartRouter from './routes/cartRoute.js'
 import orderRouter from './routes/orderRoute.js'
 import testRouter from './routes/testRoute.js'
+import { generalLimiter, loginLimiter, passwordResetLimiter, registerLimiter } from './middleware/rateLimiter.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -47,6 +50,25 @@ const initializeApp = async () => {
         await connectDB()
         await connectCloudinary()
         
+        // Security middlewares
+        app.use(helmet({
+            contentSecurityPolicy: {
+                directives: {
+                    defaultSrc: ["'self'"],
+                    styleSrc: ["'self'", "'unsafe-inline'"],
+                    scriptSrc: ["'self'"],
+                    imgSrc: ["'self'", "data:", "https:"],
+                },
+            },
+            crossOriginEmbedderPolicy: false
+        }))
+        
+        // Cookie parser
+        app.use(cookieParser())
+        
+        // Rate limiting
+        app.use('/api', generalLimiter)
+        
         // middlewares
         app.use(express.json())
         // CORS configuration
@@ -71,7 +93,7 @@ const initializeApp = async () => {
                     callback(new Error('Not allowed by CORS'));
                 }
             },
-            credentials: true,
+            credentials: true, // Allow cookies
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'token', 'Origin', 'Accept'],
             preflightContinue: false,

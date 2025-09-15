@@ -18,7 +18,7 @@ export const currency = '₹'
 
 const App = () => {
 
-  const [token, setToken] = useState(localStorage.getItem('token')?localStorage.getItem('token'):'');
+  const [token, setToken] = useState(localStorage.getItem('adminAuthenticated') === 'true' ? 'authenticated' : '');
   const [whatsappMinimized, setWhatsappMinimized] = useState(true)
   const [notificationMinimized, setNotificationMinimized] = useState(true)
   
@@ -27,7 +27,11 @@ const App = () => {
   const [notificationPosition, setNotificationPosition] = useState({ x: 20, y: 400 })
 
   useEffect(()=>{
-    localStorage.setItem('token',token)
+    if (token === 'authenticated') {
+      localStorage.setItem('adminAuthenticated', 'true')
+    } else {
+      localStorage.removeItem('adminAuthenticated')
+    }
   },[token])
 
   return (

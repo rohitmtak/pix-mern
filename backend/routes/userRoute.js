@@ -15,20 +15,23 @@ import {
   forgotPassword,
   resetPassword,
   verifyResetToken,
-  refreshToken
+  refreshToken,
+  logout
 } from '../controllers/userController.js';
 import authUser from '../middleware/auth.js'
+import { loginLimiter, passwordResetLimiter, registerLimiter } from '../middleware/rateLimiter.js'
 
 const userRouter = express.Router();
 
-userRouter.post('/register',registerUser)
-userRouter.post('/login',loginUser)
-userRouter.post('/admin',adminLogin)
+userRouter.post('/register', registerLimiter, registerUser)
+userRouter.post('/login', loginLimiter, loginUser)
+userRouter.post('/admin', loginLimiter, adminLogin)
+userRouter.post('/logout', logout)
 userRouter.post('/refresh-token', refreshToken)
 
 // Password reset routes
-userRouter.post('/forgot-password', forgotPassword)
-userRouter.post('/reset-password', resetPassword)
+userRouter.post('/forgot-password', passwordResetLimiter, forgotPassword)
+userRouter.post('/reset-password', passwordResetLimiter, resetPassword)
 userRouter.get('/verify-reset-token/:token', verifyResetToken)
 
 // Profile

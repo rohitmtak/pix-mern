@@ -1,7 +1,23 @@
 import React from 'react'
 import {assets} from '../assets/assets'
+import axios from 'axios'
+import { backendUrl } from '../App'
 
 const Navbar = ({setToken}) => {
+  const handleLogout = async () => {
+    try {
+      // Call logout endpoint to clear httpOnly cookie
+      await axios.post(backendUrl + '/api/user/logout', {}, {
+        withCredentials: true
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear local authentication state
+      setToken('');
+    }
+  };
+
   return (
     <div className='bg-white border-b border-gray-200 px-6 py-4'>
       <div className='flex items-center justify-between max-w-7xl mx-auto'>
@@ -14,7 +30,7 @@ const Navbar = ({setToken}) => {
         </div>
         
         <button 
-          onClick={()=>setToken('')} 
+          onClick={handleLogout} 
           className='bg-black text-white px-6 py-2 text-sm font-medium hover:bg-gray-800 transition-colors duration-200 rounded-lg flex items-center space-x-2'
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

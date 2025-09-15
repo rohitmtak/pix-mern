@@ -167,10 +167,9 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
     // If authenticated, sync with server
     if (isAuthenticated()) {
       try {
-        const token = getToken();
         await fetch(`${config.api.baseUrl}/user/wishlist/${productId}`, {
           method: 'DELETE',
-          headers: { 'token': token || '' }
+          credentials: 'include'
         });
       } catch (error) {
         console.error('Failed to sync wishlist removal with server:', error);
@@ -192,9 +191,8 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
     if (!isAuthenticated()) return;
     
     try {
-      const token = getToken();
       const response = await fetch(`${config.api.baseUrl}/user/wishlist`, {
-        headers: { 'token': token || '' }
+        credentials: 'include'
       });
       
       if (response.ok) {

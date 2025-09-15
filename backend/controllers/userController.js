@@ -4,10 +4,12 @@ import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import userModel from "../models/userModel.js";
 import { sendPasswordResetEmail, sendPasswordResetSuccessEmail } from "../utils/emailService.js";
+import tokenBlacklist from "../utils/tokenBlacklist.js";
+import { validatePassword } from "../utils/passwordValidator.js";
 
 
 const createToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' })
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '15m' })
 }
 
 // Route for user login
@@ -26,9 +28,21 @@ const loginUser = async (req, res) => {
 
         if (isMatch) {
             user.lastLoginAt = new Date()
-            await user.save()
+            
+            // Generate new token and update session
             const token = createToken(user._id)
-            res.status(200).json({ success: true, token })
+            user.activeSessionId = token
+            await user.save()
+            
+            // Set httpOnly cookie
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 15 * 60 * 1000 // 15 minutes
+            })
+            
+            res.status(200).json({ success: true, message: 'Login successful' })
         }
         else {
             res.status(401).json({ success: false, message: 'Invalid credentials' })
@@ -56,8 +70,15 @@ const registerUser = async (req, res) => {
         if (!validator.isEmail(email)) {
             return res.status(400).json({ success: false, message: "Please enter a valid email" })
         }
-        if (password.length < 8) {
-            return res.status(400).json({ success: false, message: "Please enter a strong password" })
+        
+        // Validate password strength
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.isValid) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Password requirements not met",
+                errors: passwordValidation.errors
+            })
         }
 
         // hashing user password
@@ -73,8 +94,20 @@ const registerUser = async (req, res) => {
         const user = await newUser.save()
 
         const token = createToken(user._id)
+        
+        // Update session
+        user.activeSessionId = token
+        await user.save()
+        
+        // Set httpOnly cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 15 * 60 * 1000 // 15 minutes
+        })
 
-        res.status(201).json({ success: true, token })
+        res.status(201).json({ success: true, message: 'Registration successful' })
 
     } catch (error) {
         console.log(error);
@@ -88,9 +121,32 @@ const adminLogin = async (req, res) => {
         
         const {email,password} = req.body
 
-        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            const token = jwt.sign({ email, role: 'admin' }, process.env.JWT_SECRET);
-            res.json({success:true,token})
+        // Validate admin credentials
+        if (email !== process.env.ADMIN_EMAIL) {
+            return res.json({success:false,message:"Invalid credentials"})
+        }
+
+        // Hash the provided password and compare with stored hash
+        const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+        if (!adminPasswordHash) {
+            console.error('ADMIN_PASSWORD_HASH not configured in environment variables');
+            return res.json({success:false,message:"Server configuration error"})
+        }
+
+        const isMatch = await bcrypt.compare(password, adminPasswordHash);
+        
+        if (isMatch) {
+            const token = jwt.sign({ email, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '15m' });
+            
+            // Set httpOnly cookie
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 15 * 60 * 1000 // 15 minutes
+            })
+            
+            res.json({success:true, message: 'Admin login successful'})
         } else {
             res.json({success:false,message:"Invalid credentials"})
         }
@@ -305,8 +361,14 @@ const resetPassword = async (req, res) => {
             return res.json({ success: false, message: "Token and new password are required" });
         }
 
-        if (newPassword.length < 8) {
-            return res.json({ success: false, message: "Password must be at least 8 characters long" });
+        // Validate new password strength
+        const passwordValidation = validatePassword(newPassword);
+        if (!passwordValidation.isValid) {
+            return res.json({ 
+                success: false, 
+                message: "Password requirements not met",
+                errors: passwordValidation.errors
+            });
         }
 
         // Find user with valid reset token
@@ -372,7 +434,7 @@ const verifyResetToken = async (req, res) => {
 // Refresh token - generate new token for existing user
 const refreshToken = async (req, res) => {
     try {
-        const { token } = req.headers;
+        const token = req.cookies.token || req.headers.token;
         
         if (!token) {
             return res.status(401).json({ success: false, message: 'Token is required' });
@@ -391,9 +453,16 @@ const refreshToken = async (req, res) => {
         // Generate new token
         const newToken = createToken(user._id);
         
+        // Set httpOnly cookie
+        res.cookie('token', newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 15 * 60 * 1000 // 15 minutes
+        })
+        
         res.status(200).json({ 
             success: true, 
-            token: newToken,
             message: 'Token refreshed successfully'
         });
 
@@ -402,6 +471,40 @@ const refreshToken = async (req, res) => {
         res.status(401).json({ 
             success: false, 
             message: 'Invalid or expired token' 
+        });
+    }
+};
+
+// Logout - clear httpOnly cookie and blacklist token
+const logout = async (req, res) => {
+    try {
+        const token = req.cookies.token || req.headers.token;
+        
+        // Blacklist the token
+        if (token) {
+            tokenBlacklist.addToken(token);
+        }
+        
+        // Clear active session
+        if (req.user && req.user.userId) {
+            await userModel.findByIdAndUpdate(req.user.userId, { activeSessionId: null });
+        }
+        
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+        
+        res.json({ 
+            success: true, 
+            message: 'Logged out successfully' 
+        });
+    } catch (error) {
+        console.log('Logout error:', error);
+        res.json({ 
+            success: false, 
+            message: 'Logout failed' 
         });
     }
 };
@@ -422,5 +525,6 @@ export {
     forgotPassword,
     resetPassword,
     verifyResetToken,
-    refreshToken
+    refreshToken,
+    logout
 }

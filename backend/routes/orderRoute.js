@@ -1,5 +1,6 @@
 import express from 'express'
 import {placeOrderRazorpay, allOrders, userOrders, updateStatus, verifyRazorpay} from '../controllers/orderController.js'
+import { handleRazorpayWebhook } from '../utils/razorpayWebhook.js'
 import adminAuth  from '../middleware/adminAuth.js'
 import authUser from '../middleware/auth.js'
 
@@ -16,6 +17,9 @@ orderRouter.put('/:id/status', adminAuth, updateStatus)
 
 // Payment Features
 orderRouter.post('/razorpay', authUser, placeOrderRazorpay)
+
+// Webhook endpoint (no auth required - Razorpay calls this)
+orderRouter.post('/webhook/razorpay', express.raw({type: 'application/json'}), handleRazorpayWebhook)
 
 // User Feature 
 // Legacy routes for backward compatibility

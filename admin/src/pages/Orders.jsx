@@ -82,7 +82,7 @@ const Orders = ({ token }) => {
 
   const fetchAllOrders = async () => {
     if (!token) {
-      console.log('No token available')
+      console.log('No authentication available')
       setOrders([])
       setLoading(false)
       return;
@@ -90,7 +90,9 @@ const Orders = ({ token }) => {
 
     try {
       setLoading(true);
-      const response = await axios.post(backendUrl + '/api/order/list', {}, { headers: { token } })
+      const response = await axios.post(backendUrl + '/api/order/list', {}, { 
+        withCredentials: true // Include httpOnly cookies
+      })
       if (response.data.success) {
         // Handle both 'orders' and 'data' response formats for backward compatibility
         const ordersData = response.data.orders || response.data.data || []
@@ -117,7 +119,9 @@ const Orders = ({ token }) => {
     }
     
     try {
-      const response = await axios.post(backendUrl + '/api/order/status' , {orderId, status: newStatus}, { headers: {token}})
+      const response = await axios.post(backendUrl + '/api/order/status' , {orderId, status: newStatus}, { 
+        withCredentials: true // Include httpOnly cookies
+      })
       if (response.data.success) {
         await fetchAllOrders()
         toast.success('Order status updated successfully')
@@ -208,6 +212,8 @@ const Orders = ({ token }) => {
           orderId: selectedOrder._id,
           trackingNumber: shippingForm.trackingNumber,
           courier: shippingForm.courier
+        }, {
+          withCredentials: true // Include httpOnly cookies
         })
       } catch (whatsappError) {
         console.log('WhatsApp notification failed:', whatsappError)
