@@ -45,6 +45,19 @@ const ProductCard = ({
   const [selectedColor, setSelectedColor] = useState<string>("");
   // State for managing current image based on selected color
   const [currentImage, setCurrentImage] = useState<string>(imageUrl);
+  // State for tracking preloaded images
+  const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
+
+  // Preload hover image when component mounts
+  useEffect(() => {
+    if (hoverImageUrl && !preloadedImages.has(hoverImageUrl)) {
+      const img = new Image();
+      img.onload = () => {
+        setPreloadedImages(prev => new Set([...prev, hoverImageUrl]));
+      };
+      img.src = hoverImageUrl;
+    }
+  }, [hoverImageUrl, preloadedImages]);
 
   // Set initial selected color when product loads
   useEffect(() => {
@@ -69,6 +82,15 @@ const ProductCard = ({
       );
       if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
         setCurrentImage(selectedVariant.images[0]);
+        
+        // Preload hover image for the selected color variant
+        if (selectedVariant.images.length > 1 && !preloadedImages.has(selectedVariant.images[1])) {
+          const img = new Image();
+          img.onload = () => {
+            setPreloadedImages(prev => new Set([...prev, selectedVariant.images[1]]));
+          };
+          img.src = selectedVariant.images[1];
+        }
       }
     }
   };
@@ -87,6 +109,8 @@ const ProductCard = ({
                 "w-full h-full object-cover transition-all duration-300 ease-in-out",
                 hoverImageUrl && "group-hover:scale-105"
               )}
+              loading="lazy"
+              decoding="async"
             />
 
             {/* Hover image (crossfade) */}
@@ -95,6 +119,8 @@ const ProductCard = ({
                 src={hoverImageUrl}
                 alt={(alt || title) + ' hover'}
                 className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                loading="lazy"
+                decoding="async"
               />
             )}
           </div>

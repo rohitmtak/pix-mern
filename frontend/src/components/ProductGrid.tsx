@@ -115,7 +115,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       <div 
         className={cn(
           "flex flex-wrap w-full",
-          "transition-all duration-1000 ease-in-out"
+          "transition-all duration-300 ease-in-out"
         )}
         style={{ gap: getLayoutConfig().gap }}
       >
@@ -133,7 +133,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               key={product._id || index}
               className={cn(
                 config.responsiveWidth,
-                "transition-all duration-1000 ease-in-out"
+                "transition-all duration-300 ease-in-out"
               )}
             >
               <ProductCard
