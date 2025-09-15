@@ -1,4 +1,4 @@
-import { toast } from "@/hooks/use-toast";
+import { toast } from "react-toastify";
 
 // Toast configuration for consistent styling across the application
 export const toastConfig = {
@@ -10,68 +10,28 @@ export const toastConfig = {
     info: 3000,
     default: 3000,
   },
-
-  // Predefined toast styles
-  styles: {
-    success: {
-      variant: "success" as const,
-      className: "border-0 bg-black text-white",
-    },
-    error: {
-      variant: "destructive" as const,
-      className: "border-red-200 bg-red-50 text-red-800",
-    },
-    warning: {
-      variant: "warning" as const,
-      className: "border-yellow-200 bg-yellow-50 text-yellow-800",
-    },
-    info: {
-      variant: "info" as const,
-      className: "border-0 bg-black text-white",
-    },
-    default: {
-      variant: "default" as const,
-      className: "border-0 bg-black text-white",
-    },
-  },
 };
 
 // Predefined toast functions for consistency
 export const showToast = {
   success: (description: string, customTitle?: string, customDuration?: number) =>
-    toast({
-      title: undefined,
-      description,
-      duration: customDuration || toastConfig.durations.success,
-      variant: toastConfig.styles.success.variant,
-      className: toastConfig.styles.success.className,
+    toast.success(description, {
+      autoClose: customDuration || toastConfig.durations.success,
     }),
 
   error: (description: string, customTitle?: string, customDuration?: number) =>
-    toast({
-      title: undefined,
-      description,
-      duration: customDuration || toastConfig.durations.error,
-      variant: toastConfig.styles.error.variant,
-      className: toastConfig.styles.error.className,
+    toast.error(description, {
+      autoClose: customDuration || toastConfig.durations.error,
     }),
 
   warning: (description: string, customTitle?: string, customDuration?: number) =>
-    toast({
-      title: undefined,
-      description,
-      duration: customDuration || toastConfig.durations.warning,
-      variant: toastConfig.styles.warning.variant,
-      className: toastConfig.styles.warning.className,
+    toast.warning(description, {
+      autoClose: customDuration || toastConfig.durations.warning,
     }),
 
   info: (description: string, customTitle?: string, customDuration?: number) =>
-    toast({
-      title: undefined,
-      description,
-      duration: customDuration || toastConfig.durations.info,
-      variant: toastConfig.styles.info.variant,
-      className: toastConfig.styles.info.className,
+    toast.info(description, {
+      autoClose: customDuration || toastConfig.durations.info,
     }),
 
   // Custom toast with full control
@@ -82,12 +42,9 @@ export const showToast = {
     variant?: "default" | "destructive" | "success" | "warning" | "info";
     className?: string;
   }) =>
-    toast({
-      title: config.title,
-      description: config.description,
-      duration: config.duration || toastConfig.durations.default,
-      variant: config.variant || "default",
-      className: config.className,
+    toast(config.description, {
+      autoClose: config.duration || toastConfig.durations.default,
+      type: config.variant === "destructive" ? "error" : config.variant || "default",
     }),
 };
 
