@@ -57,7 +57,6 @@ const App = () => (
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-            <CartLoader />
             <ToastContainer 
               position="top-center"
               autoClose={5000}
@@ -73,6 +72,7 @@ const App = () => (
               aria-label="Toast notifications"
             />
             <BrowserRouter>
+              <CartLoader />
               <AppRoutes />
             </BrowserRouter>
           </WishlistProvider>

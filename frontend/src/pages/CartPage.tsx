@@ -17,12 +17,14 @@ const CartPage = () => {
 
   // Item selection state
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [removingItems, setRemovingItems] = useState<Set<string>>(new Set());
 
   // Initialize with no items selected by default - user has full control
   useEffect(() => {
     const allItemIds = cartItems.map(item => `${item.productId}-${item.size}-${item.color}`);
     setSelectedItems(new Set(allItemIds));
   }, [cartItems]);
+
 
   // Toggle item selection
   const toggleItemSelection = (itemId: string) => {
@@ -85,19 +87,50 @@ const CartPage = () => {
     }
   };
 
-  const handleRemoveItem = (productId: string, size: string, color: string) => {
+  const handleRemoveItem = async (productId: string, size: string, color: string, event?: React.MouseEvent) => {
+    // Ensure productId is always a string
+    const productIdStr = String(productId);
+    
+    // Prevent event propagation to avoid double triggers
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    const itemKey = `${productIdStr}-${size}-${color}`;
+    
+    // Prevent multiple clicks on the same item
+    if (removingItems.has(itemKey)) {
+      return;
+    }
+    
+    // Add to removing items set
+    setRemovingItems(prev => new Set(prev).add(itemKey));
+    
     // Find the item to get its name for the toast message
     const item = cartItems.find(item => 
-      item.productId === productId && 
+      String(item.productId) === productIdStr && 
       item.size === size && 
       item.color === color
     );
     
-    removeFromCart(productId, size, color);
-    
-    // Show toast notification
-    if (item) {
-      showToast.success(toastMessages.cart.removed);
+    try {
+      await removeFromCart(productIdStr, size, color);
+      
+      // Show toast notification
+      if (item) {
+        showToast.success(toastMessages.cart.removed);
+      }
+    } catch (error) {
+      console.error('Error removing item:', error);
+      showToast.error('Failed to remove item from cart');
+    } finally {
+      // Remove from removing items set
+      setRemovingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(itemKey);
+        return newSet;
+      });
     }
   };
 
@@ -191,7 +224,7 @@ const CartPage = () => {
               {/* Cart Items */}
               <div>
                 {/* Selection Controls - Desktop Only */}
-                <div className="hidden sm:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-6 p-3 sm:p-4 bg-[#f2f2f2] border border-gray-200">
+                <div className="hidden sm:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-6 p-3 sm:p-4 bg-[#f2f2f2] border rounded-md border-gray-200">
                   <div className="flex items-center gap-3 sm:gap-4">
                     <input
                       type="checkbox"
@@ -214,7 +247,7 @@ const CartPage = () => {
                     const isSelected = selectedItems.has(itemId);
                     
                     return (
-                      <div key={`${item.id}-${item.size}-${item.color}`} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <div key={`${item.id}-${item.size}-${item.color}`} className="bg-white border border-gray-200">
                         {/* Mobile Layout */}
                         <div className="block sm:hidden p-4">
                           <div className="flex gap-4">
@@ -285,8 +318,11 @@ const CartPage = () => {
 
                                 {/* Delete Button */}
                                 <button
-                                  onClick={() => handleRemoveItem(item.productId, item.size, item.color)}
-                                  className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                  type="button"
+                                  onClick={(e) => handleRemoveItem(String(item.productId), item.size, item.color, e)}
+                                  className="text-gray-400 hover:text-red-500 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  disabled={removingItems.has(`${String(item.productId)}-${item.size}-${item.color}`)}
+                                  aria-label="Remove item from cart"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -375,8 +411,11 @@ const CartPage = () => {
 
                             {/* Delete Button */}
                             <button
-                              onClick={() => handleRemoveItem(item.productId, item.size, item.color)}
-                              className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                              type="button"
+                              onClick={(e) => handleRemoveItem(String(item.productId), item.size, item.color, e)}
+                              className="text-gray-400 hover:text-red-500 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                              disabled={removingItems.has(`${String(item.productId)}-${item.size}-${item.color}`)}
+                              aria-label="Remove item from cart"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

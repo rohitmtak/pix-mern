@@ -2,7 +2,7 @@ import React, { useEffect, useState, FormEvent, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import apiClient from "@/utils/apiClient";
+import apiClient, { resetSessionExpiredFlag } from "@/utils/apiClient";
 import axios from "axios";
 import { showToast, toastMessages } from "@/config/toastConfig";
 import { config } from "@/config/env";
@@ -94,6 +94,18 @@ const Login: React.FC = () => {
           guestCart = [];
         }
         
+        // Check if there are wishlist items to migrate
+        const savedWishlist = localStorage.getItem('wishlist');
+        let hasWishlistItems = false;
+        try {
+          if (savedWishlist) {
+            const parsedWishlist = JSON.parse(savedWishlist);
+            hasWishlistItems = Array.isArray(parsedWishlist) && parsedWishlist.length > 0;
+          }
+        } catch (error) {
+          console.error('Error parsing wishlist:', error);
+        }
+
         // Migrate guest wishlist and cart to authenticated account
         try {
           await Promise.all([
@@ -101,24 +113,33 @@ const Login: React.FC = () => {
             migrateGuestCartToUser(guestCart)
           ]);
           
-          // Show single, appropriate message based on auth mode
+          // Show appropriate message based on auth mode and wishlist status
           if (authMode === "Sign Up") {
-            // New user - show welcome message with wishlist info
-            showToast.success(toastMessages.auth.welcomeNewUser);
+            // New user - show welcome message with or without wishlist info
+            showToast.success(hasWishlistItems 
+              ? toastMessages.auth.welcomeNewUserWithWishlist 
+              : toastMessages.auth.welcomeNewUser
+            );
           } else {
-            // Existing user - show login success with wishlist info
-            showToast.success(toastMessages.auth.welcomeBackUser);
+            // Existing user - show login success with or without wishlist info
+            showToast.success(hasWishlistItems 
+              ? toastMessages.auth.welcomeBackUserWithWishlist 
+              : toastMessages.auth.welcomeBackUser
+            );
           }
         } catch (error) {
           console.error('Failed to migrate guest data:', error);
           
           // Show message without wishlist info if migration fails
           if (authMode === "Sign Up") {
-            showToast.success(toastMessages.auth.welcomeNewUserFallback);
+            showToast.success(toastMessages.auth.welcomeNewUser);
           } else {
-            showToast.success(toastMessages.auth.welcomeBackUserFallback);
+            showToast.success(toastMessages.auth.welcomeBackUser);
           }
         }
+        
+        // Reset session expired flag after successful login
+        resetSessionExpiredFlag();
         
         // Small delay to ensure cart migration completes before navigation
         // This prevents race conditions with other components loading the cart

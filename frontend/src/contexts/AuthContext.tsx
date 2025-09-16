@@ -5,6 +5,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   checkAuth: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,12 +39,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const logout = () => {
+    setIsAuthenticated(false);
+    setIsLoading(false);
+  };
+
   useEffect(() => {
     checkAuth();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, checkAuth }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, checkAuth, logout }}>
       {children}
     </AuthContext.Provider>
   );

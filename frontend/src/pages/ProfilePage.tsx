@@ -34,8 +34,9 @@ type ProfileTab = 'account' | 'addresses' | 'orders';
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { clearCart, loadUserCartFromBackend } = useCart();
-  const { isAuthenticated, isLoading: authLoading, checkAuth } = useAuth();
+  const { clearCart, loadUserCartFromBackend, state: cartState } = useCart();
+  const { isAuthenticated, isLoading: authLoading, checkAuth, logout: authLogout } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<ProfileTab>('account');
@@ -71,8 +72,14 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     // Only redirect if authentication check is complete and user is not authenticated
-    if (!authLoading && !isAuthenticated) {
-      navigate('/login');
+    // But don't redirect if we're in the middle of logging out
+    if (!authLoading && !isAuthenticated && !isLoggingOut) {
+      // Add a longer delay to prevent race conditions during logout
+      setTimeout(() => {
+        if (!isLoggingOut) {
+          navigate('/login');
+        }
+      }, 1000);
       return;
     }
 
@@ -165,12 +172,31 @@ const ProfilePage: React.FC = () => {
   }, [profile]);
 
   const handleLogout = async () => {
-    await logout(); // Now async function
-    clearCart(); // Clear cart state and localStorage
-    // Refresh authentication state after logout
-    await checkAuth();
-    showToast.success(toastMessages.profile.loggedOut);
+    // Set logout flag to prevent redirect to login
+    setIsLoggingOut(true);
+    
+    // Check if cart has items BEFORE clearing
+    const hadCartItems = cartState.items.length > 0;
+    
+    // Call logout functions
+    await logout();
+    authLogout();
+    clearCart();
+    
+    // Show appropriate message based on whether cart had items
+    const logoutMessage = hadCartItems 
+      ? toastMessages.profile.loggedOut      // "Signed out. Cart cleared."
+      : toastMessages.auth.logoutSuccess;    // "Logged out successfully"
+    
+    showToast.success(logoutMessage);
+    
+    // Redirect to homepage after logout
     navigate('/');
+    
+    // Reset logout flag after navigation
+    setTimeout(() => {
+      setIsLoggingOut(false);
+    }, 2000);
   };
 
   const validatePhone = (phone: string): boolean => {

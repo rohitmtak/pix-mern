@@ -9,6 +9,14 @@ const apiClient = axios.create({
   withCredentials: true, // Enable cookies for httpOnly tokens
 });
 
+// Flag to prevent multiple session expired toasts
+let sessionExpiredToastShown = false;
+
+// Function to reset the session expired toast flag (call after successful login)
+export const resetSessionExpiredFlag = () => {
+  sessionExpiredToastShown = false;
+};
+
 // Request interceptor - no need to add token manually with httpOnly cookies
 apiClient.interceptors.request.use(
   (config) => {
@@ -54,16 +62,9 @@ apiClient.interceptors.response.use(
           }
         }
         
-        // If refresh failed or this is a retry, logout the user
-        logout();
-        
-        // Show user-friendly message
-        showToast.error('Your session has expired. Please log in again.');
-        
-        // Redirect to login page
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 1500);
+        // If refresh failed or this is a retry, don't logout here
+        // Let the component handle authentication errors appropriately
+        // This prevents unwanted redirects during intentional logout
         
         return Promise.reject(error);
       }

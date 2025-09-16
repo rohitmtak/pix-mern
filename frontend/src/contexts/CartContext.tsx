@@ -72,9 +72,12 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     }
 
     case 'REMOVE_FROM_CART': {
+      // Ensure productId is always a string for comparison
+      const productIdStr = String(action.payload.productId);
+      
       const newItems = state.items.filter(
         item =>
-          !(item.productId === action.payload.productId &&
+          !(String(item.productId) === productIdStr &&
             item.size === action.payload.size &&
             item.color === action.payload.color)
       );
@@ -357,25 +360,32 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   };
 
   const removeFromCart = async (productId: string, size: string, color: string) => {
-    dispatch({ type: 'REMOVE_FROM_CART', payload: { productId, size, color } });
+    // Ensure productId is always a string
+    const productIdStr = String(productId);
     
-    // If user is authenticated, sync with backend
+    // Dispatch immediately for instant UI update
+    dispatch({ type: 'REMOVE_FROM_CART', payload: { productId: productIdStr, size, color } });
+    
+    // Sync with backend in the background (don't await to avoid blocking UI)
     if (isAuthenticated) {
-      try {
-        const response = await apiClient.delete(`${config.api.baseUrl}/cart/remove`, {
-          data: { productId, size, color }
-        });
+      // Use setTimeout to make this truly async and not block the UI
+      setTimeout(async () => {
+        try {
+          const response = await apiClient.delete(`${config.api.baseUrl}/cart/remove`, {
+            data: { productId: productIdStr, size, color }
+          });
 
-        // Check if the response indicates success
-        if (!response.data.success) {
-          // Item not found in backend cart - this is expected when frontend removes an item
-          // that wasn't in the backend or was already removed
-          console.log('Item not found in backend cart (expected for frontend removals)');
+          // Check if the response indicates success
+          if (!response.data.success) {
+            // Item not found in backend cart - this is expected when frontend removes an item
+            // that wasn't in the backend or was already removed
+            console.log('Item not found in backend cart (expected for frontend removals)');
+          }
+        } catch (error) {
+          console.error('Backend cart removal failed:', error);
+          // Don't revert frontend change - let it stay removed locally
         }
-      } catch (error) {
-        console.error('Backend cart removal failed:', error);
-        // Don't revert frontend change - let it stay removed locally
-      }
+      }, 0);
     }
   };
 
