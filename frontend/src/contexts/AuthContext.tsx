@@ -32,7 +32,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthenticated(authenticated);
     } catch (error) {
       console.error('Error checking authentication:', error);
-      setIsAuthenticated(false);
+      // Only set to false if it's a clear authentication error, not a network error
+      if (error instanceof Error && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
+        setIsAuthenticated(false);
+      } else {
+        // For network errors, keep the current state to avoid false negatives
+        // This is especially important in production where network issues might occur
+        console.warn('Network error during auth check, keeping current state');
+        // Don't change the authentication state on network errors
+      }
     } finally {
       setIsLoading(false);
       setIsChecking(false);

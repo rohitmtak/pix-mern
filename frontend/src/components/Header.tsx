@@ -29,13 +29,10 @@ const Header = () => {
     navigate(path);
   };
 
-  const handleProfileNavigation = () => {
-    // Check if user is authenticated before navigating to profile
-    if (isAuthenticated) {
-      handleNavigation('/profile');
-    } else {
-      handleNavigation('/login');
-    }
+  const handleProfileNavigation = async () => {
+    // Always navigate to profile first - let the ProfilePage component handle authentication
+    // This prevents race conditions and ensures consistent behavior
+    handleNavigation('/profile');
   };
 
   // Determine header background based on page

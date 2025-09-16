@@ -134,19 +134,33 @@ const CartPage = () => {
     }
   };
 
-  const handleProceedToCheckout = () => {
+  const handleProceedToCheckout = async () => {
     // Check if any items are selected
     if (selectedItems.size === 0) {
       showToast.error('Please select at least one item to checkout');
       return;
     }
 
-    // Check if user is authenticated
+    // Double-check authentication status before proceeding
     if (!isAuthenticated) {
-      // User is not logged in, redirect to login page
-      showToast.error(toastMessages.cart.loginRequired);
-      navigate("/login");
-      return;
+      // Perform a fresh authentication check to ensure accuracy
+      try {
+        const { isAuthenticated: checkAuthStatus } = await import('@/utils/auth');
+        const authStatus = await checkAuthStatus();
+        
+        if (!authStatus) {
+          // User is not logged in, redirect to login page
+          showToast.error(toastMessages.cart.loginRequired);
+          navigate("/login");
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        // If auth check fails, redirect to login to be safe
+        showToast.error(toastMessages.cart.loginRequired);
+        navigate("/login");
+        return;
+      }
     }
     
     // User is authenticated, proceed to checkout with selected items

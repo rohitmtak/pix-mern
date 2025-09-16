@@ -11,7 +11,6 @@
 select,input,textarea{
     border: 1px solid #c2c2c2;
     outline-color: #575656c2;
-    border-radius: 4px;
 }
 
 .active{

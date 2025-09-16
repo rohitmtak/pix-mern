@@ -379,7 +379,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
           if (!response.data.success) {
             // Item not found in backend cart - this is expected when frontend removes an item
             // that wasn't in the backend or was already removed
-            console.log('Item not found in backend cart (expected for frontend removals)');
           }
         } catch (error) {
           console.error('Backend cart removal failed:', error);

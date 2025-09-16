@@ -38,7 +38,7 @@ const loginUser = async (req, res) => {
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
                 maxAge: 15 * 60 * 1000 // 15 minutes
             })
             
@@ -103,7 +103,7 @@ const registerUser = async (req, res) => {
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 15 * 60 * 1000 // 15 minutes
         })
 
@@ -142,7 +142,7 @@ const adminLogin = async (req, res) => {
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
                 maxAge: 15 * 60 * 1000 // 15 minutes
             })
             
@@ -457,7 +457,7 @@ const refreshToken = async (req, res) => {
         res.cookie('token', newToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 15 * 60 * 1000 // 15 minutes
         })
         

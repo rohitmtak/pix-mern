@@ -1,13 +1,23 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { useEffect } from "react";
 
 const OrderSuccessPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { loadUserCartFromBackend } = useCart();
+
+  // Get order ID from navigation state or URL params (same format as admin page)
+  const orderIdFromState = location.state?.orderId;
+  const orderIdFromParams = searchParams.get('orderId');
+  const orderId = orderIdFromState || orderIdFromParams;
+  const displayOrderId = orderId ? `#${orderId.slice(-8).toUpperCase()}` : '#HS2024001';
+  
+  // Get order ID from navigation state or URL params
 
   // Load the updated cart from backend after successful order
   useEffect(() => {
@@ -90,7 +100,7 @@ const OrderSuccessPage = () => {
                 Order Details
               </h2>
               <div className="space-y-2 text-gray-600">
-                <p>Order Number: #HS2024001</p>
+                <p>Order Number: {displayOrderId}</p>
                 <p>Estimated Delivery: 7-10 business days</p>
                 <p>Tracking information will be sent to your email</p>
               </div>

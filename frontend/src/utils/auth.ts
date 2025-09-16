@@ -2,16 +2,54 @@
 // Since tokens are now stored in httpOnly cookies, we can't access them directly
 // We'll use API calls to check authentication status
 
+// Debounce mechanism to prevent multiple rapid authentication checks
+let authCheckPromise: Promise<boolean> | null = null;
+let lastAuthCheck = 0;
+const AUTH_CHECK_COOLDOWN = 2000; // 2 seconds
+
 // Helper function to check if user is authenticated by making an API call
 export const isAuthenticated = async (): Promise<boolean> => {
+  const now = Date.now();
+  
+  // If we have a recent check and it's still running, return that promise
+  if (authCheckPromise && (now - lastAuthCheck) < AUTH_CHECK_COOLDOWN) {
+    return authCheckPromise;
+  }
+  
+  // Create new authentication check
+  authCheckPromise = performAuthCheck();
+  lastAuthCheck = now;
+  
   try {
-    const response = await fetch('/api/user/me', {
+    const result = await authCheckPromise;
+    return result;
+  } finally {
+    // Clear the promise after completion
+    authCheckPromise = null;
+  }
+};
+
+const performAuthCheck = async (): Promise<boolean> => {
+  try {
+    // Use the configured API base URL instead of hardcoded path
+    const apiBaseUrl = import.meta.env.DEV ? '/api' : (import.meta.env.VITE_API_BASE_URL || 'https://pix-mern-production.up.railway.app/api');
+    const response = await fetch(`${apiBaseUrl}/user/me`, {
       method: 'GET',
       credentials: 'include', // Include httpOnly cookies
+      // Add timeout to prevent hanging requests
+      signal: AbortSignal.timeout(5000), // 5 second timeout
     });
-    return response.ok;
+    
+    // Check if response is ok and has valid data
+    if (response.ok) {
+      const data = await response.json();
+      return data.success === true;
+    }
+    
+    return false;
   } catch (error) {
     console.error('Error checking authentication:', error);
+    // Return false for any error (network, timeout, etc.)
     return false;
   }
 };
@@ -32,8 +70,9 @@ export const getToken = (): string | null => {
 
 export const logout = async (): Promise<void> => {
   try {
-    // Call logout endpoint to clear httpOnly cookie
-    await fetch('/api/user/logout', {
+    // Use the configured API base URL instead of hardcoded path
+    const apiBaseUrl = import.meta.env.DEV ? '/api' : (import.meta.env.VITE_API_BASE_URL || 'https://pix-mern-production.up.railway.app/api');
+    await fetch(`${apiBaseUrl}/user/logout`, {
       method: 'POST',
       credentials: 'include',
     });

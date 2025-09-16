@@ -80,7 +80,9 @@ const CheckoutPage = () => {
 
       try {
         setLoadingAddresses(true);
-        const response = await axios.get(`${config.api.baseUrl}/user/me`);
+        const response = await axios.get(`${config.api.baseUrl}/user/me`, {
+          withCredentials: true
+        });
         if (response.data?.success && response.data?.user?.addresses) {
           const userAddresses = response.data.user.addresses;
           
@@ -151,8 +153,6 @@ const CheckoutPage = () => {
         console.error('formData is undefined');
         return;
       }
-
-      console.log('Form data received - processing checkout');
 
       // If user has saved addresses and one is selected, and the form is not showing,
       // use the selected address
@@ -343,7 +343,7 @@ const CheckoutPage = () => {
         ...razorpayConfig,
         handler: async (response) => {
           try {
-            await axios.post(
+            const res = await axios.post(
               `${config.api.baseUrl}/order/verifyRazorpay`,
               { 
                 razorpay_order_id: response.razorpay_order_id,
@@ -352,6 +352,12 @@ const CheckoutPage = () => {
               },
               { withCredentials: true }
             );
+
+            // Check if payment verification was successful
+            if (!res.data.success) {
+              showToast.error(res.data.message || 'Payment verification failed');
+              return;
+            }
 
             // Always update user profile with checkout information
             try {
@@ -393,9 +399,9 @@ const CheckoutPage = () => {
                     isDefault: addresses.length === 0, // Only set as default if no addresses exist
                   },
                 };
-                await axios.post(`${config.api.baseUrl}/user/addresses`, addressPayload, {});
-              } else {
-                console.log('Address not saved - already exists in address book');
+                await axios.post(`${config.api.baseUrl}/user/addresses`, addressPayload, {
+                  withCredentials: true
+                });
               }
             } catch (_) {
               // non-blocking
@@ -404,7 +410,7 @@ const CheckoutPage = () => {
             // Don't remove items from frontend cart - let backend handle it
             // The backend will clear the cart after successful payment verification
             
-            navigate('/order-success', { 
+            navigate(`/order-success?orderId=${res.data.orderId}`, { 
               state: { orderId: res.data.orderId } 
             });
           } catch (e) {
@@ -617,7 +623,6 @@ const CheckoutPage = () => {
                 <div className="mt-4 sm:mt-6">
                   <Button 
                     onClick={() => {
-                      console.log('Checkout button clicked');
                       
                       // Handle form submission based on current state
                       if (addresses.length > 0 && !showAddressForm && selectedAddressId) {
@@ -711,11 +716,6 @@ const CheckoutPage = () => {
           </div>
           <Button 
             onClick={() => {
-              console.log('Mobile sticky button clicked - current state:', {
-                addressesLength: addresses.length,
-                showAddressForm,
-                selectedAddressId
-              });
               
               // Handle form submission based on current state
               if (addresses.length > 0 && !showAddressForm && selectedAddressId) {

@@ -75,12 +75,27 @@ const ProfilePage: React.FC = () => {
     // But don't redirect if we're in the middle of logging out
     if (!authLoading && !isAuthenticated && !isLoggingOut) {
       // Add a longer delay to prevent race conditions during logout
-      setTimeout(() => {
+      // Also perform a fresh authentication check to ensure accuracy
+      const timeoutId = setTimeout(async () => {
         if (!isLoggingOut) {
-          navigate('/login');
+          try {
+            // Perform a fresh authentication check
+            const { isAuthenticated: checkAuthStatus } = await import('@/utils/auth');
+            const authStatus = await checkAuthStatus();
+            
+            if (!authStatus) {
+              navigate('/login');
+            }
+          } catch (error) {
+            console.error('Error checking authentication:', error);
+            // If auth check fails, redirect to login to be safe
+            navigate('/login');
+          }
         }
       }, 1000);
-      return;
+      
+      // Cleanup timeout on unmount
+      return () => clearTimeout(timeoutId);
     }
 
     // Only fetch data if user is authenticated and not loading
