@@ -12,6 +12,7 @@ import NotificationTester from './components/NotificationTester'
 import WhatsAppManager from './components/WhatsAppManager'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL
 export const currency = '₹'
@@ -33,6 +34,26 @@ const App = () => {
       localStorage.removeItem('adminAuthenticated')
     }
   },[token])
+
+  // Auto-refresh token every 20 hours (before 24h expiration)
+  useEffect(() => {
+    if (token === 'authenticated') {
+      const refreshInterval = setInterval(async () => {
+        try {
+          await axios.post(backendUrl + '/api/user/refresh-token', {}, {
+            withCredentials: true
+          });
+          console.log('🔄 Admin token refreshed automatically');
+        } catch (error) {
+          console.error('Token refresh failed:', error);
+          // If refresh fails, logout the user
+          setToken('');
+        }
+      }, 20 * 60 * 60 * 1000); // 20 hours
+
+      return () => clearInterval(refreshInterval);
+    }
+  }, [token]);
 
   return (
     <div className='min-h-screen bg-gray-50'>

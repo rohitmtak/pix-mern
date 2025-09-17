@@ -28,10 +28,10 @@ const List = ({ token }) => {
   
   // Predefined color options for fashion items
   const colorOptions = [
-    "Black", "White", "Red", "Blue", "Green", "Yellow", "Pink", "Purple", 
-    "Orange", "Brown", "Grey", "Navy", "Maroon", "Cream", "Gold", "Silver",
-    "Beige", "Khaki", "Turquoise", "Magenta", "Coral", "Lavender", "Mint",
-    "Burgundy", "Teal", "Ivory", "Charcoal", "Rose Gold", "Copper", "Bronze"
+  "None", "Black", "White", "Red", "Blue", "Green", "Yellow", "Pink", "Purple", 
+  "Orange", "Brown", "Grey", "Navy", "Maroon", "Cream", "Gold", "Silver",
+  "Beige", "Khaki", "Turquoise", "Magenta", "Coral", "Lavender", "Mint",
+  "Burgundy", "Teal", "Ivory", "Charcoal", "Rose Gold", "Copper", "Bronze"
   ];
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showSubCategoryDropdown, setShowSubCategoryDropdown] = useState(false);
@@ -103,6 +103,14 @@ const List = ({ token }) => {
     try {
       setLoading(true)
       
+      // Validate colorVariants: if any variant has color "None", it must be the only variant
+      const hasNoneColor = editForm.colorVariants.some(v => (v.color || "").trim() === "None");
+      if (hasNoneColor && editForm.colorVariants.length > 1) {
+        toast.error("When using 'None' as color, only one variant is allowed.");
+        setLoading(false)
+        return;
+      }
+
       // Prepare form data for multipart upload
       const formData = new FormData()
       formData.append('name', editForm.name)
@@ -117,9 +125,9 @@ const List = ({ token }) => {
         formData, 
         { 
           headers: { 
-            token,
             'Content-Type': 'multipart/form-data'
-          } 
+          },
+          withCredentials: true // Include httpOnly cookies for authentication
         }
       )
 
@@ -547,7 +555,10 @@ const List = ({ token }) => {
                     {editForm.colorVariants.map((variant, index) => (
                       <div key={index} className="border border-gray-200 p-4 rounded-lg bg-white">
                         <div className="flex items-center justify-between mb-4">
-                          <h5 className="font-medium text-gray-900">Color Variant {index + 1}</h5>
+                          <h5 className="font-medium text-gray-900">
+                            {variant.color === "None" ? "Product Variant" : "Color Variant"} {index + 1}
+                            {variant.color && variant.color !== "None" && ` (${variant.color})`}
+                          </h5>
                           {editForm.colorVariants.length > 1 && (
                             <button
                               onClick={() => removeEditColorVariant(index)}
@@ -580,9 +591,11 @@ const List = ({ token }) => {
                                       updateEditColorVariant(index, 'color', color);
                                       setShowEditColorDropdowns(prev => ({...prev, [index]: false}));
                                     }}
-                                    className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                    className={`px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0 ${
+                                      color === "None" ? "bg-blue-50 text-blue-700 font-medium" : ""
+                                    }`}
                                   >
-                                    {color}
+                                    {color === "None" ? "None (No color variants)" : color}
                                   </div>
                                 ))}
                               </div>

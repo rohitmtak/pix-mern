@@ -9,7 +9,9 @@ const NotificationTester = ({ isMinimized, setIsMinimized, position, setPosition
 
   const testNotification = async (type) => {
     try {
-      const response = await axios.post(`${backendUrl}/api/test/test-notification`, { type })
+      const response = await axios.post(`${backendUrl}/api/test/test-notification`, { type }, {
+        withCredentials: true // Include httpOnly cookies for authentication
+      })
       console.log('Test notification sent:', response.data)
     } catch (error) {
       console.error('Failed to send test notification:', error)

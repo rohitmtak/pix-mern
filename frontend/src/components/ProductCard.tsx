@@ -45,19 +45,21 @@ const ProductCard = ({
   const [selectedColor, setSelectedColor] = useState<string>("");
   // State for managing current image based on selected color
   const [currentImage, setCurrentImage] = useState<string>(imageUrl);
+  // State for managing current hover image based on selected color
+  const [currentHoverImage, setCurrentHoverImage] = useState<string | undefined>(hoverImageUrl);
   // State for tracking preloaded images
   const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
 
-  // Preload hover image when component mounts
+  // Preload the current hover image whenever it changes
   useEffect(() => {
-    if (hoverImageUrl && !preloadedImages.has(hoverImageUrl)) {
+    if (currentHoverImage && !preloadedImages.has(currentHoverImage)) {
       const img = new Image();
       img.onload = () => {
-        setPreloadedImages(prev => new Set([...prev, hoverImageUrl]));
+        setPreloadedImages(prev => new Set([...prev, currentHoverImage]));
       };
-      img.src = hoverImageUrl;
+      img.src = currentHoverImage;
     }
-  }, [hoverImageUrl, preloadedImages]);
+  }, [currentHoverImage, preloadedImages]);
 
   // Set initial selected color when product loads
   useEffect(() => {
@@ -67,6 +69,7 @@ const ProductCard = ({
       const firstVariant = product.colorVariants[0];
       if (firstVariant.images && firstVariant.images.length > 0) {
         setCurrentImage(firstVariant.images[0]);
+        setCurrentHoverImage(firstVariant.images[1] || undefined);
       }
     }
   }, [product, imageUrl]);
@@ -82,6 +85,7 @@ const ProductCard = ({
       );
       if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
         setCurrentImage(selectedVariant.images[0]);
+        setCurrentHoverImage(selectedVariant.images[1] || undefined);
         
         // Preload hover image for the selected color variant
         if (selectedVariant.images.length > 1 && !preloadedImages.has(selectedVariant.images[1])) {
@@ -107,16 +111,16 @@ const ProductCard = ({
               alt={alt || title}
               className={cn(
                 "w-full h-full object-cover transition-all duration-300 ease-in-out",
-                hoverImageUrl && "group-hover:scale-105"
+                (currentHoverImage || hoverImageUrl) && "group-hover:scale-105"
               )}
               loading="lazy"
               decoding="async"
             />
 
             {/* Hover image (crossfade) */}
-            {hoverImageUrl && (
+            {(currentHoverImage || hoverImageUrl) && (
               <img
-                src={hoverImageUrl}
+                src={currentHoverImage || hoverImageUrl}
                 alt={(alt || title) + ' hover'}
                 className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                 loading="lazy"

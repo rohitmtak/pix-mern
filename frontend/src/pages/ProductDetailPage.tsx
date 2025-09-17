@@ -64,8 +64,17 @@ const ProductDetailPage = () => {
   // Set default selected color when product loads
   useEffect(() => {
     if (product && product.colorVariants && product.colorVariants.length > 0) {
-      // Set default color from first color variant
-      setSelectedColor(product.colorVariants[0].color);
+      // Check if product has only "None" color (single product)
+      const hasOnlyNoneColor = product.colorVariants.length === 1 && 
+                               product.colorVariants[0].color === "None";
+      
+      if (hasOnlyNoneColor) {
+        // For single products, set "None" as selected but don't show color selector
+        setSelectedColor("None");
+      } else {
+        // For multi-color products, set default color from first color variant
+        setSelectedColor(product.colorVariants[0].color);
+      }
       // Reset size selection to empty - user must choose
       setSelectedSize("");
     }
@@ -198,7 +207,10 @@ const ProductDetailPage = () => {
 
   const getAvailableColors = () => {
     if (!product || !product.colorVariants) return [];
-    return product.colorVariants.map((variant) => variant.color);
+    // Filter out "None" colors - they shouldn't be shown to customers
+    return product.colorVariants
+      .map((variant) => variant.color)
+      .filter(color => color !== "None");
   };
 
   const sizes = getAvailableSizes();
@@ -587,7 +599,7 @@ const ProductDetailPage = () => {
                         <strong>Subcategory:</strong> {product.subCategory}
                       </li>
                       <li className="text-gray-700 text-sm sm:text-sm leading-relaxed">
-                        <strong>Available Colors:</strong> {colors.join(", ")}
+                        <strong>Available Colors:</strong> {colors.length > 0 ? colors.join(", ") : "Single color product"}
                       </li>
                       <li className="text-gray-700 text-sm sm:text-sm leading-relaxed">
                         <strong>Available Sizes:</strong> {sizes.join(", ")}

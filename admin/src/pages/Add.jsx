@@ -4,6 +4,7 @@ import axios from 'axios'
 import { backendUrl } from '../App'
 import { toast } from 'react-toastify'
 import { uploadVideoToCloudinary } from '../utils/cloudinaryUpload'
+import { apiCallWithRefresh } from '../utils/authUtils'
 
 const Add = ({token}) => {
 
@@ -18,7 +19,7 @@ const Add = ({token}) => {
   
   // Predefined color options for fashion items
   const colorOptions = [
-    "Black", "White", "Red", "Blue", "Green", "Yellow", "Pink", "Purple", 
+    "None", "Black", "White", "Red", "Blue", "Green", "Yellow", "Pink", "Purple", 
     "Orange", "Brown", "Grey", "Navy", "Maroon", "Cream", "Gold", "Silver",
     "Beige", "Khaki", "Turquoise", "Magenta", "Coral", "Lavender", "Mint",
     "Burgundy", "Teal", "Ivory", "Charcoal", "Rose Gold", "Copper", "Bronze"
@@ -166,7 +167,7 @@ const Add = ({token}) => {
           } : variant
         ));
         
-        toast.success(`✅ Video uploaded to Cloudinary successfully! (${fileSize}MB)`);
+        toast.success(`Video uploaded to Cloudinary successfully! (${fileSize}MB)`);
       } else {
         throw new Error('Upload failed');
       }
@@ -283,6 +284,13 @@ const Add = ({token}) => {
         return;
       }
 
+      // If 'None' is selected as color, it must be the only variant
+      const hasNoneColor = colorVariants.some(v => (v.color || "").trim() === "None");
+      if (hasNoneColor && colorVariants.length > 1) {
+        toast.error("When using 'None' as color, only one variant is allowed.");
+        return;
+      }
+
       for (let variant of colorVariants) {
         if (!variant.color || !variant.price || variant.sizes.length === 0) {
           toast.error("All color variants must have color, price, and sizes");
@@ -323,26 +331,28 @@ const Add = ({token}) => {
         }
       });
 
-      const response = await axios.post(backendUrl + "/api/product/add", formData, {
-        headers: {
-          token,
-          'Content-Type': 'multipart/form-data'
-        },
-        timeout: 600000, // 10 minutes timeout for large video uploads
-        // Add upload optimization
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percentCompleted);
-          
-          // Show progress for large files
-          if (progressEvent.total > 10 * 1024 * 1024) { // Files larger than 10MB
-            const uploadedMB = Math.round(progressEvent.loaded / (1024 * 1024));
-            const totalMB = Math.round(progressEvent.total / (1024 * 1024));
-            console.log(`Upload progress: ${uploadedMB}MB / ${totalMB}MB (${percentCompleted}%)`);
+      const response = await apiCallWithRefresh(async () => {
+        return await axios.post(backendUrl + "/api/product/add", formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          withCredentials: true, // Include httpOnly cookies for authentication
+          timeout: 600000, // 10 minutes timeout for large video uploads
+          // Add upload optimization
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+            
+            // Show progress for large files
+            if (progressEvent.total > 10 * 1024 * 1024) { // Files larger than 10MB
+              const uploadedMB = Math.round(progressEvent.loaded / (1024 * 1024));
+              const totalMB = Math.round(progressEvent.total / (1024 * 1024));
+              console.log(`Upload progress: ${uploadedMB}MB / ${totalMB}MB (${percentCompleted}%)`);
+            }
           }
-        }
+        });
       })
 
       if (response.data.success) {
@@ -513,7 +523,10 @@ const Add = ({token}) => {
         {/* Color Variants Section */}
         <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
           <div className='flex justify-between items-center mb-6'>
-            <h2 className="font-jost text-xl font-medium text-gray-800">Color Variants</h2>
+            <div>
+              <h2 className="font-jost text-xl font-medium text-gray-800">Product Variants</h2>
+              <p className="text-sm text-gray-600 mt-1">Select "None" for products without color variants, or add multiple color options</p>
+            </div>
             <button 
               type="button" 
               onClick={addColorVariant}
@@ -528,7 +541,10 @@ const Add = ({token}) => {
             {colorVariants.map((variant, variantIndex) => (
               <div key={variantIndex} className='border border-gray-200 p-6 rounded-lg bg-gray-100'>
                 <div className='flex justify-between items-center mb-4'>
-                  <h3 className='font-medium text-gray-800 text-lg'>Color Variant {variantIndex + 1}</h3>
+                  <h3 className='font-medium text-gray-800 text-lg'>
+                    {variant.color === "None" ? "Product Variant" : "Color Variant"} {variantIndex + 1}
+                    {variant.color && variant.color !== "None" && ` (${variant.color})`}
+                  </h3>
                   {colorVariants.length > 1 && (
                     <button 
                       type="button" 
@@ -563,9 +579,11 @@ const Add = ({token}) => {
                               updateColorVariant(variantIndex, 'color', color);
                               setShowColorDropdowns(prev => ({...prev, [variantIndex]: false}));
                             }}
-                            className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                            className={`px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0 ${
+                              color === "None" ? "bg-blue-50 text-blue-700 font-medium" : ""
+                            }`}
                           >
-                            {color}
+                            {color === "None" ? "None (No color variants)" : color}
                           </div>
                         ))}
                       </div>
@@ -620,7 +638,9 @@ const Add = ({token}) => {
                 </div>
 
                                  <div className='mb-6'>
-                   <label className="block text-sm font-medium text-gray-700 mb-2">Product Images {variant.color ? `for ${variant.color}` : ''} *</label>
+                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                     Product Images {variant.color && variant.color !== "None" ? `for ${variant.color}` : ''} *
+                   </label>
                                      <div className='flex gap-3 flex-wrap'>
                      {[1, 2, 3, 4, 5].map((imageNum) => (
                       <label key={imageNum} htmlFor={`image_${variantIndex}_${imageNum}`} className="cursor-pointer">

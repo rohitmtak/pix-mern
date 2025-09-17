@@ -36,6 +36,8 @@ const WhatsAppManager = ({ isMinimized, setIsMinimized, position, setPosition })
     try {
       const response = await axios.post(`${backendUrl}/api/test/add-admin-number`, {
         phoneNumber: newNumber
+      }, {
+        withCredentials: true // Include httpOnly cookies for authentication
       })
       
       if (response.data.success) {
@@ -54,6 +56,8 @@ const WhatsAppManager = ({ isMinimized, setIsMinimized, position, setPosition })
     try {
       const response = await axios.post(`${backendUrl}/api/test/remove-admin-number`, {
         phoneNumber: number
+      }, {
+        withCredentials: true // Include httpOnly cookies for authentication
       })
       
       if (response.data.success) {
@@ -71,6 +75,8 @@ const WhatsAppManager = ({ isMinimized, setIsMinimized, position, setPosition })
     try {
       const response = await axios.post(`${backendUrl}/api/test/test-whatsapp-message`, {
         message: '🧪 Test message from PIX Luxury Clothing Admin Panel!'
+      }, {
+        withCredentials: true // Include httpOnly cookies for authentication
       })
       
       if (response.data.success) {

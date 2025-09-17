@@ -136,14 +136,14 @@ const adminLogin = async (req, res) => {
         const isMatch = await bcrypt.compare(password, adminPasswordHash);
         
         if (isMatch) {
-            const token = jwt.sign({ email, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '15m' });
+            const token = jwt.sign({ email, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '24h' });
             
             // Set httpOnly cookie
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-                maxAge: 15 * 60 * 1000 // 15 minutes
+                maxAge: 24 * 60 * 60 * 1000 // 24 hours
             })
             
             res.json({success:true, message: 'Admin login successful'})
@@ -443,7 +443,26 @@ const refreshToken = async (req, res) => {
         // Verify the existing token
         const token_decode = jwt.verify(token, process.env.JWT_SECRET);
         
-        // Find the user
+        // Check if this is an admin token
+        if (token_decode.role === 'admin' && token_decode.email === process.env.ADMIN_EMAIL) {
+            // Generate new admin token with 24h expiration
+            const newToken = jwt.sign({ email: token_decode.email, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '24h' });
+            
+            // Set httpOnly cookie
+            res.cookie('token', newToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                maxAge: 24 * 60 * 60 * 1000 // 24 hours
+            })
+            
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Admin token refreshed successfully'
+            });
+        }
+        
+        // For regular users, find the user and generate new token
         const user = await userModel.findById(token_decode.id);
         
         if (!user) {
