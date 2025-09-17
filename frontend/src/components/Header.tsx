@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import SideMenu from "./SideMenu";
 import { useCart } from "@/contexts/CartContext";
@@ -7,6 +7,22 @@ import { useAuth } from "@/contexts/AuthContext";
 const Header = () => {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [isCollectionHovered, setIsCollectionHovered] = useState(false);
+  const collectionCloseTimeoutRef = useRef<number | null>(null);
+  const openCollectionMenu = () => {
+    if (collectionCloseTimeoutRef.current) {
+      window.clearTimeout(collectionCloseTimeoutRef.current);
+      collectionCloseTimeoutRef.current = null;
+    }
+    setIsCollectionHovered(true);
+  };
+  const scheduleCloseCollectionMenu = () => {
+    if (collectionCloseTimeoutRef.current) {
+      window.clearTimeout(collectionCloseTimeoutRef.current);
+    }
+    collectionCloseTimeoutRef.current = window.setTimeout(() => {
+      setIsCollectionHovered(false);
+    }, 150);
+  };
   const navigate = useNavigate();
   const location = useLocation();
   const { state: cartState } = useCart();
@@ -178,18 +194,22 @@ const Header = () => {
               </Link>
 
               {/* Our Collection - with Dropdown */}
-              <div
-                className="group"
-                onMouseEnter={() => setIsCollectionHovered(true)}
-                onMouseLeave={() => setIsCollectionHovered(false)}
-              >
-                <button className="text-black font-jost text-sm uppercase tracking-wide hover:opacity-70 transition-opacity relative after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:w-full after:h-10 after:bg-transparent after:hidden group-hover:after:block">
+              <div>
+                <button 
+                  onMouseEnter={openCollectionMenu}
+                  onMouseLeave={scheduleCloseCollectionMenu}
+                  className="text-black font-jost text-sm uppercase tracking-wide hover:opacity-70 transition-opacity relative after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:w-full after:h-10 after:bg-transparent after:hidden group-hover:after:block"
+                >
                   Collection
                 </button>
 
                 {/* Category Cards Row - Full width with images */}
                 <div
-                  className="absolute top-full left-1/2 -translate-x-1/2 w-screen bg-white border-t border-gray-100 shadow-2xl py-12 z-[70] opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto transform"
+                  onMouseEnter={openCollectionMenu}
+                  onMouseLeave={scheduleCloseCollectionMenu}
+                  className={`absolute top-full left-1/2 -translate-x-1/2 w-screen bg-white border-t border-gray-100 shadow-2xl py-12 z-[70] transition-all duration-300 transform ${
+                    isCollectionHovered ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                  }`}
                 >
                   <div className="max-w-screen-2xl mx-auto px-16">
                     <div className="flex">
@@ -197,9 +217,13 @@ const Header = () => {
                       <div className="w-2/5">
                         <div className="space-y-6">
                           {/* Signature Collection */}
-                          <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-0">
+                          <div className={`transition-all duration-1000 ease-out ${
+                            isCollectionHovered 
+                              ? 'opacity-100 translate-y-0 delay-0' 
+                              : 'opacity-0 -translate-y-8 delay-0'
+                          }`}>
                             <button
-                              onClick={() => handleNavigation("/collection/signature")}
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/signature"); }}
                               className="text-left"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
@@ -209,9 +233,13 @@ const Header = () => {
                           </div>
 
                           {/* Bridal Couture */}
-                          <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-100">
+                          <div className={`transition-all duration-1000 ease-out ${
+                            isCollectionHovered 
+                              ? 'opacity-100 translate-y-0 delay-100' 
+                              : 'opacity-0 -translate-y-8 delay-0'
+                          }`}>
                             <button
-                              onClick={() => handleNavigation("/collection/bridal")}
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/bridal"); }}
                               className="text-left"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
@@ -221,9 +249,13 @@ const Header = () => {
                           </div>
 
                           {/* Contemporary Drapes */}
-                          <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-200">
+                          <div className={`transition-all duration-1000 ease-out ${
+                            isCollectionHovered 
+                              ? 'opacity-100 translate-y-0 delay-200' 
+                              : 'opacity-0 -translate-y-8 delay-0'
+                          }`}>
                             <button
-                              onClick={() => handleNavigation("/collection/contemporary")}
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/contemporary"); }}
                               className="text-left"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
@@ -233,9 +265,13 @@ const Header = () => {
                           </div>
 
                           {/* Luxury Fusion Lounge */}
-                          <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-300">
+                          <div className={`transition-all duration-1000 ease-out ${
+                            isCollectionHovered 
+                              ? 'opacity-100 translate-y-0 delay-300' 
+                              : 'opacity-0 -translate-y-8 delay-0'
+                          }`}>
                             <button
-                              onClick={() => handleNavigation("/collection/luxury")}
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/luxury"); }}
                               className="text-left"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
@@ -245,10 +281,14 @@ const Header = () => {
                           </div>
 
                           {/* VIEW ALL - Separator and View All option */}
-                          <div className="group/item opacity-0 -translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-1000 ease-out group-hover:delay-400">
+                          <div className={`transition-all duration-1000 ease-out ${
+                            isCollectionHovered 
+                              ? 'opacity-100 translate-y-0 delay-400' 
+                              : 'opacity-0 -translate-y-8 delay-0'
+                          }`}>
                             <div className="border-t border-gray-200 my-4 mr-32"></div>
                             <button
-                              onClick={() => handleNavigation("/collection")}
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection"); }}
                               className="text-left"
                             >
                               <div className="text-md text-gray-600 group-hover/item:text-black transition-colors duration-300 font-medium">
@@ -263,9 +303,9 @@ const Header = () => {
                       <div className="w-3/5">
                         <div className="grid grid-cols-4 gap-4">
                           {/* Signature Collection Image */}
-                          <div className="group/item">
+                          <div>
                             <button
-                              onClick={() => handleNavigation("/collection/signature")}
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/signature"); }}
                               className="w-full"
                             >
                               <div className="aspect-[4/5] overflow-hidden">
@@ -282,9 +322,9 @@ const Header = () => {
                           </div>
 
                           {/* Bridal Couture Image */}
-                          <div className="group/item">
+                          <div>
                             <button
-                              onClick={() => handleNavigation("/collection/bridal")}
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/bridal"); }}
                               className="w-full"
                             >
                               <div className="aspect-[4/5] overflow-hidden">
@@ -301,9 +341,9 @@ const Header = () => {
                           </div>
 
                           {/* Contemporary Drapes Image */}
-                          <div className="group/item">
+                          <div>
                             <button
-                              onClick={() => handleNavigation("/collection/contemporary")}
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/contemporary"); }}
                               className="w-full"
                             >
                               <div className="aspect-[4/5] overflow-hidden">
@@ -320,9 +360,9 @@ const Header = () => {
                           </div>
 
                           {/* Luxury Fusion Lounge Image */}
-                          <div className="group/item">
+                          <div>
                             <button
-                              onClick={() => handleNavigation("/collection/luxury")}
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/luxury"); }}
                               className="w-full"
                             >
                               <div className="aspect-[4/5] overflow-hidden">

@@ -47,7 +47,7 @@ const AboutPage = () => {
                 <img 
                   src="https://res.cloudinary.com/djhnxxllr/image/upload/v1757334101/Designer-Portrait_qivuar.jpg" 
                   alt="Founder portrait" 
-                  className="w-full h-[300px] sm:h-[400px] lg:h-[600px] object-cover object-center"
+                  className="w-full h-[300px] sm:h-[400px] lg:h-[calc(100vh-48px)] object-cover object-center"
                 />
               </div>
             </div>
@@ -55,7 +55,7 @@ const AboutPage = () => {
 
           {/* Quote Section */}
           <section className="mb-12 sm:mb-16 lg:mb-20">
-            <div className="text-center max-w-4xl mx-auto py-8 sm:py-12 lg:py-16">
+            <div className="text-center max-w-4xl mx-auto py-8 sm:py-12 lg:py-8">
               <blockquote className="text-xl sm:text-2xl lg:text-3xl font-serif text-black leading-relaxed mb-6 px-4">
                 "Indo-contemporary luxury is not just fashion, it's a cultural narrative."
               </blockquote>
@@ -156,7 +156,7 @@ const AboutPage = () => {
                     <img
                       src={image}
                       alt={`Instagram post ${index + 1}`}
-                      className="w-full h-[250px] sm:h-[350px] lg:h-[436px] object-cover transition-all duration-300 group-hover:brightness-75"
+                      className="w-full h-[250px] sm:h-[350px] lg:h-[436px] object-cover object-top transition-all duration-300 group-hover:brightness-75"
                     />
                     {/* Instagram Overlay */}
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
