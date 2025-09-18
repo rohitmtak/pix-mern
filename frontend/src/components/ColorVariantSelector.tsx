@@ -83,14 +83,14 @@ const ColorVariantSelector: React.FC<ColorVariantSelectorProps> = ({
                 getSizeClasses(),
                 "rounded-full",
                 disabled && "cursor-not-allowed opacity-60",
+                // Add ring styling similar to ProductDetailPage
+                "ring-1 ring-gray-200 hover:ring-gray-400",
                 // Enhanced styling for collection page context
                 disabled && "hover:ring-gray-200", // Prevent hover effects when disabled
                 // Add subtle shadow for better visual depth
                 "shadow-sm",
                 // Better hover effects when enabled
-                !disabled && "hover:scale-110 hover:shadow-md",
-                // Subtle hover effect without rings
-                !disabled && "hover:border-gray-300"
+                !disabled && "hover:scale-110"
               )}
               title={variant.color}
             >
@@ -106,7 +106,10 @@ const ColorVariantSelector: React.FC<ColorVariantSelectorProps> = ({
                 <div className="absolute inset-0 flex items-center justify-center">
                   <svg
                     className={cn(
-                      "text-white drop-shadow-sm",
+                      // Use black checkmark for light colors, white for dark colors
+                      hexColor === "#FFFFFF" || hexColor === "#FFFF00" || hexColor === "#FFC0CB" 
+                        ? "text-black drop-shadow-sm" 
+                        : "text-white drop-shadow-sm",
                       size === 'sm' ? 'w-2.5 h-2.5' : size === 'lg' ? 'w-4 h-4' : 'w-3 h-3'
                     )}
                     fill="currentColor"

@@ -476,7 +476,13 @@ const ProductDetailPage = () => {
                           {isSelected && (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <svg
-                                className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white drop-shadow-sm"
+                                className={cn(
+                                  // Use black checkmark for light colors, white for dark colors
+                                  hexColor === "#FFFFFF" || hexColor === "#FFFF00" || hexColor === "#FFC0CB" 
+                                    ? "text-black drop-shadow-sm" 
+                                    : "text-white drop-shadow-sm",
+                                  "w-2.5 h-2.5 sm:w-3 sm:h-3"
+                                )}
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                               >
@@ -558,9 +564,9 @@ const ProductDetailPage = () => {
                         : "text-gray-500 hover:text-gray-700"
                     )}
                   >
-                    Details
+                    {/* Details */}
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => setActiveTab("materials")}
                     className={cn(
                       "py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap touch-manipulation",
@@ -571,7 +577,7 @@ const ProductDetailPage = () => {
                   >
                     <span className="hidden sm:inline">Materials & Care</span>
                     <span className="sm:hidden">Care</span>
-                  </button>
+                  </button> */}
                 </div>
 
                 {/* Tab Content */}

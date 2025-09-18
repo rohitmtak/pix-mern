@@ -216,34 +216,34 @@ const Header = () => {
                       {/* Left Side - Category Names */}
                       <div className="w-2/5">
                         <div className="space-y-6">
-                          {/* Signature Collection */}
+                          {/* Bridal Couture */}
                           <div className={`transition-all duration-1000 ease-out ${
                             isCollectionHovered 
                               ? 'opacity-100 translate-y-0 delay-0' 
                               : 'opacity-0 -translate-y-8 delay-0'
                           }`}>
                             <button
-                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/signature"); }}
-                              className="text-left"
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/bridal"); }}
+                              className="text-left group/item"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
-                                Signature Collection
+                                Bridal Couture
                               </div>
                             </button>
                           </div>
 
-                          {/* Bridal Couture */}
+                          {/* Signature Collection */}
                           <div className={`transition-all duration-1000 ease-out ${
                             isCollectionHovered 
                               ? 'opacity-100 translate-y-0 delay-100' 
                               : 'opacity-0 -translate-y-8 delay-0'
                           }`}>
                             <button
-                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/bridal"); }}
-                              className="text-left"
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/signature"); }}
+                              className="text-left group/item"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
-                                Bridal Couture
+                                Signature Collection
                               </div>
                             </button>
                           </div>
@@ -256,7 +256,7 @@ const Header = () => {
                           }`}>
                             <button
                               onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/contemporary"); }}
-                              className="text-left"
+                              className="text-left group/item"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
                                 Contemporary Drapes
@@ -272,7 +272,7 @@ const Header = () => {
                           }`}>
                             <button
                               onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/luxury"); }}
-                              className="text-left"
+                              className="text-left group/item"
                             >
                               <div className="text-xl text-black group-hover/item:text-gray-700 transition-colors duration-300">
                                 Luxury Fusion Lounge
@@ -289,7 +289,7 @@ const Header = () => {
                             <div className="border-t border-gray-200 my-4 mr-32"></div>
                             <button
                               onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection"); }}
-                              className="text-left"
+                              className="text-left group/item"
                             >
                               <div className="text-md text-gray-600 group-hover/item:text-black transition-colors duration-300 font-medium">
                                 VIEW ALL
@@ -302,25 +302,6 @@ const Header = () => {
                       {/* Right Side - Category Images */}
                       <div className="w-3/5">
                         <div className="grid grid-cols-4 gap-4">
-                          {/* Signature Collection Image */}
-                          <div>
-                            <button
-                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/signature"); }}
-                              className="w-full"
-                            >
-                              <div className="aspect-[4/5] overflow-hidden">
-                                <img 
-                                  src="/images/img9.1.jpg" 
-                                  alt="Signature Collection"
-                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                                  onError={(e) => {
-                                    e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='128' viewBox='0 0 192 128'%3E%3Crect width='192' height='128' fill='%23fdf2f8'/%3E%3Ctext x='96' y='64' text-anchor='middle' dy='.3em' font-family='Arial' font-size='12' fill='%23be185d'%3ESignature%3C/text%3E%3C/svg%3E";
-                                  }}
-                                />
-                              </div>
-                            </button>
-                          </div>
-
                           {/* Bridal Couture Image */}
                           <div>
                             <button
@@ -334,6 +315,25 @@ const Header = () => {
                                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                                   onError={(e) => {
                                     e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='128' viewBox='0 0 192 128'%3E%3Crect width='192' height='128' fill='%23faf5ff'/%3E%3Ctext x='96' y='64' text-anchor='middle' dy='.3em' font-family='Arial' font-size='12' fill='%237c3aed'%3EBridal%3C/text%3E%3C/svg%3E";
+                                  }}
+                                />
+                              </div>
+                            </button>
+                          </div>
+
+                          {/* Signature Collection Image */}
+                          <div>
+                            <button
+                              onClick={() => { setIsCollectionHovered(false); handleNavigation("/collection/signature"); }}
+                              className="w-full"
+                            >
+                              <div className="aspect-[4/5] overflow-hidden">
+                                <img 
+                                  src="/images/img9.1.jpg" 
+                                  alt="Signature Collection"
+                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                  onError={(e) => {
+                                    e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='128' viewBox='0 0 192 128'%3E%3Crect width='192' height='128' fill='%23fdf2f8'/%3E%3Ctext x='96' y='64' text-anchor='middle' dy='.3em' font-family='Arial' font-size='12' fill='%23be185d'%3ESignature%3C/text%3E%3C/svg%3E";
                                   }}
                                 />
                               </div>
