@@ -7,100 +7,7 @@ const ContactPage = () => {
       <Header />
 
       <main className="pt-24">
-        <div className="container mx-auto px-4 sm:px-8 lg:px-16 py-8 sm:py-12 lg:py-16">
-          {/* Original code commented out */}
-          {/* 
-          <h1 className="text-4xl text-black mb-8 uppercase font-jost">
-            Contact Us
-          </h1>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-2xl font-semibold text-black mb-6 font-jost">
-                Get in Touch
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-black mb-2">Address</h3>
-                  <p className="text-gray-700">
-                    HIGH STREET PIX, 22 - 25, Wonderland, Lower Ground Floor,<br />
-                    7 M.G. Road, Camp,<br />
-                    Pune - 411001 Maharashtra
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-black mb-2">Phone</h3>
-                  <p className="text-gray-700">+91 9812345678</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-black mb-2">Email</h3>
-                  <p className="text-gray-700">info@highstreetpix.com</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-black mb-2">Hours</h3>
-                  <p className="text-gray-700">
-                    Monday - Friday: 9:00 AM - 6:00 PM<br />
-                    Saturday: 10:00 AM - 4:00 PM<br />
-                    Sunday: Closed
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h2 className="text-2xl font-semibold text-black mb-6 font-jost">
-                Send us a Message
-              </h2>
-              <form className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="Your full name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="your.email@example.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Subject
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="Message subject"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Message
-                  </label>
-                  <textarea
-                    rows={5}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    placeholder="Your message..."
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-black text-white py-3 px-6 hover:bg-gray-800 transition-colors duration-200 font-jost uppercase"
-                >
-                  Send Message
-                </button>
-              </form>
-            </div>
-          </div>
-          */}
+        <div className="container mx-auto px-4 sm:px-8 lg:px-16 py-8 sm:py-12 lg:py-16">         
 
           {/* New design matching the image layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-40 max-w-screen-lg mx-auto">
@@ -132,22 +39,16 @@ const ContactPage = () => {
 
               <div className="w-full border-b-[1px] border-b-[#dddddd]"></div>
 
-              {/* Speak to Our CEO Section */}
               <div>
                 <h3 className="text-xl font-medium text-black mb-4 font-jost">
                   Visit Our Store
                 </h3>
-                {/* <p className="text-gray-700 mb-4 leading-relaxed">
-                  Every High Street PIX experience tells a story, and yours is important to us.
-                </p> */}
+                
                 <p className="text-gray-700">
                   HIGH STREET PIX, 22 - 25, Wonderland, Lower Ground Floor,<br />
                   7 M.G. Road, Camp,<br />
                   Pune - 411001, Maharashtra
                 </p>
-                {/* <p className="text-gray-700 text-sm">
-                  Personal response within 48 hours
-                </p> */}
               </div>
             </div>
 
@@ -199,15 +100,16 @@ const ContactPage = () => {
           </div>
 
           <div className="hidden md:block">
-            <img src="/images/contact.webp" alt="Contact Map" className="w-full h-full mt-12 md:mt-24" />
+            <img src="https://res.cloudinary.com/djhnxxllr/image/upload/v1758640304/contact_sdze9j.webp" 
+            alt="Contact Map" 
+            className="w-full h-full mt-12 md:mt-24" />
           </div>
 
           {/* Visit Us Section - matching the image layout */}
           <div className="mt-12 md:mt-24 flex flex-col lg:flex-row gap-0">
-            {/* Left Section - Store Interior (40% width) */}
             <div className="lg:w-1/2">
               <img 
-                src="/images/contact2.webp" 
+                src="https://res.cloudinary.com/djhnxxllr/image/upload/v1758640304/contact2_cav5eo.webp" 
                 alt="Store Interior" 
                 className="w-full object-cover"
               />

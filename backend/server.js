@@ -29,6 +29,8 @@ if (!fs.existsSync(uploadsDir)) {
 
 // App Config
 const app = express()
+// Trust proxy so secure cookies work behind Railway/Netlify proxies
+app.set('trust proxy', 1)
 const port = process.env.PORT || 4000
 
 // Create HTTP server and Socket.io
@@ -50,6 +52,38 @@ const initializeApp = async () => {
         await connectDB()
         await connectCloudinary()
         
+        // CORS configuration (must be BEFORE any rate limiters or routes)
+        const corsOptions = {
+            origin: function (origin, callback) {
+                // Allow requests with no origin (like mobile apps or curl requests)
+                if (!origin) return callback(null, true)
+
+                // Allow all localhost ports for development
+                if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+                    return callback(null, true)
+                }
+
+                const allowedOrigins = [
+                    // Netlify domain
+                    'https://highstreetpix.netlify.app'
+                ]
+
+                if (allowedOrigins.indexOf(origin) !== -1) {
+                    callback(null, true)
+                } else {
+                    callback(new Error('Not allowed by CORS'))
+                }
+            },
+            credentials: true, // Allow cookies
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'token', 'Origin', 'Accept'],
+            preflightContinue: false,
+            optionsSuccessStatus: 204
+        }
+        app.use(cors(corsOptions))
+        // Handle preflight for all routes
+        app.options('*', cors(corsOptions))
+
         // Security middlewares
         app.use(helmet({
             contentSecurityPolicy: {
@@ -66,39 +100,11 @@ const initializeApp = async () => {
         // Cookie parser
         app.use(cookieParser())
         
-        // Rate limiting
+        // Rate limiting (after CORS so preflight gets CORS headers)
         app.use('/api', generalLimiter)
         
-        // middlewares
+        // JSON body parser
         app.use(express.json())
-        // CORS configuration
-        app.use(cors({
-            origin: function (origin, callback) {
-                // Allow requests with no origin (like mobile apps or curl requests)
-                if (!origin) return callback(null, true);
-                
-                // Allow all localhost ports for development
-                if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-                    return callback(null, true);
-                }
-                
-                const allowedOrigins = [
-                    // Netlify domain
-                    'https://highstreetpix.netlify.app'
-                ];
-                
-                if (allowedOrigins.indexOf(origin) !== -1) {
-                    callback(null, true);
-                } else {
-                    callback(new Error('Not allowed by CORS'));
-                }
-            },
-            credentials: true, // Allow cookies
-            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'token', 'Origin', 'Accept'],
-            preflightContinue: false,
-            optionsSuccessStatus: 204
-        }))
 
         // api endpoints
         app.use('/api/user',userRouter)
