@@ -114,4 +114,6 @@ backend/.wwebjs_cache/
 
 # Cookie files (curl/libcurl generated)
 cookies.txt
-*.cookies
+*.cookiespackage-lock.json
+*/package-lock.json
+**/package-lock.json
