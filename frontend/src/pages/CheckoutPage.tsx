@@ -359,60 +359,53 @@ const CheckoutPage = () => {
               return;
             }
 
-            // Always update user profile with checkout information
-            try {
-              await axios.put(`${config.api.baseUrl}/user/me`, { name: address.fullName, phone: address.phone }, {
-                withCredentials: true
-              });
-            } catch (_) {
-              // non-blocking
-            }
+            // Navigate immediately for fast UX
+            const orderId = res.data.orderId;
+            navigate(`/order-success?orderId=${orderId}`, { 
+              state: { orderId } 
+            });
 
-            // Always save address to address book (like profile info)
-            try {
-              // Check if this address already exists to prevent duplicates
-              const existingAddresses = addresses || [];
-              const isDuplicate = existingAddresses.some(existingAddr => 
-                existingAddr.fullName === address.fullName &&
-                existingAddr.phone === address.phone &&
-                existingAddr.line1 === address.line1 &&
-                existingAddr.line2 === address.line2 &&
-                existingAddr.city === address.city &&
-                existingAddr.state === address.state &&
-                existingAddr.postalCode === address.postalCode &&
-                existingAddr.country === address.country
-              );
-
-              // Only save if it's not a duplicate
-              if (!isDuplicate) {
-                const addressPayload = {
-                  address: {
-                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // More unique ID
-                    fullName: address.fullName,
-                    phone: address.phone,
-                    line1: address.line1,
-                    line2: address.line2,
-                    city: address.city,
-                    state: address.state,
-                    postalCode: address.postalCode,
-                    country: address.country,
-                    isDefault: addresses.length === 0, // Only set as default if no addresses exist
-                  },
-                };
-                await axios.post(`${config.api.baseUrl}/user/addresses`, addressPayload, {
+            // Fire-and-forget profile/address updates (non-blocking)
+            (async () => {
+              try {
+                await axios.put(`${config.api.baseUrl}/user/me`, { name: address.fullName, phone: address.phone }, {
                   withCredentials: true
                 });
-              }
-            } catch (_) {
-              // non-blocking
-            }
+              } catch (_) {}
 
-            // Don't remove items from frontend cart - let backend handle it
-            // The backend will clear the cart after successful payment verification
-            
-            navigate(`/order-success?orderId=${res.data.orderId}`, { 
-              state: { orderId: res.data.orderId } 
-            });
+              try {
+                const existingAddresses = addresses || [];
+                const isDuplicate = existingAddresses.some(existingAddr => 
+                  existingAddr.fullName === address.fullName &&
+                  existingAddr.phone === address.phone &&
+                  existingAddr.line1 === address.line1 &&
+                  existingAddr.line2 === address.line2 &&
+                  existingAddr.city === address.city &&
+                  existingAddr.state === address.state &&
+                  existingAddr.postalCode === address.postalCode &&
+                  existingAddr.country === address.country
+                );
+                if (!isDuplicate) {
+                  const addressPayload = {
+                    address: {
+                      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                      fullName: address.fullName,
+                      phone: address.phone,
+                      line1: address.line1,
+                      line2: address.line2,
+                      city: address.city,
+                      state: address.state,
+                      postalCode: address.postalCode,
+                      country: address.country,
+                      isDefault: addresses.length === 0,
+                    },
+                  };
+                  await axios.post(`${config.api.baseUrl}/user/addresses`, addressPayload, {
+                    withCredentials: true
+                  });
+                }
+              } catch (_) {}
+            })();
           } catch (e) {
             showToast.error('Payment verification failed');
           }

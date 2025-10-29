@@ -29,7 +29,7 @@ if (!fs.existsSync(uploadsDir)) {
 
 // App Config
 const app = express()
-// Trust proxy so secure cookies work behind Railway/Netlify proxies
+// Trust proxy so secure cookies work behind Render/Netlify proxies
 app.set('trust proxy', 1)
 const port = process.env.PORT || 4000
 
@@ -53,6 +53,13 @@ const initializeApp = async () => {
         await connectCloudinary()
         
         // CORS configuration (must be BEFORE any rate limiters or routes)
+        // Allow credentials and a flexible list of production origins
+        const envOrigins = (process.env.FRONTEND_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean)
+        const defaultAllowedOrigins = [
+            'https://highstreetpix.netlify.app'
+        ]
+        const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...envOrigins])]
+
         const corsOptions = {
             origin: function (origin, callback) {
                 // Allow requests with no origin (like mobile apps or curl requests)
@@ -63,16 +70,15 @@ const initializeApp = async () => {
                     return callback(null, true)
                 }
 
-                const allowedOrigins = [
-                    // Netlify domain
-                    'https://highstreetpix.netlify.app'
-                ]
+                // Allow Netlify deploy previews (e.g., https://<hash>--highstreetpix.netlify.app)
+                const isNetlifyPreview = /https:\/\/.*--highstreetpix\.netlify\.app$/.test(origin)
+                const isAllowedExplicit = allowedOrigins.includes(origin)
 
-                if (allowedOrigins.indexOf(origin) !== -1) {
-                    callback(null, true)
-                } else {
-                    callback(new Error('Not allowed by CORS'))
+                if (isAllowedExplicit || isNetlifyPreview) {
+                    return callback(null, true)
                 }
+
+                callback(new Error('Not allowed by CORS'))
             },
             credentials: true, // Allow cookies
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -90,8 +96,12 @@ const initializeApp = async () => {
                 directives: {
                     defaultSrc: ["'self'"],
                     styleSrc: ["'self'", "'unsafe-inline'"],
-                    scriptSrc: ["'self'"],
-                    imgSrc: ["'self'", "data:", "https:"],
+                    // Allow Razorpay checkout script and inline handlers it requires
+                    scriptSrc: ["'self'", 'https://checkout.razorpay.com'],
+                    // Allow images and icons from https
+                    imgSrc: ["'self'", 'data:', 'https:'],
+                    // Allow XHR/WebSocket to https and wss (Razorpay and our APIs)
+                    connectSrc: ["'self'", 'https:', 'wss:']
                 },
             },
             crossOriginEmbedderPolicy: false

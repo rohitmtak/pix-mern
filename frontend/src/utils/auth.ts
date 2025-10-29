@@ -32,7 +32,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
 const performAuthCheck = async (): Promise<boolean> => {
   try {
     // Use the configured API base URL instead of hardcoded path
-    const apiBaseUrl = import.meta.env.DEV ? '/api' : (import.meta.env.VITE_API_BASE_URL || 'https://pix-mern-production.up.railway.app/api');
+    const apiBaseUrl = import.meta.env.DEV ? '/api' : (import.meta.env.VITE_API_BASE_URL || 'https://pix-mern.onrender.com/api');
     const response = await fetch(`${apiBaseUrl}/user/me`, {
       method: 'GET',
       credentials: 'include', // Include httpOnly cookies
@@ -71,7 +71,7 @@ export const getToken = (): string | null => {
 export const logout = async (): Promise<void> => {
   try {
     // Use the configured API base URL instead of hardcoded path
-    const apiBaseUrl = import.meta.env.DEV ? '/api' : (import.meta.env.VITE_API_BASE_URL || 'https://pix-mern-production.up.railway.app/api');
+    const apiBaseUrl = import.meta.env.DEV ? '/api' : (import.meta.env.VITE_API_BASE_URL || 'https://pix-mern.onrender.com/api');
     await fetch(`${apiBaseUrl}/user/logout`, {
       method: 'POST',
       credentials: 'include',
