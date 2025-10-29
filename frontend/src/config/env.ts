@@ -2,7 +2,7 @@
 export const config = {
   api: {
     // Use proxy path in development, full URL in production
-    baseUrl: import.meta.env.DEV ? '/api' : (import.meta.env.VITE_API_BASE_URL || 'https://pix-mern-production.up.railway.app/api'),
+    baseUrl: import.meta.env.DEV ? '/api' : (import.meta.env.VITE_API_BASE_URL || 'https://pix-mern.onrender.com/api'),
     timeout: 10000, // 10 seconds
   },
   app: {
