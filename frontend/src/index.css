@@ -123,7 +123,7 @@
   object-position: center top;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1025px) {
   .custom-object-pos {
     object-position: bottom;
     transition: object-position 3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -139,7 +139,7 @@
 }
 
 /* Mobile-specific faster transitions for hover effects */
-@media (max-width: 767px) {
+@media (max-width: 1024px) {
   .custom-fade-mobile {
     transition-duration: 0.6s;
   }

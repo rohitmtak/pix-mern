@@ -208,6 +208,11 @@ const Footer = () => {
               <div className="space-y-6">
                 {/* Brand Identity */}
                 <div>
+                  <img
+                    src="/images/pix-golden-logo.png"
+                    alt="High Street Pix Logo"
+                    className="h-16 w-auto mb-6"
+                  />
                   <h2 className="text-2xl font-normal text-white mb-4">
                     High Street Pix
                   </h2>

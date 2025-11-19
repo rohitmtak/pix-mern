@@ -37,6 +37,9 @@ const ProductDetailPage = () => {
   const [isCustomSizeOpen, setIsCustomSizeOpen] = useState(false);
   const [galleryApi, setGalleryApi] = useState<CarouselApi | null>(null);
   const [showSizePrompt, setShowSizePrompt] = useState(false);
+  const [isVideoMuted, setIsVideoMuted] = useState(true);
+  const [isVideoPaused, setIsVideoPaused] = useState(false);
+  const [hasVideoEnded, setHasVideoEnded] = useState(false);
 
   // Cart and wishlist hooks
   const { addToCart, isInCart } = useCart();
@@ -80,9 +83,12 @@ const ProductDetailPage = () => {
     }
   }, [product]);
 
-  // Reset image index when color changes
+  // Reset image index and video state when color changes
   useEffect(() => {
     setCurrentImageIndex(0);
+    setIsVideoPaused(false);
+    setIsVideoMuted(true);
+    setHasVideoEnded(false);
   }, [selectedColor]);
 
   // Keep main carousel in sync when current image changes
@@ -95,8 +101,13 @@ const ProductDetailPage = () => {
   // Update current image when user scrolls main carousel
   useEffect(() => {
     if (!galleryApi) return;
-    const onSelect = () =>
+    const onSelect = () => {
       setCurrentImageIndex(galleryApi.selectedScrollSnap());
+      // Reset video muted state and paused state when switching to a different media item
+      setIsVideoMuted(true);
+      setIsVideoPaused(false);
+      setHasVideoEnded(false);
+    };
     galleryApi.on("select", onSelect);
     return () => {
       galleryApi.off("select", onSelect);
@@ -279,18 +290,124 @@ const ProductDetailPage = () => {
                         {currentMedia.map((media, index) => (
                           <CarouselItem key={index} className="pl-0">
                             {media.type === 'video' ? (
-                              <div className="relative">
+                              <div className="relative group">
                                 <video
                                   src={media.url}
-                                  controls
-                                  muted
-                                  loop
-                                  className="w-full h-auto video-hover-controls"
+                                  autoPlay
+                                  muted={isVideoMuted}
+                                  playsInline
+                                  className="w-full h-auto cursor-pointer"
                                   onContextMenu={(e) => e.preventDefault()}
-                                  controlsList="nodownload nofullscreen noremoteplayback"
+                                  onClick={(e) => {
+                                    const videoElement = e.currentTarget;
+                                    if (videoElement.paused) {
+                                      videoElement.play();
+                                      setIsVideoPaused(false);
+                                      setHasVideoEnded(false);
+                                    } else {
+                                      videoElement.pause();
+                                      setIsVideoPaused(true);
+                                      // Don't set hasVideoEnded when manually pausing
+                                    }
+                                  }}
+                                  onEnded={(e) => {
+                                    const videoElement = e.currentTarget;
+                                    videoElement.pause();
+                                    setIsVideoPaused(true);
+                                    setHasVideoEnded(true);
+                                  }}
+                                  onPlay={() => {
+                                    setIsVideoPaused(false);
+                                    setHasVideoEnded(false);
+                                  }}
                                 >
                                   Your browser does not support the video tag.
                                 </video>
+                                
+                                {/* Centered Play Button - Shows only when video has ended */}
+                                {hasVideoEnded && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const videoElement = (e.currentTarget.parentElement?.querySelector('video') as HTMLVideoElement);
+                                      if (videoElement) {
+                                        videoElement.play();
+                                        setIsVideoPaused(false);
+                                        setHasVideoEnded(false);
+                                      }
+                                    }}
+                                    className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-all duration-200 z-20"
+                                    aria-label="Play video"
+                                  >
+                                    <div className="bg-white rounded-full p-2.5 sm:p-3 shadow-lg">
+                                      <svg
+                                        className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={2}
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path d="M1 4v6h6" />
+                                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                                      </svg>
+                                    </div>
+                                  </button>
+                                )}
+
+                                {/* Mute/Unmute Button */}
+                                <button
+                                  onClick={(e) => {
+                                    const videoElement = (e.currentTarget.parentElement?.querySelector('video') as HTMLVideoElement);
+                                    if (videoElement) {
+                                      const newMutedState = !isVideoMuted;
+                                      videoElement.muted = newMutedState;
+                                      setIsVideoMuted(newMutedState);
+                                    }
+                                  }}
+                                  className="absolute bottom-4 right-4 bg-white rounded-full p-2.5 sm:p-3 transition-all duration-200 z-10 hover:bg-gray-50 shadow-sm"
+                                  aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
+                                >
+                                  {isVideoMuted ? (
+                                    <svg
+                                      className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                                      />
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                                      />
+                                    </svg>
+                                  ) : (
+                                    <svg
+                                      className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                                      />
+                                    </svg>
+                                  )}
+                                </button>
                               </div>
                             ) : (
                               <img
@@ -304,8 +421,16 @@ const ProductDetailPage = () => {
                       </CarouselContent>
                       {currentMedia.length > 1 && (
                         <>
-                          <CarouselPrevious className="left-2 sm:left-4 right-auto top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white/80 backdrop-blur-sm text-gray-900 border border-gray-200 hover:bg-white hover:border-gray-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-200 pointer-events-auto focus:outline-none shadow-sm" />
-                          <CarouselNext className="right-2 sm:right-4 left-auto top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white/80 backdrop-blur-sm text-gray-900 border border-gray-200 hover:bg-white hover:border-gray-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-200 pointer-events-auto focus:outline-none shadow-sm" />
+                          <CarouselPrevious
+                            variant="ghost"
+                            size="icon"
+                            className="hidden sm:inline-flex left-2 sm:left-4 right-auto top-1/2 -translate-y-1/2 z-10 text-black p-0 bg-transparent hover:bg-transparent border-none rounded-none shadow-none opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 pointer-events-none sm:group-hover:pointer-events-auto transition-opacity h-12 w-12 sm:h-14 sm:w-14 [&_svg]:size-6 sm:[&_svg]:size-7"
+                          />
+                          <CarouselNext
+                            variant="ghost"
+                            size="icon"
+                            className="hidden sm:inline-flex right-2 sm:right-4 left-auto top-1/2 -translate-y-1/2 z-10 text-black p-0 bg-transparent hover:bg-transparent border-none rounded-none shadow-none opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 pointer-events-none sm:group-hover:pointer-events-auto transition-opacity h-12 w-12 sm:h-14 sm:w-14 [&_svg]:size-6 sm:[&_svg]:size-7"
+                          />
                         </>
                       )}
                     </Carousel>
@@ -320,7 +445,7 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Product Information */}
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-4 sm:space-y-6 lg:pr-6 xl:pr-8 2xl:pr-12">
               {/* Title and Price */}
               <div className="pb-4 sm:pb-6 border-b border-gray-200">
                 <div className="flex items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">

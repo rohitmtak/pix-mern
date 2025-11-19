@@ -280,7 +280,7 @@ const Index = () => {
             <div className="text-white">
               {/* Store address */}
               <p
-                className="text-sm md:text-xl font-normal font-jost leading-relaxed whitespace-nowrap overflow-hidden"
+                className="text-sm md:text-xl font-normal font-jost leading-relaxed whitespace-normal md:whitespace-nowrap overflow-hidden"
                 style={{
                   lineHeight: "clamp(1.5rem, 4vw, 50px)",
                 }}
@@ -291,7 +291,7 @@ const Index = () => {
               
               {/* Store hours and contact */}
               <p
-                className="text-sm md:text-xl font-normal mt-2 md:mt-0 mb-0 leading-none font-jost whitespace-nowrap overflow-hidden"
+                className="text-sm md:text-xl font-normal mt-2 md:mt-0 mb-0 leading-none font-jost whitespace-normal md:whitespace-nowrap overflow-hidden"
                 style={{
                   lineHeight: "clamp(1.25rem, 3vw, 25px)",
                   margin: 0,
