@@ -19,6 +19,11 @@ export default {
       },
     },
     extend: {
+      screens: {
+        // Custom breakpoint for desktop - ensures iPad Pro uses mobile UI
+        // Standard breakpoints remain: sm: 640px, md: 768px, lg: 1024px, xl: 1280px, 2xl: 1536px
+        'desktop': '1367px', // Desktop starts at 1367px (iPad Pro max is 1366px)
+      },
       fontFamily: {
         'jost': ['Jost', 'sans-serif'],
         'jost-light': ['Jost', 'sans-serif'],

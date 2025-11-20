@@ -139,11 +139,7 @@ const AboutPage = () => {
                   slidesPerView: 1,
                   spaceBetween: 0,
                 },
-                768: {
-                  slidesPerView: 2,
-                  spaceBetween: 4,
-                },
-                1024: {
+                1367: {
                   slidesPerView: 3,
                   spaceBetween: 4,
                 },

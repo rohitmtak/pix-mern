@@ -123,7 +123,8 @@
   object-position: center top;
 }
 
-@media (min-width: 768px) {
+/* Desktop-only styles (1367px+) - aligns with custom 'desktop' breakpoint */
+@media (min-width: 1367px) {
   .custom-object-pos {
     object-position: bottom;
     transition: object-position 3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -138,8 +139,8 @@
   transition-duration: 3s;
 }
 
-/* Mobile-specific faster transitions for hover effects */
-@media (max-width: 767px) {
+/* Mobile and tablet styles (up to 1366px) - includes all tablets and iPad Pro */
+@media (max-width: 1366px) {
   .custom-fade-mobile {
     transition-duration: 0.6s;
   }

@@ -72,13 +72,13 @@ const GridLayoutToggle = ({
 
   return (
     <div className={cn("flex items-center gap-6", className)}>
-      {/* Desktop layouts - hidden on mobile */}
-      <div className="hidden md:flex items-center gap-6">
+      {/* Desktop layouts - hidden on mobile and tablets */}
+      <div className="hidden desktop:flex items-center gap-6">
         {desktopLayouts.map(layout => renderLayoutIcon(layout, false))}
       </div>
       
-      {/* Mobile layouts - shown only on mobile */}
-      <div className="flex md:hidden items-center gap-6">
+      {/* Mobile layouts - shown on mobile and tablets (up to 1366px) */}
+      <div className="flex desktop:hidden items-center gap-6">
         {mobileLayouts.map(layout => renderLayoutIcon(layout, true))}
       </div>
     </div>

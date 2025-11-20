@@ -62,9 +62,9 @@ const Header = () => {
 
   return (
     <>
-      {/* Mobile Header */}
+      {/* Mobile Header - shown on mobile and tablets (up to 1366px) */}
       <header 
-        className={`md:hidden fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-in-out ${getHeaderBackground()}`}
+        className={`desktop:hidden fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-in-out ${getHeaderBackground()}`}
       >
         <div className="px-4 py-4">
           <div className="flex items-center justify-between">
@@ -176,12 +176,12 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Desktop Header */}
+      {/* Desktop Header - shown only on desktop (1367px+) */}
       <header 
-        className={`hidden md:block fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-in-out ${getHeaderBackground()}`}
+        className={`hidden desktop:block fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-in-out ${getHeaderBackground()}`}
       >
         {/* Main Navbar */}
-        <div className={`px-4 md:px-16 py-4 md:py-8 relative`}>
+        <div className={`px-4 desktop:px-16 py-4 desktop:py-8 relative`}>
           <div className="flex items-center justify-between w-full max-w-screen-2xl mx-auto">
             {/* Left - Navigation Links */}
             <div className="flex items-center space-x-12">
