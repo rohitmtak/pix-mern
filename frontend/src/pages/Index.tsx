@@ -41,9 +41,9 @@ const Index = () => {
           Features: Image hover effect, gradient separators
       */}
       <Link to="/collection/signature" className="block">
-        <section className="relative w-full h-[40vh] md:h-screen flex flex-row">
-          {/* Mobile-only top separator line */}
-          <div className="md:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
+        <section className="relative w-full h-[40vh] desktop:h-screen flex flex-row">
+          {/* Mobile/Tablet-only top separator line */}
+          <div className="desktop:hidden absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
           
           {/* LEFT SIDE - IMAGE CONTAINER */}
           <div className="w-1/2 flex items-center justify-center relative group h-full">
@@ -78,8 +78,8 @@ const Index = () => {
             </div>
 
             {/* Main text content */}
-            <div className="relative z-10 mt-8 md:mt-0">
-              <div className="text-4xl md:text-9xl font-medium text-right leading-tight md:leading-none font-playfair px-4 md:px-0 text-black">
+            <div className="relative z-10 mt-8 desktop:mt-0">
+              <div className="text-4xl desktop:text-9xl font-medium text-right leading-tight desktop:leading-none font-playfair px-4 desktop:px-0 text-black">
                 SIGN
                 <br />
                 ATURE
@@ -91,8 +91,8 @@ const Index = () => {
             </div>
           </div>
           
-          {/* Mobile-only bottom separator line */}
-          <div className="md:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
+          {/* Mobile/Tablet-only bottom separator line */}
+          <div className="desktop:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
         </section>
       </Link>
 
@@ -105,7 +105,7 @@ const Index = () => {
           Features: Black background, centered text overlay
       */}
       <Link to="/collection/bridal" className="block">
-        <section className="relative w-full h-[60vh] md:h-screen">
+        <section className="relative w-full h-[60vh] desktop:h-screen">
           {/* Main image container */}
           <div className="relative w-full h-full bg-black flex items-center justify-center">
             {/* Background image */}
@@ -120,9 +120,9 @@ const Index = () => {
             />
 
             {/* Text overlay positioned at bottom */}
-            <div className="absolute bottom-8 md:bottom-16 left-0 right-0 text-center w-fit mx-auto px-4">
+            <div className="absolute bottom-8 desktop:bottom-16 left-0 right-0 text-center w-fit mx-auto px-4">
               <h2
-                className="font-playfair text-3xl md:text-8xl text-white font-normal uppercase font-jost cursor-pointer"
+                className="font-playfair text-3xl desktop:text-8xl text-white font-normal uppercase font-jost cursor-pointer"
                 style={{
                   fontSize: "clamp(2rem, 8vw, 120px)",
                   lineHeight: "normal",
@@ -131,13 +131,13 @@ const Index = () => {
                 Bridal Couture
               </h2>
 
-              {/* Mobile-only spacing */}
-              <div className="md:hidden mt-3"></div>
+              {/* Mobile/Tablet-only spacing */}
+              <div className="desktop:hidden mt-3"></div>
             </div>
           </div>
           
-          {/* Mobile-only bottom separator line */}
-          <div className="md:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
+          {/* Mobile/Tablet-only bottom separator line */}
+          <div className="desktop:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
         </section>
       </Link>
 
@@ -150,17 +150,17 @@ const Index = () => {
           Features: Text on left, image on right, hover effect
       */}
       <Link to="/collection/contemporary" className="block">
-        <section className="relative w-full h-[40vh] md:h-screen flex flex-row">
+        <section className="relative w-full h-[40vh] desktop:h-screen flex flex-row">
           {/* LEFT SIDE - TEXT CONTAINER */}
-          <div className="w-1/2 relative flex items-center justify-center md:justify-start md:pl-32 h-full bg-gradient-to-br from-slate-50 via-white to-gray-50">
+          <div className="w-1/2 relative flex items-center justify-center desktop:justify-start desktop:pl-32 h-full bg-gradient-to-br from-slate-50 via-white to-gray-50">
             {/* Background decorative pattern */}
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-slate-50/40 via-transparent to-gray-50/20"></div>
             </div>
 
             {/* Main text content */}
-            <div className="relative z-10 mt-8 md:mt-0">
-              <div className="text-4xl md:text-9xl font-medium text-left leading-tight md:leading-none font-playfair px-4 md:px-0 text-black">
+            <div className="relative z-10 mt-8 desktop:mt-0">
+              <div className="text-4xl desktop:text-9xl font-medium text-left leading-tight desktop:leading-none font-playfair px-4 desktop:px-0 text-black">
                 CON
                 <br />
                 TEMPO
@@ -197,8 +197,8 @@ const Index = () => {
             />
           </div>
           
-          {/* Mobile-only bottom separator line */}
-          <div className="md:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
+          {/* Mobile/Tablet-only bottom separator line */}
+          <div className="desktop:hidden absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent z-10"></div>
         </section>
       </Link>
 
@@ -211,7 +211,7 @@ const Index = () => {
           Features: Similar to Bridal section, centered text overlay
       */}
       <Link to="/collection/luxury" className="block group">
-        <section className="relative w-full h-[60vh] md:h-screen overflow-hidden">
+        <section className="relative w-full h-[60vh] desktop:h-screen overflow-hidden">
           {/* Main image container */}
           <div className="relative w-full h-full flex items-center justify-center">
             {/* Background image */}
@@ -226,9 +226,9 @@ const Index = () => {
             />
 
             {/* Text overlay positioned at bottom */}
-            <div className="absolute bottom-8 md:bottom-16 left-0 right-0 text-center w-fit mx-auto px-4">
+            <div className="absolute bottom-8 desktop:bottom-16 left-0 right-0 text-center w-fit mx-auto px-4">
               <h2
-                className="font-playfair text-3xl md:text-8xl text-white font-normal uppercase font-jost cursor-pointer"
+                className="font-playfair text-3xl desktop:text-8xl text-white font-normal uppercase font-jost cursor-pointer"
                 style={{
                   fontSize: "clamp(2rem, 8vw, 120px)",
                   lineHeight: "normal",
@@ -263,7 +263,7 @@ const Index = () => {
         </div>
 
         {/* Store image with address overlay */}
-        <div className="relative w-full h-[60vh] md:h-screen">
+        <div className="relative w-full h-[60vh] desktop:h-screen">
           {/* Background store image */}
           <CloudinaryImage
             cloudinaryUrl="https://res.cloudinary.com/djhnxxllr/image/upload/v1757412649/storefront_fzas9n.png"
@@ -276,11 +276,11 @@ const Index = () => {
           />
 
           {/* Address and hours overlay */}
-          <div className="absolute bottom-8 md:bottom-16 left-1/2 transform -translate-x-1/2 text-center px-2 md:px-4 w-[95%] md:w-auto">
+          <div className="absolute bottom-8 desktop:bottom-16 left-1/2 transform -translate-x-1/2 text-center px-2 desktop:px-4 w-[95%] desktop:w-auto">
             <div className="text-white">
               {/* Store address */}
               <p
-                className="text-sm md:text-xl font-normal font-jost leading-relaxed whitespace-normal md:whitespace-nowrap overflow-hidden"
+                className="text-sm desktop:text-xl font-normal font-jost leading-relaxed whitespace-nowrap overflow-hidden"
                 style={{
                   lineHeight: "clamp(1.5rem, 4vw, 50px)",
                 }}
@@ -291,7 +291,7 @@ const Index = () => {
               
               {/* Store hours and contact */}
               <p
-                className="text-sm md:text-xl font-normal mt-2 md:mt-0 mb-0 leading-none font-jost whitespace-normal md:whitespace-nowrap overflow-hidden"
+                className="text-sm desktop:text-xl font-normal mt-2 desktop:mt-0 mb-0 leading-none font-jost whitespace-nowrap overflow-hidden"
                 style={{
                   lineHeight: "clamp(1.25rem, 3vw, 25px)",
                   margin: 0,
