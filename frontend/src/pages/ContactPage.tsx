@@ -9,8 +9,8 @@ const ContactPage = () => {
       <main className="pt-24">
         <div className="container mx-auto px-4 sm:px-8 lg:px-16 py-8 sm:py-12 lg:py-16">         
 
-          {/* New design matching the image layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-40 max-w-screen-lg mx-auto">
+          {/* Desktop Layout - Original Grid */}
+          <div className="hidden lg:grid lg:grid-cols-2 gap-8 md:gap-40 max-w-screen-lg mx-auto">
             {/* Left Column - Contact Information */}
             <div className="space-y-6 md:space-y-10">
               {/* Get in Touch Section */}
@@ -99,14 +99,123 @@ const ContactPage = () => {
             </div>
           </div>
 
-          <div className="hidden md:block">
-            <img src="https://res.cloudinary.com/djhnxxllr/image/upload/v1758640304/contact_sdze9j.webp" 
-            alt="Contact Map" 
-            className="w-full h-full mt-12 md:mt-24" />
+          {/* Mobile/Tablet Layout - Jim Thompson Sequence */}
+          <div className="lg:hidden space-y-8 md:space-y-12">
+            {/* 1. GET IN TOUCH WITH US Section */}
+            <div>
+              <h2 className="text-3xl md:text-5xl text-black mb-6 md:mb-10 font-jost uppercase tracking-wide">
+                GET IN TOUCH
+                <br />
+                WITH US
+              </h2>
+              
+              {/* Contact Information */}
+              <div className="space-y-4 mb-6 md:mb-8">
+                <div className="flex items-center space-x-4">
+                  <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                  </svg>
+                  <span className="text-gray-700">info@highstreetpix.com</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                  </svg>
+                  <span className="text-gray-700">+91 9812345678</span>
+                </div>
+              </div>
+
+              {/* Contact Form */}
+              <form className="space-y-4 md:space-y-6">
+                <div>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200"
+                    placeholder="Name*"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="email"
+                    className="w-full px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200"
+                    placeholder="Email address*"
+                  />
+                </div>
+                <div className="flex">
+                  <div className="flex items-center px-4 py-3 border border-gray-300 border-r-0 bg-gray-50">
+                    <span className="text-gray-700">+91</span>
+                    <svg className="w-4 h-4 ml-2 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <input
+                    type="tel"
+                    className="flex-1 px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200"
+                    placeholder="Phone number"
+                  />
+                </div>
+                <div>
+                  <textarea
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200 resize-none"
+                    placeholder="Message*"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-black text-white py-3 px-6 hover:bg-gray-700 transition-colors duration-200 font-jost uppercase tracking-wide font-medium"
+                >
+                  SEND
+                </button>
+              </form>
+            </div>
+
+            {/* 2. People Image (Missing Image) */}
+            <div className="w-full aspect-square md:aspect-video overflow-hidden">
+              <img 
+                src="https://res.cloudinary.com/djhnxxllr/image/upload/v1758640304/contact_sdze9j.webp" 
+                alt="People" 
+                className="w-full h-full object-cover"
+                style={{ objectPosition: '56% center' }}
+              />
+            </div>
+
+            {/* 3. VISIT US Section */}
+            <div className="px-4 md:px-0">
+              <h2 className="text-3xl md:text-4xl text-black mb-4 md:mb-6 font-jost uppercase tracking-wide">
+                VISIT US
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-6 md:mb-8 text-sm md:text-base">
+                Visit our stores and experience the artistry of design, the richness of materials, and the exceptional service that define the High Street PIX world.
+              </p>
+              <button 
+                onClick={() => window.open('https://maps.google.com/?q=7+M.G.+Road,+Camp,+Pune,+Maharashtra+411001', '_blank')}
+                className="text-black underline hover:text-gray-700 transition-colors duration-200 font-jost uppercase tracking-wide text-sm"
+              >
+                SEE OUR LOCATION
+              </button>
+            </div>
+
+            {/* 4. Store Interior Image */}
+            <div className="w-full">
+              <img 
+                src="https://res.cloudinary.com/djhnxxllr/image/upload/v1758640304/contact2_cav5eo.webp" 
+                alt="Store Interior"
+                className="w-full h-auto object-cover"
+              />
+            </div>
           </div>
 
-          {/* Visit Us Section - matching the image layout */}
-          <div className="mt-12 md:mt-24 flex flex-col lg:flex-row gap-0">
+          {/* Desktop: Map Image */}
+          <div className="hidden lg:block mt-12 md:mt-24">
+            <img src="https://res.cloudinary.com/djhnxxllr/image/upload/v1758640304/contact_sdze9j.webp" 
+            alt="Contact Map" 
+            className="w-full h-full" />
+          </div>
+
+          {/* Desktop: Visit Us Section - matching the image layout */}
+          <div className="hidden lg:flex mt-12 md:mt-24 flex-col lg:flex-row gap-0">
             <div className="lg:w-1/2">
               <img 
                 src="https://res.cloudinary.com/djhnxxllr/image/upload/v1758640304/contact2_cav5eo.webp" 

@@ -1,119 +1,80 @@
-import type { Config } from "tailwindcss";
-import tailwindcssAnimate from "tailwindcss-animate";
+import type { Config } from 'tailwindcss'
+import tailwindcssAnimate from 'tailwindcss-animate'
 
-export default {
-  darkMode: ["class"],
+const config: Config = {
+  darkMode: ['class'],
   content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
   ],
-  prefix: "",
   theme: {
+    /**
+     * Keep Tailwind defaults and add a single custom 'desktop' breakpoint.
+     * This keeps predictable responsive behavior while still allowing your
+     * 1367px desktop-specific styles.
+     */
     screens: {
-      sm: "640px",
-      md: "1025px",
-      lg: "1280px",
-      xl: "1536px",
-      "2xl": "1700px",
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1536px',
+      desktop: '1367px',
     },
+
     container: {
       center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
+      padding: '2rem',
+      screens: { '2xl': '1400px' },
     },
+
     extend: {
-      screens: {
-        // Custom breakpoint for desktop - ensures iPad Pro uses mobile UI
-        // Standard breakpoints remain: sm: 640px, md: 768px, lg: 1024px, xl: 1280px, 2xl: 1536px
-        'desktop': '1367px', // Desktop starts at 1367px (iPad Pro max is 1366px)
-      },
+      // Font families (assumes you load these fonts via <link> or @font-face)
       fontFamily: {
-        'jost': ['Jost', 'sans-serif'],
-        'jost-light': ['Jost', 'sans-serif'],
-        'jost-medium': ['Jost', 'sans-serif'],
-        'jost-bold': ['Jost', 'sans-serif'],
-        'bodoni': ['Playfair Display', 'serif'],
-        'bodoni-light': ['Playfair Display', 'serif'],
-        'bodoni-medium': ['Playfair Display', 'serif'],
-        'bodoni-bold': ['Playfair Display', 'serif'],
+        jost: ['Jost', 'sans-serif'],
+        playfair: ['Playfair Display', 'serif'],
       },
+
+      // Clean, semantic typography scale for the luxury layout
+      fontSize: {
+        // Hero / very large headings (used for full-screen section titles)
+        'hero-mobile': ['2rem', { lineHeight: '1.05' }], // 32px
+        'hero-tablet': ['3.5rem', { lineHeight: '1.02' }], // 56px
+        'hero-desktop': ['6rem', { lineHeight: '1' }], // 96px
+
+        // Section split titles (the stacked editorial text)
+        'split-mobile': ['2.25rem', { lineHeight: '1.02' }], // 36px
+        'split-tablet': ['3.75rem', { lineHeight: '1.01' }], // 60px
+        'split-desktop': ['7.75rem', { lineHeight: '0.98' }], // 88px
+
+        // Smaller section headings / overlays
+        'section-mobile': ['1.25rem', { lineHeight: '1.2' }], // 20px
+        'section-desktop': ['3rem', { lineHeight: '1.05' }], // 48px
+      },
+
+      // small utility for tracking and letter-spacing consistent with editorial look
+      letterSpacing: {
+        tightness: '-0.01em',
+      },
+
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
-        },
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
       },
+
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      keyframes: {
-        "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
-        },
-        "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
-        },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
       },
     },
   },
   plugins: [tailwindcssAnimate],
-} satisfies Config;
+}
+
+export default config
