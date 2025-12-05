@@ -15,9 +15,28 @@ export default defineConfig({
         target: 'http://localhost:4000',
         changeOrigin: true,
         secure: false,
+        timeout: 10000,
+        configure: (proxy, _options) => {
+          // Only log errors - keep console clean during normal operation
+          proxy.on('error', (err, req, res) => {
+            console.error('❌ Proxy error:', err.message);
+            console.error('💡 Make sure the backend server is running on http://localhost:4000');
+            if (res && !res.headersSent) {
+              res.writeHead(503, {
+                'Content-Type': 'application/json',
+              });
+              res.end(JSON.stringify({
+                success: false,
+                message: 'Backend server is not running. Please start the backend server on port 4000.',
+                error: 'ECONNREFUSED'
+              }));
+            }
+          });
+        },
       },
     },
   },
+  // @ts-ignore - Vitest config (test property is added by vitest plugin)
   test: {
     globals: true,
     environment: 'jsdom',

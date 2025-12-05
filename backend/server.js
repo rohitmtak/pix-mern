@@ -35,9 +35,33 @@ const port = process.env.PORT || 4000
 
 // Create HTTP server and Socket.io
 const httpServer = createServer(app)
+
+// Socket.io CORS configuration - supports both local development and production
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:5174", "https://highstreetpix.netlify.app"],
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true)
+      
+      // Allow all localhost ports for local development (flexible for any port)
+      if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+        return callback(null, true)
+      }
+      
+      // Allow AWS Lightsail IP addresses (for production deployments)
+      // This allows http://13.204.195.106 and any port variations
+      const isAWSIP = /^https?:\/\/13\.204\.195\.106(:\d+)?$/.test(origin)
+      
+      // Allow Netlify production and preview deployments
+      const isNetlify = origin === "https://highstreetpix.netlify.app" || 
+                       /^https:\/\/.*--highstreetpix\.netlify\.app$/.test(origin)
+      
+      if (isAWSIP || isNetlify) {
+        return callback(null, true)
+      }
+      
+      callback(new Error('Not allowed by CORS'))
+    },
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -70,11 +94,15 @@ const initializeApp = async () => {
                     return callback(null, true)
                 }
 
+                // Allow AWS Lightsail IP addresses (for production deployments)
+                // This allows http://13.204.195.106 and any port variations
+                const isAWSIP = /^https?:\/\/13\.204\.195\.106(:\d+)?$/.test(origin)
+                
                 // Allow Netlify deploy previews (e.g., https://<hash>--highstreetpix.netlify.app)
                 const isNetlifyPreview = /https:\/\/.*--highstreetpix\.netlify\.app$/.test(origin)
                 const isAllowedExplicit = allowedOrigins.includes(origin)
 
-                if (isAllowedExplicit || isNetlifyPreview) {
+                if (isAllowedExplicit || isNetlifyPreview || isAWSIP) {
                     return callback(null, true)
                 }
 
