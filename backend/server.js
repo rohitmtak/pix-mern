@@ -14,31 +14,16 @@ import connectDB from './config/mongodb.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Load environment files in priority order:
-// 1. .env.local (for local development overrides)
-// 2. .env.production or .env.development (environment-specific)
-// 3. .env (fallback, maintains AWS compatibility)
-
-// Load .env.local first if it exists (local development)
-const localEnvPath = path.join(__dirname, '.env.local')
-if (fs.existsSync(localEnvPath)) {
-  dotenv.config({ path: localEnvPath })
-  console.log('📝 Loaded .env.local')
-}
-
-// Load environment-specific file if it exists
-const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development'
+// Simple approach: .env for local, .env.production for production
+const isProduction = process.env.NODE_ENV === 'production'
+const envFile = isProduction ? '.env.production' : '.env'
 const envPath = path.join(__dirname, envFile)
-if (fs.existsSync(envPath)) {
-  dotenv.config({ path: envPath, override: true })
-  console.log(`📝 Loaded ${envFile}`)
-}
 
-// Fallback to .env (maintains AWS compatibility - this is what AWS uses)
-const defaultEnvPath = path.join(__dirname, '.env')
-if (fs.existsSync(defaultEnvPath)) {
-  dotenv.config({ path: defaultEnvPath, override: true })
-  console.log('📝 Loaded .env (fallback)')
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath })
+  console.log(`📝 Loaded ${envFile}`)
+} else {
+  console.warn(`⚠️  ${envFile} not found`)
 }
 
 console.log(`📦 Loaded environment: ${process.env.NODE_ENV || 'development'}`)
@@ -60,23 +45,36 @@ if (!fs.existsSync(uploadsDir)) {
 
 const app = express()
 app.set('trust proxy', 1)
-const port = process.env.PORT || 4000
+const port = process.env.PORT || 3000
 
 const httpServer = createServer(app)
 
 // Socket.io CORS (only allow frontend/admin)
 const io = new Server(httpServer, {
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-      "http://highstreetpix.com",
-      "https://highstreetpix.com",
-      "https://admin.highstreetpix.com",
-      "https://highstreetpix.netlify.app",
-      "http://13.204.195.106",
-      "https://13.204.195.106",
-    ],
+    origin: function (origin, callback) {
+      // Allow all localhost ports for development
+      if (!origin || origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
+        return callback(null, true)
+      }
+      // Production origins
+      const allowedOrigins = [
+        "http://highstreetpix.com",
+        "https://highstreetpix.com",
+        "https://admin.highstreetpix.com",
+        "https://highstreetpix.netlify.app",
+        "http://13.204.195.106",
+        "https://13.204.195.106",
+      ]
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true)
+      }
+      // Netlify preview builds
+      if (/^https:\/\/.*--highstreetpix\.netlify\.app$/.test(origin)) {
+        return callback(null, true)
+      }
+      callback(new Error("Not allowed by CORS"))
+    },
     methods: ["GET", "POST"],
     credentials: true
   }

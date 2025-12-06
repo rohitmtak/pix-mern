@@ -12,7 +12,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: 'http://localhost:3000',
         changeOrigin: true,
         secure: false,
         timeout: 10000,
@@ -20,14 +20,14 @@ export default defineConfig({
           // Only log errors - keep console clean during normal operation
           proxy.on('error', (err, req, res) => {
             console.error('❌ Proxy error:', err.message);
-            console.error('💡 Make sure the backend server is running on http://localhost:4000');
+            console.error('💡 Make sure the backend server is running on http://localhost:3000');
             if (res && !res.headersSent) {
               res.writeHead(503, {
                 'Content-Type': 'application/json',
               });
               res.end(JSON.stringify({
                 success: false,
-                message: 'Backend server is not running. Please start the backend server on port 4000.',
+                message: 'Backend server is not running. Please start the backend server on port 3000.',
                 error: 'ECONNREFUSED'
               }));
             }
