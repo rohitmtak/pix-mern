@@ -7,18 +7,49 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
-import 'dotenv/config'
+import dotenv from 'dotenv'
 import connectDB from './config/mongodb.js'
+
+// Load environment-specific .env file
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Load environment files in priority order:
+// 1. .env.local (for local development overrides)
+// 2. .env.production or .env.development (environment-specific)
+// 3. .env (fallback, maintains AWS compatibility)
+
+// Load .env.local first if it exists (local development)
+const localEnvPath = path.join(__dirname, '.env.local')
+if (fs.existsSync(localEnvPath)) {
+  dotenv.config({ path: localEnvPath })
+  console.log('📝 Loaded .env.local')
+}
+
+// Load environment-specific file if it exists
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development'
+const envPath = path.join(__dirname, envFile)
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath, override: true })
+  console.log(`📝 Loaded ${envFile}`)
+}
+
+// Fallback to .env (maintains AWS compatibility - this is what AWS uses)
+const defaultEnvPath = path.join(__dirname, '.env')
+if (fs.existsSync(defaultEnvPath)) {
+  dotenv.config({ path: defaultEnvPath, override: true })
+  console.log('📝 Loaded .env (fallback)')
+}
+
+console.log(`📦 Loaded environment: ${process.env.NODE_ENV || 'development'}`)
+
 import connectCloudinary from './config/cloudinary.js'
 import userRouter from './routes/userRoute.js'
 import productRouter from './routes/productRoute.js'
 import cartRouter from './routes/cartRoute.js'
 import orderRouter from './routes/orderRoute.js'
 import testRouter from './routes/testRoute.js'
-import { generalLimiter, loginLimiter, passwordResetLimiter, registerLimiter } from './middleware/rateLimiter.js'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+import { generalLimiter } from './middleware/rateLimiter.js'
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads')
@@ -27,172 +58,119 @@ if (!fs.existsSync(uploadsDir)) {
     console.log('Created uploads directory')
 }
 
-// App Config
 const app = express()
-// Trust proxy so secure cookies work behind Render/Netlify proxies
 app.set('trust proxy', 1)
 const port = process.env.PORT || 4000
 
-// Create HTTP server and Socket.io
 const httpServer = createServer(app)
 
-// Socket.io CORS configuration - supports both local development and production
+// Socket.io CORS (only allow frontend/admin)
 const io = new Server(httpServer, {
   cors: {
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true)
-      
-      // Allow all localhost ports for local development (flexible for any port)
-      if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-        return callback(null, true)
-      }
-      
-      // Allow AWS Lightsail IP addresses (for production deployments)
-      // This allows http://13.204.195.106 and any port variations
-      const isAWSIP = /^https?:\/\/13\.204\.195\.106(:\d+)?$/.test(origin)
-      
-      // Allow Netlify production and preview deployments
-      const isNetlify = origin === "https://highstreetpix.netlify.app" || 
-                       /^https:\/\/.*--highstreetpix\.netlify\.app$/.test(origin)
-      
-      if (isAWSIP || isNetlify) {
-        return callback(null, true)
-      }
-      
-      callback(new Error('Not allowed by CORS'))
-    },
+    origin: [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://highstreetpix.com",
+      "https://highstreetpix.com",
+      "https://admin.highstreetpix.com",
+      "https://highstreetpix.netlify.app",
+      "http://13.204.195.106",
+      "https://13.204.195.106",
+    ],
     methods: ["GET", "POST"],
     credentials: true
   }
 })
 
-// Export app and io for testing
 export { app, io }
 
-// Initialize database and cloudinary connections
 const initializeApp = async () => {
-    try {
-        await connectDB()
-        await connectCloudinary()
-        
-        // CORS configuration (must be BEFORE any rate limiters or routes)
-        // Allow credentials and a flexible list of production origins
-        const envOrigins = (process.env.FRONTEND_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean)
-        const defaultAllowedOrigins = [
-            'https://highstreetpix.netlify.app'
-        ]
-        const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...envOrigins])]
+  try {
+    await connectDB()
+    await connectCloudinary()
 
-        const corsOptions = {
-            origin: function (origin, callback) {
-                // Allow requests with no origin (like mobile apps or curl requests)
-                if (!origin) return callback(null, true)
+    // CORS fix for production domain & admin
+    const allowedOrigins = [
+      "http://highstreetpix.com",
+      "https://highstreetpix.com",
+      "https://admin.highstreetpix.com",
+      "https://highstreetpix.netlify.app",
+      // Direct server IP access
+      "http://13.204.195.106",
+      "https://13.204.195.106"
+    ]
 
-                // Allow all localhost ports for development
-                if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-                    return callback(null, true)
-                }
+    const corsOptions = {
+      origin: function (origin, callback) {
+        if (!origin) return callback(null, true)
 
-                // Allow AWS Lightsail IP addresses (for production deployments)
-                // This allows http://13.204.195.106 and any port variations
-                const isAWSIP = /^https?:\/\/13\.204\.195\.106(:\d+)?$/.test(origin)
-                
-                // Allow Netlify deploy previews (e.g., https://<hash>--highstreetpix.netlify.app)
-                const isNetlifyPreview = /https:\/\/.*--highstreetpix\.netlify\.app$/.test(origin)
-                const isAllowedExplicit = allowedOrigins.includes(origin)
-
-                if (isAllowedExplicit || isNetlifyPreview || isAWSIP) {
-                    return callback(null, true)
-                }
-
-                callback(new Error('Not allowed by CORS'))
-            },
-            credentials: true, // Allow cookies
-            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'token', 'Origin', 'Accept'],
-            preflightContinue: false,
-            optionsSuccessStatus: 204
+        // Allow local dev ports
+        if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
+          return callback(null, true)
         }
-        app.use(cors(corsOptions))
-        // Handle preflight for all routes
-        app.options('*', cors(corsOptions))
 
-        // Security middlewares
-        app.use(helmet({
-            contentSecurityPolicy: {
-                directives: {
-                    defaultSrc: ["'self'"],
-                    styleSrc: ["'self'", "'unsafe-inline'"],
-                    // Allow Razorpay checkout script and inline handlers it requires
-                    scriptSrc: ["'self'", 'https://checkout.razorpay.com'],
-                    // Allow images and icons from https
-                    imgSrc: ["'self'", 'data:', 'https:'],
-                    // Allow XHR/WebSocket to https and wss (Razorpay and our APIs)
-                    connectSrc: ["'self'", 'https:', 'wss:']
-                },
-            },
-            crossOriginEmbedderPolicy: false
-        }))
-        
-        // Cookie parser
-        app.use(cookieParser())
-        
-        // Rate limiting (after CORS so preflight gets CORS headers)
-        app.use('/api', generalLimiter)
-        
-        // JSON body parser
-        app.use(express.json())
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true)
+        }
 
-        // api endpoints
-        app.use('/api/user',userRouter)
-        app.use('/api/product',productRouter)
-        app.use('/api/cart',cartRouter)
-        app.use('/api/order',orderRouter)
-        app.use('/api/test',testRouter)
+        // Netlify preview builds
+        if (/^https:\/\/.*--highstreetpix\.netlify\.app$/.test(origin)) {
+          return callback(null, true)
+        }
 
-        // Root health check for frontend
-        app.get('/',(req,res)=>{
-            res.json({ 
-                success: true,
-                message: "PIX MERN API is running",
-                version: "1.0.0",
-                endpoints: {
-                    products: "/api/product",
-                    users: "/api/user", 
-                    cart: "/api/cart",
-                    orders: "/api/order"
-                }
-            })
-        })
-
-        // API health check
-        app.get('/api',(req,res)=>{
-            res.json({ 
-                success: true,
-                message: "API Working",
-                status: "healthy"
-            })
-        })
-
-        // Socket.io connection handling
-        io.on('connection', (socket) => {
-          console.log('🟢 Admin connected:', socket.id)
-          
-          // Join admin room
-          socket.join('admin')
-          
-          socket.on('disconnect', () => {
-            console.log('🔴 Admin disconnected:', socket.id)
-          })
-        })
-
-        httpServer.listen(port, ()=> console.log('🚀 Server started on PORT : '+ port))
-        console.log('📡 Socket.io server ready for real-time notifications')
-    } catch (error) {
-        console.error('Failed to initialize app:', error)
-        process.exit(1)
+        return callback(new Error("Not allowed by CORS"))
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'token', 'Origin', 'Accept'],
+      optionsSuccessStatus: 204
     }
+
+    app.use(cors(corsOptions))
+    app.options('*', cors(corsOptions))
+
+    // Security
+    app.use(helmet({
+      contentSecurityPolicy: false
+    }))
+
+    app.use(cookieParser())
+    app.use('/api', generalLimiter)
+    app.use(express.json())
+
+    // Routes
+    app.use('/api/user', userRouter)
+    app.use('/api/product', productRouter)
+    app.use('/api/cart', cartRouter)
+    app.use('/api/order', orderRouter)
+    app.use('/api/test', testRouter)
+
+    app.get('/', (req, res) => {
+      res.json({ success: true, message: "PIX MERN API Running" })
+    })
+
+    app.get('/api', (req, res) => {
+      res.json({ success: true, message: "API Healthy" })
+    })
+
+    // Socket.io
+    io.on('connection', (socket) => {
+      console.log('Admin socket connected:', socket.id)
+      socket.join("admin")
+
+      socket.on("disconnect", () => {
+        console.log('❌ Admin socket disconnected:', socket.id)
+      })
+    })
+
+    httpServer.listen(port, '0.0.0.0', () => {
+      console.log("Server running on PORT:", port)
+    })
+
+  } catch (error) {
+    console.error("❌ Startup Error:", error)
+    process.exit(1)
+  }
 }
 
 initializeApp()
