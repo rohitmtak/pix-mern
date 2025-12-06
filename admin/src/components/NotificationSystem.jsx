@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { io } from 'socket.io-client'
 import { toast } from 'react-toastify'
+import { backendUrl } from '../App'
 
 const NotificationSystem = () => {
   const [socket, setSocket] = useState(null)
@@ -9,8 +10,8 @@ const NotificationSystem = () => {
   const [showPanel, setShowPanel] = useState(false)
 
   useEffect(() => {
-    // Initialize socket connection
-    const newSocket = io('http://localhost:4000', {
+    // Initialize socket connection using backendUrl from environment
+    const newSocket = io(backendUrl || 'http://localhost:3000', {
       transports: ['websocket', 'polling']
     })
 
