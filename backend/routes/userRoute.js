@@ -16,9 +16,11 @@ import {
   resetPassword,
   verifyResetToken,
   refreshToken,
-  logout
+  logout,
+  changeAdminPassword
 } from '../controllers/userController.js';
 import authUser from '../middleware/auth.js'
+import adminAuth from '../middleware/adminAuth.js'
 import { loginLimiter, passwordResetLimiter, registerLimiter } from '../middleware/rateLimiter.js'
 
 const userRouter = express.Router();
@@ -48,5 +50,8 @@ userRouter.delete('/addresses/:id', authUser, deleteAddress)
 userRouter.get('/wishlist', authUser, listWishlist)
 userRouter.post('/wishlist', authUser, addWishlist)
 userRouter.delete('/wishlist/:productId', authUser, removeWishlist)
+
+// Admin password change
+userRouter.post('/admin/change-password', adminAuth, changeAdminPassword)
 
 export default userRouter;

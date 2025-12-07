@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs"
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import userModel from "../models/userModel.js";
+import Admin from "../models/adminModel.js";
 import { sendPasswordResetEmail, sendPasswordResetSuccessEmail } from "../utils/emailService.js";
 import tokenBlacklist from "../utils/tokenBlacklist.js";
 import { validatePassword } from "../utils/passwordValidator.js";
@@ -119,24 +120,36 @@ const registerUser = async (req, res) => {
 const adminLogin = async (req, res) => {
     try {
         
-        const {email,password} = req.body
+        const {email, password} = req.body
 
-        // Validate admin credentials
-        if (email !== process.env.ADMIN_EMAIL) {
-            return res.json({success:false,message:"Invalid credentials"})
+        if (!email || !password) {
+            return res.json({success: false, message: "Email and password are required"})
         }
 
-        // Hash the provided password and compare with stored hash
-        const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
-        if (!adminPasswordHash) {
-            console.error('ADMIN_PASSWORD_HASH not configured in environment variables');
-            return res.json({success:false,message:"Server configuration error"})
+        // Find admin in database
+        const admin = await Admin.findOne({ email: email.toLowerCase() });
+
+        if (!admin) {
+            return res.json({success: false, message: "Invalid credentials"})
         }
 
-        const isMatch = await bcrypt.compare(password, adminPasswordHash);
+        // Compare password with stored hash
+        const isMatch = await bcrypt.compare(password, admin.password);
         
         if (isMatch) {
-            const token = jwt.sign({ email, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '24h' });
+            // Update last login time
+            admin.lastLoginAt = new Date();
+            
+            // Generate token with admin ID and email
+            const token = jwt.sign({ 
+                id: admin._id,
+                email: admin.email, 
+                role: admin.role || 'admin' 
+            }, process.env.JWT_SECRET, { expiresIn: '24h' });
+            
+            // Update active session
+            admin.activeSessionId = token;
+            await admin.save();
             
             // Set httpOnly cookie
             res.cookie('token', token, {
@@ -146,9 +159,9 @@ const adminLogin = async (req, res) => {
                 maxAge: 24 * 60 * 60 * 1000 // 24 hours
             })
             
-            res.json({success:true, message: 'Admin login successful'})
+            res.json({success: true, message: 'Admin login successful'})
         } else {
-            res.json({success:false,message:"Invalid credentials"})
+            res.json({success: false, message: "Invalid credentials"})
         }
 
     } catch (error) {
@@ -444,9 +457,29 @@ const refreshToken = async (req, res) => {
         const token_decode = jwt.verify(token, process.env.JWT_SECRET);
         
         // Check if this is an admin token
-        if (token_decode.role === 'admin' && token_decode.email === process.env.ADMIN_EMAIL) {
+        if (token_decode.role === 'admin' || token_decode.role === 'superadmin') {
+            // Find admin in database
+            const admin = await Admin.findById(token_decode.id);
+            
+            if (!admin) {
+                return res.status(401).json({ success: false, message: 'Admin not found' });
+            }
+            
+            // Verify current token matches active session
+            if (admin.activeSessionId !== token) {
+                return res.status(401).json({ success: false, message: 'Session expired. Please login again.' });
+            }
+            
             // Generate new admin token with 24h expiration
-            const newToken = jwt.sign({ email: token_decode.email, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '24h' });
+            const newToken = jwt.sign({ 
+                id: admin._id,
+                email: admin.email, 
+                role: admin.role || 'admin' 
+            }, process.env.JWT_SECRET, { expiresIn: '24h' });
+            
+            // Update active session
+            admin.activeSessionId = newToken;
+            await admin.save();
             
             // Set httpOnly cookie
             res.cookie('token', newToken, {
@@ -504,15 +537,29 @@ const logout = async (req, res) => {
             tokenBlacklist.addToken(token);
         }
         
-        // Clear active session
-        if (req.user && req.user.userId) {
-            await userModel.findByIdAndUpdate(req.user.userId, { activeSessionId: null });
+        // Decode token to check if it's admin or user
+        try {
+            const token_decode = jwt.verify(token, process.env.JWT_SECRET);
+            
+            // Clear active session for admin
+            if (token_decode.role === 'admin' || token_decode.role === 'superadmin') {
+                if (token_decode.id) {
+                    await Admin.findByIdAndUpdate(token_decode.id, { activeSessionId: null });
+                }
+            }
+            // Clear active session for regular user
+            else if (token_decode.id) {
+                await userModel.findByIdAndUpdate(token_decode.id, { activeSessionId: null });
+            }
+        } catch (decodeError) {
+            // Token might be invalid, but we still want to clear the cookie
+            console.log('Token decode error during logout:', decodeError.message);
         }
         
         res.clearCookie('token', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict'
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
         });
         
         res.json({ 
@@ -524,6 +571,78 @@ const logout = async (req, res) => {
         res.json({ 
             success: false, 
             message: 'Logout failed' 
+        });
+    }
+};
+
+// Admin password change
+const changeAdminPassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.json({ 
+                success: false, 
+                message: "Current password and new password are required" 
+            });
+        }
+
+        // Validate new password strength
+        const passwordValidation = validatePassword(newPassword);
+        if (!passwordValidation.isValid) {
+            return res.json({ 
+                success: false, 
+                message: "Password requirements not met",
+                errors: passwordValidation.errors
+            });
+        }
+
+        // Get admin from request (set by adminAuth middleware)
+        const adminId = req.admin?.id;
+        if (!adminId) {
+            return res.json({ 
+                success: false, 
+                message: "Admin not authenticated" 
+            });
+        }
+
+        // Find admin
+        const admin = await Admin.findById(adminId);
+        if (!admin) {
+            return res.json({ 
+                success: false, 
+                message: "Admin not found" 
+            });
+        }
+
+        // Verify current password
+        const isMatch = await bcrypt.compare(currentPassword, admin.password);
+        if (!isMatch) {
+            return res.json({ 
+                success: false, 
+                message: "Current password is incorrect" 
+            });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update password and clear active session (force re-login for security)
+        admin.password = hashedPassword;
+        admin.activeSessionId = null;
+        await admin.save();
+
+        res.json({ 
+            success: true, 
+            message: "Password changed successfully. Please login again." 
+        });
+
+    } catch (error) {
+        console.log('Change admin password error:', error);
+        res.json({ 
+            success: false, 
+            message: error.message 
         });
     }
 };
@@ -545,5 +664,6 @@ export {
     resetPassword,
     verifyResetToken,
     refreshToken,
-    logout
+    logout,
+    changeAdminPassword
 }

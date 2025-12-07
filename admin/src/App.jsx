@@ -5,6 +5,7 @@ import { Routes, Route } from 'react-router-dom'
 import Add from './pages/Add'
 import List from './pages/List'
 import Orders from './pages/Orders'
+import Settings from './pages/Settings'
 import StockManager from './components/StockManager'
 import Login from './components/Login'
 import NotificationSystem from './components/NotificationSystem'
@@ -14,7 +15,30 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
-export const backendUrl = import.meta.env.VITE_BACKEND_URL
+// Backend URL configuration with fallback
+// Priority: 1. VITE_BACKEND_URL env var, 2. Production default, 3. Development default
+const getBackendUrl = () => {
+  // Check for explicit environment variable first
+  if (import.meta.env.VITE_BACKEND_URL) {
+    return import.meta.env.VITE_BACKEND_URL;
+  }
+  
+  // Check if we're in production mode
+  if (import.meta.env.PROD) {
+    return 'https://pix-mern.onrender.com';  // Default production backend URL
+  }
+  
+  // Default to development
+  return 'http://localhost:3000';
+};
+
+export const backendUrl = getBackendUrl();
+
+// Log backend URL for debugging (helps verify the correct URL is being used)
+console.log('🔧 Backend URL:', backendUrl);
+console.log('🔧 VITE_BACKEND_URL env:', import.meta.env.VITE_BACKEND_URL);
+console.log('🔧 PROD mode:', import.meta.env.PROD);
+
 export const currency = '₹'
 
 const App = () => {
@@ -131,6 +155,7 @@ const App = () => {
                 <Route path='/list' element={<List token={token} />} />
                 <Route path='/orders' element={<Orders token={token} />} />
                 <Route path='/stock' element={<StockManager token={token} />} />
+                <Route path='/settings' element={<Settings setToken={setToken} />} />
                 <Route path='*' element={<Add token={token} />} />
               </Routes>
             </main>
