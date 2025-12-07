@@ -5,6 +5,7 @@ import { config } from '@/config/env';
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
+  baseURL: config.api.baseUrl,
   timeout: 10000,
   withCredentials: true, // Enable cookies for httpOnly tokens
 });

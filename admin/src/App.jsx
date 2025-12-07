@@ -16,19 +16,33 @@ import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
 // Backend URL configuration with fallback
-// Priority: 1. VITE_BACKEND_URL env var, 2. Production default, 3. Development default
+// Note: Vite automatically loads:
+//   - .env for local development
+//   - .env.production when building for production (npm run build)
+// Environment variables must be prefixed with VITE_ to be exposed to the client
+// 
+// Priority: 1. VITE_BACKEND_URL from .env/.env.production, 2. Production default, 3. Development default
 const getBackendUrl = () => {
-  // Check for explicit environment variable first
+  // Check for explicit environment variable first (from .env or .env.production)
   if (import.meta.env.VITE_BACKEND_URL) {
-    return import.meta.env.VITE_BACKEND_URL;
+    const url = import.meta.env.VITE_BACKEND_URL;
+    // In production, ensure HTTPS to avoid mixed content errors
+    if (import.meta.env.PROD && url.startsWith('http://')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
   }
   
   // Check if we're in production mode
   if (import.meta.env.PROD) {
-    return 'https://pix-mern.onrender.com';  // Default production backend URL
+    // Default production backend URL - update this to your actual backend URL
+    // Example: https://13.204.195.106:4000 or https://api.highstreetpix.com
+    // Better: Set VITE_BACKEND_URL in .env.production file
+    console.warn('⚠️ VITE_BACKEND_URL not set in .env.production. Please set it in your environment variables.');
+    return 'https://13.204.195.106:4000';  // Default production backend URL
   }
   
-  // Default to development
+  // Default to development (uses Vite proxy /api -> http://localhost:3000)
   return 'http://localhost:3000';
 };
 

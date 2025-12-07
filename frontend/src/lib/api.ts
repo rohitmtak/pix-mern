@@ -1,7 +1,7 @@
 import { config } from '@/config/env';
 
-// Use relative URL for API calls when using Vite proxy
-const API_BASE_URL = import.meta.env.DEV ? '/api' : config.api.baseUrl;
+// Use the configured API base URL (handles dev/prod and HTTPS automatically)
+const API_BASE_URL = config.api.baseUrl;
 
 export interface ColorVariant {
   color: string;

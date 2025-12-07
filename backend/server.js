@@ -62,15 +62,10 @@ const io = new Server(httpServer, {
         "http://highstreetpix.com",
         "https://highstreetpix.com",
         "https://admin.highstreetpix.com",
-        "https://highstreetpix.netlify.app",
         "http://13.204.195.106",
         "https://13.204.195.106",
       ]
       if (allowedOrigins.includes(origin)) {
-        return callback(null, true)
-      }
-      // Netlify preview builds
-      if (/^https:\/\/.*--highstreetpix\.netlify\.app$/.test(origin)) {
         return callback(null, true)
       }
       callback(new Error("Not allowed by CORS"))
@@ -92,7 +87,6 @@ const initializeApp = async () => {
       "http://highstreetpix.com",
       "https://highstreetpix.com",
       "https://admin.highstreetpix.com",
-      "https://highstreetpix.netlify.app",
       // Direct server IP access
       "http://13.204.195.106",
       "https://13.204.195.106"
@@ -108,11 +102,6 @@ const initializeApp = async () => {
         }
 
         if (allowedOrigins.includes(origin)) {
-          return callback(null, true)
-        }
-
-        // Netlify preview builds
-        if (/^https:\/\/.*--highstreetpix\.netlify\.app$/.test(origin)) {
           return callback(null, true)
         }
 
