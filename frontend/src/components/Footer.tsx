@@ -67,7 +67,8 @@ const Footer = () => {
       title: 'CONTACT',
       links: [
         { name: "info@highstreetpix.com", path: "mailto:info@highstreetpix.com" },
-        { name: "+91 9812345678", path: "tel:+919812345678" }
+        { name: "+91 7350731111", path: "tel:+917350731111" },
+        { name: "+91 9890489394", path: "tel:+919890489394" }
       ]
     }
   ];
@@ -80,7 +81,7 @@ const Footer = () => {
     },
     {
       icon: "M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z",
-      text: "+91 9812345678"
+      text: "+91 7350731111"
     }
   ];
 
@@ -217,7 +218,7 @@ const Footer = () => {
                     High Street Pix
                   </h2>
                   <p className="text-base text-gray-400 leading-relaxed max-w-md">
-                  Traditional craftsmanship meets modern innovation in every luxury creation.
+                    Traditional craftsmanship meets modern innovation in every luxury creation.
                   </p>
                 </div>
                 
@@ -320,11 +321,14 @@ const Footer = () => {
                       </svg>
                       <span className="text-sm font-normal">info@highstreetpix.com</span>
                     </div>
-                    <div className="flex items-center space-x-3 text-gray-400 hover:text-white transition-colors duration-200">
-                      <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex items-start space-x-3 text-gray-400 hover:text-white transition-colors duration-200">
+                      <svg className="w-4 h-4 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                       </svg>
-                      <span className="text-sm font-normal">+91 9812345678</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-normal">+91 7350731111</span>
+                        <span className="text-sm font-normal">+91 9890489394</span>
+                      </div>
                     </div>
                   </div>
                 </div>

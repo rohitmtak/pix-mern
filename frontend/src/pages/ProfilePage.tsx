@@ -104,7 +104,7 @@ const ProfilePage: React.FC = () => {
         // Only make API calls if user is authenticated
         const fetchOrders = async () => {
         try {
-          const res = await apiClient.post(`${config.api.baseUrl}/order/userorders`, {});
+          const res = await apiClient.post('/order/userorders', {});
           
           if (res.data?.success && Array.isArray(res.data?.orders)) {
             setOrders(res.data.orders);
@@ -130,7 +130,7 @@ const ProfilePage: React.FC = () => {
 
       const fetchProfile = async () => {
         try {
-          const res = await apiClient.get(`${config.api.baseUrl}/user/me`);
+          const res = await apiClient.get('/user/me');
           if (res.data?.success && res.data.user) {
             // Sort addresses: default first, then others
             if (res.data.user.addresses && Array.isArray(res.data.user.addresses)) {

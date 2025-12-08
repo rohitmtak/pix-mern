@@ -74,7 +74,7 @@ const Login: React.FC = () => {
         return;
       }
 
-      const endpoint = `${config.api.baseUrl}/user/${authMode === "Sign Up" ? "register" : "login"}`;
+      const endpoint = `/user/${authMode === "Sign Up" ? "register" : "login"}`;
       const payload = authMode === "Sign Up" ? { name: name.trim(), email: trimmedEmail, password: trimmedPassword } : { email: trimmedEmail, password: trimmedPassword };
       const response = await apiClient.post(endpoint, payload);
 

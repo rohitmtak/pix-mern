@@ -212,11 +212,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     
     try {
       // Clear the backend cart first to avoid duplicates
-      await apiClient.delete(`${config.api.baseUrl}/cart/clear`);
+      await apiClient.delete('/cart/clear');
 
       // Send each cart item to backend
       for (const item of state.items) {
-        await apiClient.post(`${config.api.baseUrl}/cart/add`, {
+        await apiClient.post('/cart/add', {
           productId: item.productId,
           name: item.name,
           price: item.price,
@@ -245,7 +245,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
     
     try {
-      const response = await apiClient.get(`${config.api.baseUrl}/cart/get`);
+      const response = await apiClient.get('/cart/get');
 
       if (response.status === 200) {
         const data = response.data;
@@ -284,7 +284,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     
     try {
       // First, get the user's existing backend cart
-      const response = await apiClient.get(`${config.api.baseUrl}/cart/get`);
+      const response = await apiClient.get('/cart/get');
 
       let backendCart: CartItem[] = [];
       if (response.status === 200) {
@@ -344,7 +344,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     // If user is authenticated, sync with backend
     if (isAuthenticated) {
       try {
-        await apiClient.post(`${config.api.baseUrl}/cart/add`, {
+        await apiClient.post('/cart/add', {
           productId: item.productId,
           name: item.name,
           price: item.price,
@@ -371,7 +371,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       // Use setTimeout to make this truly async and not block the UI
       setTimeout(async () => {
         try {
-          const response = await apiClient.delete(`${config.api.baseUrl}/cart/remove`, {
+          const response = await apiClient.delete('/cart/remove', {
             data: { productId: productIdStr, size, color }
           });
 
@@ -394,7 +394,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     // If user is authenticated, sync with backend
     if (isAuthenticated) {
       try {
-        await apiClient.put(`${config.api.baseUrl}/cart/update`, {
+        await apiClient.put('/cart/update', {
           productId,
           size,
           color,
@@ -412,7 +412,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     // If user is authenticated, sync with backend
     if (isAuthenticated) {
       try {
-        await apiClient.delete(`${config.api.baseUrl}/cart/clear`);
+        await apiClient.delete('/cart/clear');
       } catch (error) {
         console.error('Failed to sync cart with backend:', error);
         // Don't revert frontend change - let it stay cleared locally

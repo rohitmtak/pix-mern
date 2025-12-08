@@ -11,35 +11,59 @@ const ensureHttps = (url: string | undefined): string => {
     return '/api'; // Development uses Vite proxy
   }
   
-  if (url.startsWith('/')) return url; // Already a relative path, use as-is
+  // Trim whitespace
+  url = url.trim();
+  
+  // Already a relative path, use as-is
+  if (url.startsWith('/')) {
+    return url;
+  }
   
   // In production, always use HTTPS to avoid mixed content errors
   if (import.meta.env.PROD) {
-    if (url.startsWith('http://')) {
-      // Replace http:// with https:// for production
-      return url.replace('http://', 'https://');
+    // Force HTTPS in production - replace http:// with https://
+    if (url.toLowerCase().startsWith('http://')) {
+      const httpsUrl = url.replace(/^http:\/\//i, 'https://');
+      console.warn(`⚠️ Converted HTTP to HTTPS: ${url} → ${httpsUrl}`);
+      return httpsUrl;
     }
-    if (!url.startsWith('https://')) {
-      // If no protocol, assume HTTPS in production
-      return `https://${url}`;
+    // If no protocol specified, add https://
+    if (!url.toLowerCase().startsWith('https://')) {
+      const httpsUrl = `https://${url}`;
+      console.warn(`⚠️ Added HTTPS protocol: ${url} → ${httpsUrl}`);
+      return httpsUrl;
     }
   }
   
   return url;
 };
 
+// Get the raw environment variable for debugging
+const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 // Environment configuration
 // Note: Vite automatically loads:
 //   - .env for all environments (local development)
 //   - .env.production when building for production (npm run build)
 // Environment variables must be prefixed with VITE_ to be exposed to the client
+const apiBaseUrl = import.meta.env.DEV
+  ? '/api'
+  : ensureHttps(rawApiBaseUrl);
+
+// Log the final API URL in production for debugging
+if (import.meta.env.PROD) {
+  console.log('🔧 API Configuration:', {
+    rawEnvVar: rawApiBaseUrl || '(not set)',
+    finalBaseUrl: apiBaseUrl,
+    isHttps: apiBaseUrl.startsWith('https://'),
+  });
+}
+
 export const config = {
   api: {
     // Development: Uses Vite proxy (/api -> http://localhost:3000)
     // Production: Uses VITE_API_BASE_URL from .env.production (e.g., https://13.204.195.106:4000/api)
-    baseUrl: import.meta.env.DEV
-      ? '/api'
-      : ensureHttps(import.meta.env.VITE_API_BASE_URL),
+    baseUrl: apiBaseUrl,
     timeout: 10000, // 10 seconds
   },
   app: {
