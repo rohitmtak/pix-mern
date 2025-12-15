@@ -1,7 +1,134 @@
+import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import apiClient from "@/utils/apiClient";
+import { showToast } from "@/config/toastConfig";
 
 const ContactPage = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Validation constants (match backend)
+    const NAME_MIN_LENGTH = 2;
+    const NAME_MAX_LENGTH = 100;
+    const EMAIL_MAX_LENGTH = 254;
+    const MESSAGE_MIN_LENGTH = 10;
+    const MESSAGE_MAX_LENGTH = 5000;
+
+    // Validate name
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) {
+      newErrors.name = "Name is required";
+    } else if (trimmedName.length < NAME_MIN_LENGTH) {
+      newErrors.name = `Name must be at least ${NAME_MIN_LENGTH} characters long`;
+    } else if (trimmedName.length > NAME_MAX_LENGTH) {
+      newErrors.name = `Name must not exceed ${NAME_MAX_LENGTH} characters`;
+    }
+
+    // Validate email
+    const trimmedEmail = formData.email.trim();
+    if (!trimmedEmail) {
+      newErrors.email = "Email is required";
+    } else if (trimmedEmail.length > EMAIL_MAX_LENGTH) {
+      newErrors.email = `Email must not exceed ${EMAIL_MAX_LENGTH} characters`;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    // Validate phone number if provided (Indian format: 10 digits)
+    if (formData.phone.trim()) {
+      const phoneNumber = formData.phone.trim().replace(/\D/g, ''); // Remove all non-digits
+      if (phoneNumber.length !== 10) {
+        newErrors.phone = "Please enter a valid 10-digit phone number";
+      }
+    }
+
+    // Validate message
+    const trimmedMessage = formData.message.trim();
+    if (!trimmedMessage) {
+      newErrors.message = "Message is required";
+    } else if (trimmedMessage.length < MESSAGE_MIN_LENGTH) {
+      newErrors.message = `Message must be at least ${MESSAGE_MIN_LENGTH} characters long`;
+    } else if (trimmedMessage.length > MESSAGE_MAX_LENGTH) {
+      newErrors.message = `Message must not exceed ${MESSAGE_MAX_LENGTH} characters`;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    
+    // For phone number, only allow digits
+    let processedValue = value;
+    if (name === "phone") {
+      // Remove all non-digit characters
+      processedValue = value.replace(/\D/g, '');
+      // Limit to 10 digits
+      if (processedValue.length > 10) {
+        processedValue = processedValue.slice(0, 10);
+      }
+    }
+    
+    setFormData((prev) => ({ ...prev, [name]: processedValue }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      showToast.error("Please fill in all required fields correctly");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await apiClient.post("/contact/submit", formData);
+
+      if (response.data.success) {
+        showToast.success(
+          response.data.message || "Thank you for contacting us! We'll get back to you soon."
+        );
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          message: "",
+        });
+        setErrors({});
+      } else {
+        showToast.error(
+          response.data.message || "Failed to submit form. Please try again."
+        );
+      }
+    } catch (error: any) {
+      console.error("Contact form submission error:", error);
+      showToast.error(
+        error.response?.data?.message ||
+          "Failed to submit contact form. Please try again later."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -57,46 +184,101 @@ const ContactPage = () => {
 
             {/* Right Column - Contact Form */}
             <div>
-              <form className="space-y-4 md:space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                 <div>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 border bg-white text-black placeholder-gray-500 focus:outline-none transition-colors duration-200 ${
+                      errors.name
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-gray-400"
+                    }`}
                     placeholder="Name*"
+                    disabled={isSubmitting}
+                    maxLength={100}
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+                  )}
                 </div>
                 <div>
                   <input
                     type="email"
-                    className="w-full px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 border bg-white text-black placeholder-gray-500 focus:outline-none transition-colors duration-200 ${
+                      errors.email
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-gray-400"
+                    }`}
                     placeholder="Email address*"
+                    disabled={isSubmitting}
+                    maxLength={254}
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+                  )}
                 </div>
-                <div className="flex">
-                  <div className="flex items-center px-4 py-3 border border-gray-300 border-r-0 bg-gray-50">
-                    <span className="text-gray-700">+91</span>
-                    <svg className="w-4 h-4 ml-2 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
+                <div>
+                  <div className="flex">
+                    <div className="flex items-center px-4 py-3 border border-gray-300 border-r-0 bg-gray-50">
+                      <span className="text-gray-700">+91</span>
+                      <svg className="w-4 h-4 ml-2 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className={`flex-1 px-4 py-3 border bg-white text-black placeholder-gray-500 focus:outline-none transition-colors duration-200 ${
+                        errors.phone
+                          ? "border-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:border-gray-400"
+                      }`}
+                      placeholder="Phone number"
+                      disabled={isSubmitting}
+                      maxLength={10}
+                    />
                   </div>
-                  <input
-                    type="tel"
-                    className="flex-1 px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200"
-                    placeholder="Phone number"
-                  />
+                  {errors.phone && (
+                    <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+                  )}
                 </div>
                 <div>
                   <textarea
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200 resize-none"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 border bg-white text-black placeholder-gray-500 focus:outline-none transition-colors duration-200 resize-none ${
+                      errors.message
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-gray-400"
+                    }`}
                     placeholder="Message*"
+                    disabled={isSubmitting}
+                    maxLength={5000}
                   />
+                  {errors.message && (
+                    <p className="mt-1 text-sm text-red-500">{errors.message}</p>
+                  )}
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-black text-white py-3 px-6 hover:bg-gray-700 transition-colors duration-200 font-jost uppercase tracking-wide font-medium"
+                  disabled={isSubmitting}
+                  className={`w-full bg-black text-white py-3 px-6 transition-colors duration-200 font-jost uppercase tracking-wide font-medium ${
+                    isSubmitting
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-gray-700"
+                  }`}
                 >
-                  Send
+                  {isSubmitting ? "Sending..." : "Send"}
                 </button>
               </form>
             </div>
@@ -133,46 +315,101 @@ const ContactPage = () => {
               </div>
 
               {/* Contact Form */}
-              <form className="space-y-4 md:space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                 <div>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 border bg-white text-black placeholder-gray-500 focus:outline-none transition-colors duration-200 ${
+                      errors.name
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-gray-400"
+                    }`}
                     placeholder="Name*"
+                    disabled={isSubmitting}
+                    maxLength={100}
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+                  )}
                 </div>
                 <div>
                   <input
                     type="email"
-                    className="w-full px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 border bg-white text-black placeholder-gray-500 focus:outline-none transition-colors duration-200 ${
+                      errors.email
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-gray-400"
+                    }`}
                     placeholder="Email address*"
+                    disabled={isSubmitting}
+                    maxLength={254}
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+                  )}
                 </div>
-                <div className="flex">
-                  <div className="flex items-center px-4 py-3 border border-gray-300 border-r-0 bg-gray-50">
-                    <span className="text-gray-700">+91</span>
-                    <svg className="w-4 h-4 ml-2 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
+                <div>
+                  <div className="flex">
+                    <div className="flex items-center px-4 py-3 border border-gray-300 border-r-0 bg-gray-50">
+                      <span className="text-gray-700">+91</span>
+                      <svg className="w-4 h-4 ml-2 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className={`flex-1 px-4 py-3 border bg-white text-black placeholder-gray-500 focus:outline-none transition-colors duration-200 ${
+                        errors.phone
+                          ? "border-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:border-gray-400"
+                      }`}
+                      placeholder="Phone number"
+                      disabled={isSubmitting}
+                      maxLength={10}
+                    />
                   </div>
-                  <input
-                    type="tel"
-                    className="flex-1 px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200"
-                    placeholder="Phone number"
-                  />
+                  {errors.phone && (
+                    <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+                  )}
                 </div>
                 <div>
                   <textarea
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 bg-white text-black placeholder-gray-500 focus:outline-none focus:border-gray-400 transition-colors duration-200 resize-none"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 border bg-white text-black placeholder-gray-500 focus:outline-none transition-colors duration-200 resize-none ${
+                      errors.message
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-gray-400"
+                    }`}
                     placeholder="Message*"
+                    disabled={isSubmitting}
+                    maxLength={5000}
                   />
+                  {errors.message && (
+                    <p className="mt-1 text-sm text-red-500">{errors.message}</p>
+                  )}
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-black text-white py-3 px-6 hover:bg-gray-700 transition-colors duration-200 font-jost uppercase tracking-wide font-medium"
+                  disabled={isSubmitting}
+                  className={`w-full bg-black text-white py-3 px-6 transition-colors duration-200 font-jost uppercase tracking-wide font-medium ${
+                    isSubmitting
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-gray-700"
+                  }`}
                 >
-                  SEND
+                  {isSubmitting ? "SENDING..." : "SEND"}
                 </button>
               </form>
             </div>

@@ -122,3 +122,68 @@ export const sendPasswordResetSuccessEmail = async (email, name) => {
     return false;
   }
 };
+
+// Send contact form notification email
+export const sendContactFormEmail = async (contactData) => {
+  try {
+    // Check if email credentials are configured
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+      console.log('Email credentials not configured. Skipping contact form email send.');
+      return true; // Return true for testing
+    }
+
+    const transporter = createTransporter();
+    
+    // Get admin email or use default
+    const adminEmail = process.env.ADMIN_EMAILS?.split(',')[0]?.trim() || process.env.EMAIL_USER;
+    
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: adminEmail,
+      subject: `New Contact Form Submission - PIX`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background-color: #000; color: #fff; padding: 20px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px;">PIX</h1>
+          </div>
+          <div style="padding: 30px; background-color: #f9f9f9;">
+            <h2 style="color: #333; margin-bottom: 20px;">New Contact Form Submission</h2>
+            <div style="background-color: #fff; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+              <p style="color: #666; line-height: 1.8; margin-bottom: 10px;">
+                <strong style="color: #333;">Name:</strong> ${contactData.name}
+              </p>
+              <p style="color: #666; line-height: 1.8; margin-bottom: 10px;">
+                <strong style="color: #333;">Email:</strong> <a href="mailto:${contactData.email}" style="color: #000;">${contactData.email}</a>
+              </p>
+              ${contactData.phone ? `
+              <p style="color: #666; line-height: 1.8; margin-bottom: 10px;">
+                <strong style="color: #333;">Phone:</strong> <a href="tel:${contactData.phone}" style="color: #000;">${contactData.phone}</a>
+              </p>
+              ` : ''}
+              <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                <p style="color: #333; font-weight: bold; margin-bottom: 10px;">Message:</p>
+                <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${contactData.message}</p>
+              </div>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+              <a href="mailto:${contactData.email}" 
+                 style="background-color: #000; color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                Reply to ${contactData.name}
+              </a>
+            </div>
+          </div>
+          <div style="background-color: #f0f0f0; padding: 20px; text-align: center; color: #666;">
+            <p style="margin: 0;">© 2024 PIX. All rights reserved.</p>
+          </div>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Contact form email sent:', info.messageId);
+    return true;
+  } catch (error) {
+    console.error('Error sending contact form email:', error);
+    return false;
+  }
+};

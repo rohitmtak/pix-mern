@@ -33,6 +33,7 @@ import userRouter from './routes/userRoute.js'
 import productRouter from './routes/productRoute.js'
 import cartRouter from './routes/cartRoute.js'
 import orderRouter from './routes/orderRoute.js'
+import contactRouter from './routes/contactRoute.js'
 import testRouter from './routes/testRoute.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
 
@@ -64,6 +65,9 @@ const io = new Server(httpServer, {
         "https://admin.highstreetpix.com",
         "http://13.204.195.106",
         "https://13.204.195.106",
+        // Netlify demo site (non-www and www)
+        "https://pix-demo.netlify.app",
+        "https://www.pix-demo.netlify.app",
       ]
       if (allowedOrigins.includes(origin)) {
         return callback(null, true)
@@ -89,7 +93,10 @@ const initializeApp = async () => {
       "https://admin.highstreetpix.com",
       // Direct server IP access
       "http://13.204.195.106",
-      "https://13.204.195.106"
+      "https://13.204.195.106",
+      // Netlify demo site (non-www and www)
+      "https://pix-demo.netlify.app",
+      "https://www.pix-demo.netlify.app"
     ]
 
     const corsOptions = {
@@ -130,6 +137,7 @@ const initializeApp = async () => {
     app.use('/api/product', productRouter)
     app.use('/api/cart', cartRouter)
     app.use('/api/order', orderRouter)
+    app.use('/api/contact', contactRouter)
     app.use('/api/test', testRouter)
 
     app.get('/', (req, res) => {
