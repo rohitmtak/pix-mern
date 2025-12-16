@@ -104,6 +104,16 @@
   /* No font-size here — all sizes handled by Tailwind classes */
 }
 
+.text-image-cutout {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
 /* ---------------------------------------------------------
    MISC UTILITY FIXES (SAFE)
 --------------------------------------------------------- */

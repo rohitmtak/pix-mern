@@ -98,9 +98,12 @@ const submitContactForm = async (req, res) => {
         const sanitizedName = validator.escape(trimmedName);
         const sanitizedMessage = validator.escape(trimmedMessage);
 
+        // Normalize and escape email (HTML context safety)
+        const sanitizedEmail = validator.escape(trimmedEmail.toLowerCase());
+
         const contactSubmission = await contactModel.create({
             name: sanitizedName,
-            email: trimmedEmail.toLowerCase(),
+            email: sanitizedEmail,
             phone: cleanedPhone,
             message: sanitizedMessage
         });

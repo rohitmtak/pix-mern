@@ -53,10 +53,12 @@ const Index = () => {
           <div className="w-1/2 h-full relative flex items-center justify-center">
             <div className="relative z-10 mt-8 desktop:mt-0 px-4 desktop:px-0">
               <div className="
-                split-title font-playfair tracking-tightness
+                split-title font-playfair tracking-tightness text-image-cutout
                 text-split-mobile sm:text-split-tablet desktop:text-split-desktop
-                font-medium text-right leading-tight desktop:leading-none text-black
-              ">
+                font-medium text-right leading-tight desktop:leading-none text-transparent
+              " style={{
+                backgroundImage: "url('https://res.cloudinary.com/djhnxxllr/image/upload/v1757330212/fashionable-clothes-london-boutique-store_kzbbsy.jpg')"
+              }}>
                 SIGN
                 <br />
                 ATURE
@@ -115,10 +117,12 @@ const Index = () => {
           <div className="w-1/2 h-full relative flex items-center justify-center desktop:justify-start desktop:pl-32">
             <div className="relative z-10 mt-8 desktop:mt-0 px-4 desktop:px-0">
               <div className="
-                split-title font-playfair text-black
+                split-title font-playfair text-image-cutout
                 text-split-mobile sm:text-split-tablet desktop:text-split-desktop
-                leading-tight desktop:leading-none tracking-tightness
-              ">
+                leading-tight desktop:leading-none tracking-tightness text-transparent
+              " style={{
+                backgroundImage: "url('https://res.cloudinary.com/djhnxxllr/image/upload/v1757330212/fashionable-clothes-london-boutique-store_kzbbsy.jpg')"
+              }}>
                 CON
                 <br />
                 TEMPO
