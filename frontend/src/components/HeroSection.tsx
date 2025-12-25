@@ -10,7 +10,7 @@ const HeroSection = () => {
         preload="metadata"
       >
         <source 
-          src="https://res.cloudinary.com/djhnxxllr/video/upload/q_auto,f_webm/v1757268595/hero-video_n2jjtq.webm" 
+          src="https://res.cloudinary.com/djhnxxllr/video/upload/q_auto,f_webm/v1765967092/Banner_Video_01_lvazgi.webm"
           type="video/webm" 
         />
         Your browser does not support the video tag.
